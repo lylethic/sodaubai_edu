@@ -1,0 +1,7 @@
+.heading {
+	font-weight: 600;
+	font-size: 2rem;
+	text-transform: uppercase;
+	user-select: none;
+	pointer-events: none;
+}
