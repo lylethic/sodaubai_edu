@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
 	Popover,
 	PopoverContent,
@@ -18,10 +18,11 @@ import { cn, handleErrorApi } from '@/lib/utils';
 import { useFormContext } from 'react-hook-form';
 import { TeacherResType } from '@/schemaValidations/teacher.schema';
 import teacherApiRequest from '@/apiRequests/teacher';
+import { QueryType } from '@/types/queryType';
 
 interface TeacherSelectProps {
-	selectedTeacherId: number | null;
-	selectedSchoolId: number | null;
+	selectedTeacherId: number;
+	selectedSchoolId: number;
 	onSelectTeacher: (teacherId: number) => void;
 }
 
@@ -31,28 +32,54 @@ const TeachersBySchoolSelect = ({
 	onSelectTeacher,
 }: TeacherSelectProps) => {
 	const [teachers, setTeachers] = useState<TeacherResType['data'][]>([]);
+	const [page, setPage] = useState(1);
+	const [loading, setLoading] = useState(false);
+	const [hasMore, setHasMore] = useState(true);
+	const latestPageRef = useRef(1);
 
 	const { setValue } = useFormContext();
 
-	useEffect(() => {
-		const getTeacherList = async () => {
-			try {
-				const response = await teacherApiRequest.teachersBySchoolNoLimit(
-					selectedSchoolId
-				);
-				const result = Array.isArray(response.payload.data)
-					? response.payload.data
-					: [];
+	const fetchTeacherList = async (page: QueryType, schoolId: number) => {
+		if (loading || !hasMore || latestPageRef.current === page.pageSize) return;
 
-				setTeachers(result);
-			} catch (error) {
-				handleErrorApi({ error });
-			}
-		};
-		if (selectedSchoolId) getTeacherList();
-		else setTeachers([]);
+		setLoading(true);
+		latestPageRef.current === page.pageSize;
+		try {
+			const { payload } = await teacherApiRequest.teachersBySchoolNoLimit(
+				page,
+				schoolId
+			);
+			const result = Array.isArray(payload.data) ? payload.data : [];
+			setTeachers((prev) => [...prev, ...result]);
+			setHasMore(result.length > 0); // stop
+		} catch (error) {
+			handleErrorApi({ error });
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		setTeachers([]); // Reset
+		setPage(1);
+		setHasMore(true);
+		latestPageRef.current = 1;
+		fetchTeacherList({ pageNumber: page, pageSize: 20 }, selectedSchoolId);
 	}, [selectedSchoolId]);
 
+	const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+		const bottom =
+			e.currentTarget.scrollHeight - e.currentTarget.scrollTop <=
+			e.currentTarget.clientHeight;
+		if (bottom && hasMore && !loading) {
+			const nextPage = page + 1;
+			setPage(nextPage);
+			fetchTeacherList(
+				{ pageNumber: nextPage, pageSize: 20 },
+				selectedSchoolId
+			);
+		}
+	};
 	return (
 		<Popover modal={true}>
 			<PopoverTrigger asChild>
@@ -71,7 +98,7 @@ const TeachersBySchoolSelect = ({
 					<ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className='w-full p-0'>
+			<PopoverContent className='w-full p-0' onScroll={handleScroll}>
 				<Command>
 					<CommandInput placeholder='Nhập MÃ giáo viên để tìm kiếm...' />
 					<CommandList>

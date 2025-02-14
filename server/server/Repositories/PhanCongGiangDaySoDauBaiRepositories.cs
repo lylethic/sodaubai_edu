@@ -18,13 +18,10 @@ namespace server.Repositories
       this._context = context;
     }
 
-    public async Task<PhanCongGiangDayBiaResType> GetPC_GiangDay_BiaSDBs(QueryObject queryObject)
+    public async Task<PhanCongGiangDayBiaResType> GetPC_GiangDay_BiaSDBs()
     {
       try
       {
-        queryObject ??= new QueryObject();
-        var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-
         // Show nhung GV nao day lop nao   
         var query = @"SELECT pc.phanCongGiangDayId, 
                       pc.biaSoDauBaiId, 
@@ -36,18 +33,11 @@ namespace server.Repositories
                       c.className,
                       c.classId
                       FROM PhanCongGiangDay as pc
-                      LEFT JOIN TEACHER AS T 
-                      ON pc.teacherId = T.teacherId
-                      LEFT JOIN CLASS AS C ON t.teacherId = c.teacherId
-                      ORDER BY BIASODAUBAIID 
-                      OFFSET @skip ROWS
-                      FETCH NEXT @pageSize ROWS ONLY";
+                      LEFT JOIN TEACHER AS T ON pc.teacherId = T.teacherId
+                      LEFT JOIN CLASS AS C ON t.teacherId = c.teacherId";
 
         var phancongSBD = await _context.PhanCongGiangDays
-          .FromSqlRaw(query,
-                      new SqlParameter("@skip", skip),
-                      new SqlParameter("@pageSize", queryObject.PageSize)
-          ).Select(static x => new
+          .FromSqlRaw(query).Select(static x => new
           {
             x.BiaSoDauBaiId,
             x.PhanCongGiangDayId,
@@ -78,7 +68,7 @@ namespace server.Repositories
           ClassName = x.className,
           Fullname = x.teacherName
         })
-          .OrderBy(x => x.DateCreated)
+          .OrderBy(x => x.ClassId)
           .ToList();
 
         return new PhanCongGiangDayBiaResType(200, "Thành công", result);
@@ -158,7 +148,8 @@ namespace server.Repositories
         if (biaId == 0)
         {
           return new PhanCongGiangDayBiaResType(400, "Vui lòng nhập mã bìa sổ đầu bài");
-        };
+        }
+        ;
         // Show nhung GV nao day lop nao   
         var query = @"SELECT pc.phanCongGiangDayId, 
                       pc.biaSoDauBaiId, 
@@ -227,7 +218,7 @@ namespace server.Repositories
 
         if (phancongSDB is null)
         {
-          return new PhanCongGiangDayBiaResType(404, "Not found");
+          return new PhanCongGiangDayBiaResType(404, "Không tìm thấy bản ghi phân công giảng dạy");
         }
 
         var result = new PC_GiangDay_BiaSDBDto
@@ -404,14 +395,14 @@ namespace server.Repositories
 
         if (getClass is null)
         {
-          return new PhanCongGiangDayBiaResType(404, "Not found");
+          return new PhanCongGiangDayBiaResType(404, "Không tìm thấy");
         }
 
         var deleteQuery = "DELETE FROM PhanCongGiangDay WHERE PhanCongGiangDayId = @id";
 
         await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
 
-        return new PhanCongGiangDayBiaResType(200, "Deleted");
+        return new PhanCongGiangDayBiaResType(200, "Xóa bản ghi thành công");
       }
       catch (Exception ex)
       {
@@ -444,7 +435,7 @@ namespace server.Repositories
 
         await transaction.CommitAsync();
 
-        return new PhanCongGiangDayBiaResType(200, "Thành công");
+        return new PhanCongGiangDayBiaResType(200, "Xóa thành công");
       }
       catch (Exception ex)
       {

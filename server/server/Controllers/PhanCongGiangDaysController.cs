@@ -21,7 +21,7 @@ namespace server.Controllers
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] QueryObject queryObject)
     {
-      var result = await _pc.GetPC_GiangDay_BiaSDBs(queryObject);
+      var result = await _pc.GetPC_GiangDay_BiaSDBs();
       if (result.StatusCode == 400)
       {
         return BadRequest(new
@@ -33,11 +33,23 @@ namespace server.Controllers
 
       if (result.StatusCode == 200)
       {
+        var data = result.ListMapData ?? [];
+        var totalResults = data.Count;
+        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
+        var paginatedData = data.Skip((queryObject.PageNumber - 1) * queryObject.PageSize).Take(queryObject.PageSize);
+
         return Ok(new
         {
           status = 200,
           message = result.Message,
-          data = result.ListMapData
+          data = paginatedData,
+          pagination = new
+          {
+            queryObject.PageNumber,
+            queryObject.PageSize,
+            totalResults,
+            totalPages,
+          }
         });
       }
 
@@ -184,7 +196,7 @@ namespace server.Controllers
         return Ok(new
         {
           status = result.StatusCode,
-          result.StatusCode
+          message = result.Message,
         });
       }
       if (result.StatusCode == 404)

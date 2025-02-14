@@ -3,14 +3,14 @@ import { cookies } from 'next/headers';
 import { Metadata, ResolvingMetadata } from 'next';
 import envConfig from '@/config';
 import { baseOpenGraph } from '@/app/shared-metadata';
-import { PhanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
+import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { formatDateToDDMMYYYY } from '@/lib/utils';
 
-const getDetail = cache(PhanCongChuNhiemApiRequest.phanCong);
+const getDetail = cache(phanCongChuNhiemApiRequest.phanCong);
 
 type Props = {
 	params: { id: string };

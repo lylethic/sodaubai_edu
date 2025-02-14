@@ -51,6 +51,11 @@ export const sidebarNavItems: SidebarNavItem[] = [
 		title: 'Phân công chủ nhiệm',
 	},
 	{
+		href: '/dashboard/teaching-assignments',
+		icon: Handshake,
+		title: 'Phân công giảng dạy',
+	},
+	{
 		href: '/dashboard/teachers',
 		icon: UserCircleIcon,
 		title: 'giáo viên',

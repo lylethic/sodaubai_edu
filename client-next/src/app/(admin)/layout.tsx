@@ -1,7 +1,7 @@
 import React from 'react';
-import MenuProfile from '@/components/header/menu-profile';
 import SideBarItem from './_components/sidebar-item';
 import SidebarItemResponsive from './_components/sidebar-item-responsive';
+import MenuProfileAdmin from '@/components/header/menu-profile-admin';
 
 export default function AdminDashboardLayout({
 	children,
@@ -15,7 +15,7 @@ export default function AdminDashboardLayout({
 				<SideBarItem />
 				<main className='h-full overflow-y-auto'>
 					<div className='p-2 flex items-center justify-end border-b-2 border-dark-200'>
-						<MenuProfile />
+						<MenuProfileAdmin />
 					</div>
 					<div className='p-4 overflow-x-hidden'>{children}</div>
 				</main>

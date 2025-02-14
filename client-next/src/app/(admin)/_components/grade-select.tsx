@@ -59,13 +59,6 @@ function GradeSelect({ selectedGradeId, onSelectedGrade }: GradeSelectProps) {
 						/>
 						<div className='w-full flex items-center justify-between'>
 							{key.gradeName}
-							<Ban
-								color='red'
-								className={cn(
-									'ml-2 h-4 w-4',
-									key.status === false ? 'opacity-100' : 'opacity-0'
-								)}
-							/>
 						</div>
 					</DropdownMenuItem>
 				))}

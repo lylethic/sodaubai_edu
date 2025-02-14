@@ -26,20 +26,22 @@ export const PhanCongGiangDayRes = z.object({
 		dateCreated: z.date().nullable(),
 		dateUpdated: z.date().nullable(),
 	}),
+	pagination: z.object({
+		pageNumber: z.number(),
+		pageSize: z.number(),
+		totalPages: z.number(),
+		totalResults: z.number(),
+	}),
 });
 export type PhanCongGiangDayResType = z.TypeOf<typeof PhanCongGiangDayRes>;
 
 export const CreatePhanCongBody = z.object({
-	TeacherId: z.number(),
-	BiaSoDauBaiId: z.number(),
-	Status: z.number(),
-});
-export type CreatePhanCongBodyType = z.TypeOf<typeof CreatePhanCongBody>;
-
-export const UpdatePhanCongBody = z.object({
 	phanCongGiangDayId: z.number(),
 	biaSoDauBaiId: z.number(),
 	teacherId: z.number(),
-	status: z.number(),
+	status: z.boolean(),
 });
+export type CreatePhanCongBodyType = z.TypeOf<typeof CreatePhanCongBody>;
+
+export const UpdatePhanCongBody = CreatePhanCongBody;
 export type UpdatePhanCongBodyType = z.TypeOf<typeof UpdatePhanCongBody>;

@@ -11,7 +11,7 @@ namespace server.IService
 
     Task<PhanCongGiangDayBiaResType> GetPhanCongGiangDayByBia(int biaId);
 
-    Task<PhanCongGiangDayBiaResType> GetPC_GiangDay_BiaSDBs(QueryObject queryObject);
+    Task<PhanCongGiangDayBiaResType> GetPC_GiangDay_BiaSDBs();
 
     Task<PhanCongGiangDayBiaResType> DeletePC_GiangDay_BiaSDB(int id);
 

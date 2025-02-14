@@ -1,13 +1,12 @@
 import { MessageResType } from '@/schemaValidations/common.schema';
 import {
-	CreatePhanCongBody,
 	CreatePhanCongBodyType,
 	PhanCongGiangDayResType,
 	PhanCongGiangDaySchemaResType,
 	UpdatePhanCongBodyType,
 } from './../schemaValidations/phanCongGiangDayBia';
 import http from '@/lib/http';
-import { headers } from 'next/headers';
+import { QueryType } from '@/types/queryType';
 
 export const phanCongGiangDayApiRequest = {
 	// api/PhanCongGiangDays/get-info-by-bia?id=4
@@ -22,18 +21,24 @@ export const phanCongGiangDayApiRequest = {
 			}
 		),
 
-	phanCongGiangDays: () =>
-		http.get<PhanCongGiangDayResType>('PhanCongGiangDays', {
-			cache: 'no-store',
-		}),
+	phanCongGiangDays: (page: QueryType) =>
+		http.get<PhanCongGiangDayResType>(
+			`PhanCongGiangDays?pageNumber=${page.pageNumber}&pageSize=${page.pageSize}`,
+			{
+				cache: 'no-store',
+			}
+		),
 
-	phanCongGiangDay: (id: number) =>
+	phanCongGiangDay: (id: number, token?: string) =>
 		http.get<PhanCongGiangDayResType>(`PhanCongGiangDays/${id}`, {
+			headers: {
+				Authorization: `Bearer ${token}`,
+			},
 			cache: 'no-store',
 		}),
 
 	create: (body: CreatePhanCongBodyType) =>
-		http.post<PhanCongGiangDaySchemaResType>('/PhanCongGiangDays', body),
+		http.post<MessageResType>('/PhanCongGiangDays', body),
 
 	update: (id: number, body: UpdatePhanCongBodyType) =>
 		http.put<MessageResType>(`/PhanCongGiangDays/${id}`, body),

@@ -13,16 +13,17 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { handleErrorApi } from '@/lib/utils';
-import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { Trash2Icon } from 'lucide-react';
+import { phanCongGiangDayApiRequest } from '@/apiRequests/phanCongGiangDay';
 
 type Props = {
 	selectedItems: number[];
 	onDeleted: (ids: number[]) => void;
 };
 
-export default function BulkDeleteAssignTeachersButton(props: Props) {
+export default function BulkDeleteTeachingAssingmentsButton(props: Props) {
 	const { toast } = useToast();
+
 	const handleBulkDelete = async () => {
 		try {
 			if (props.selectedItems.length === 0) {
@@ -30,7 +31,7 @@ export default function BulkDeleteAssignTeachersButton(props: Props) {
 				return;
 			}
 
-			const response = await phanCongChuNhiemApiRequest.bulkdelete(
+			const response = await phanCongGiangDayApiRequest.bulkdelete(
 				props.selectedItems
 			);
 			toast({ description: response.payload.message });
@@ -55,10 +56,10 @@ export default function BulkDeleteAssignTeachersButton(props: Props) {
 			<AlertDialogContent>
 				<AlertDialogHeader>
 					<AlertDialogTitle>
-						Bạn có muốn xóa các phân công chủ nhiệm này?
+						Bạn có muốn xóa các phân công giảng dạy lớp này?
 					</AlertDialogTitle>
 					<AlertDialogDescription>
-						Các phân công chủ nhiệm đã chọn sẽ bị xóa vĩnh viễn.
+						Các phân công giảng dạy lớp đã chọn sẽ bị xóa vĩnh viễn.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

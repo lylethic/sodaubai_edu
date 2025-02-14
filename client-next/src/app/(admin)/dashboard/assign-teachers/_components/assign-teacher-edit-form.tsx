@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useToast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
-import { PhanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
+import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { Button } from '@/components/ui/button';
 import {
 	UpdatePhanCongChuNhiemBody,
@@ -47,7 +47,7 @@ export default function AssignTeacherEditForm({
 	const { toast } = useToast();
 	const router = useRouter();
 	const [loading, setLoading] = useState(false);
-	const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(0);
+	const [selectedSchoolId, setSelectedSchoolId] = useState<number>(0);
 
 	const form = useForm<UpdatePhanCongChuNhiemBodyType>({
 		resolver: zodResolver(UpdatePhanCongChuNhiemBody),
@@ -63,7 +63,7 @@ export default function AssignTeacherEditForm({
 
 	const hanldeEdit = async (values: UpdatePhanCongChuNhiemBodyType) => {
 		try {
-			const response = await PhanCongChuNhiemApiRequest.update(
+			const response = await phanCongChuNhiemApiRequest.update(
 				Number(params.id),
 				values
 			);
@@ -134,7 +134,7 @@ export default function AssignTeacherEditForm({
 						)}
 					/>
 					<FormField
-						name='SchoolId'
+						name='schoolId'
 						render={({ field }) => (
 							<FormItem>
 								<FormLabel>Trường học</FormLabel>

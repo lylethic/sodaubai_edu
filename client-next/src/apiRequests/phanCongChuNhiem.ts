@@ -5,9 +5,8 @@ import {
 	PhanCongChuNhiemResType,
 	UpdatePhanCongChuNhiemBodyType,
 } from '@/schemaValidations/phanCongChuNhiemLop.schema';
-import { QueryType } from '@/types/queryType';
 
-export const PhanCongChuNhiemApiRequest = {
+export const phanCongChuNhiemApiRequest = {
 	phanCongs: (
 		pageNumber: number,
 		pageSize: number,

@@ -2,12 +2,13 @@ import React, { cache, Suspense } from 'react';
 import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { cookies } from 'next/headers';
 import LoadingSpinner from '../../../loading';
-import AssignTeacherEditForm from '../../_components/assign-teacher-edit-form';
 import { Metadata, ResolvingMetadata } from 'next';
 import envConfig from '@/config';
 import { baseOpenGraph } from '@/app/shared-metadata';
+import TeachingAssignmentUpSert from '../../_components/upsert';
+import { phanCongGiangDayApiRequest } from '@/apiRequests/phanCongGiangDay';
 
-const getDetail = cache(phanCongChuNhiemApiRequest.phanCong);
+const getDetail = cache(phanCongGiangDayApiRequest.phanCongGiangDay);
 
 type Props = {
 	params: { id: string };
@@ -26,12 +27,12 @@ export async function generateMetadata(
 	const url =
 		envConfig.NEXT_PUBLIC_URL +
 		'/dashboard/assign-teachers/' +
-		account.phanCongChuNhiemId;
+		account.phanCongGiangDayId;
 	return {
-		title: account.nameClass,
+		title: account.className,
 		openGraph: {
 			...baseOpenGraph,
-			title: account.nameClass,
+			title: account.className,
 			url,
 		},
 		alternates: {
@@ -40,7 +41,7 @@ export async function generateMetadata(
 	};
 }
 
-export default async function AssignTeacherEditPage({ params }: Props) {
+export default async function TeachingAssignmentsEditPage({ params }: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
 	if (!token) return;
@@ -60,7 +61,7 @@ export default async function AssignTeacherEditPage({ params }: Props) {
 					{!result ? (
 						<div>Không tìm thấy dữ liệu</div>
 					) : (
-						<AssignTeacherEditForm params={params} phanCongChuNhiem={result} />
+						<TeachingAssignmentUpSert data={result} />
 					)}
 				</div>
 			</div>

@@ -38,6 +38,18 @@ const biaSoDauBaiApiRequest = {
 			}
 		),
 
+	getAllBiaBySchoolSelect: (
+		pageNumber: number,
+		pageSize: number,
+		schoolId: number
+	) =>
+		http.get<BiaSoDauBaiResType>(
+			`/BiaSoDauBais/get-by-school?pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`,
+			{
+				cache: 'no-store',
+			}
+		),
+
 	// api/BiaSoDauBais/get-bia-by-school-class?PageNumber=1&PageSize=20&schoolId=1
 	// params: require: schoolId || optional: classId
 	getAllBiaBySchoolClass: (

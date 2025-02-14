@@ -8,15 +8,13 @@ import {
 	PhanCongChuNhiemListResType,
 	PhanCongChuNhiemResType,
 } from '@/schemaValidations/phanCongChuNhiemLop.schema';
-import { PhanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
+import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { QueryType } from '@/types/queryType';
 import { getPhanCongChuNhiemColumns } from './columns';
 import AssignTeacherAddButton from './add-assign-teacher-button';
 import DeleteAssignTeacher from './delete-assign-teacher';
-import { phanCongGiangDayApiRequest } from '@/apiRequests/phanCongGiangDay';
 import FilterAssignTeachers from './filter-assign-teachers';
 import BulkDeleteAssignTeachersButton from './bulk-delete';
-import AssignTeachersUploadButton from './assign-teacher-upload';
 
 type PhanCongListType = PhanCongChuNhiemListResType['data'];
 type PhanCongType = PhanCongChuNhiemResType['data'];
@@ -71,7 +69,7 @@ export default function AssignTeachersList({ filters }: FilterProps) {
 					className: 'bg-yellow-400',
 				});
 			}
-			const response = await PhanCongChuNhiemApiRequest.phanCongs(
+			const response = await phanCongChuNhiemApiRequest.phanCongs(
 				query.pageNumber,
 				query.pageSize,
 				selectedSchoolId || 0,
@@ -105,7 +103,7 @@ export default function AssignTeachersList({ filters }: FilterProps) {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await phanCongGiangDayApiRequest.delete(
+			const response = await phanCongChuNhiemApiRequest.delete(
 				rowToDelete.phanCongChuNhiemId
 			);
 			toast({

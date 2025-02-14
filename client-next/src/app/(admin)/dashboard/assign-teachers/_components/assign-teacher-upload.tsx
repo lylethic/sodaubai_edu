@@ -3,7 +3,7 @@ import { useToast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { PhanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
+import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { Import } from 'lucide-react';
 
 export default function AssignTeachersUploadButton({
@@ -29,7 +29,7 @@ export default function AssignTeachersUploadButton({
 		try {
 			const formData = new FormData();
 			formData.append('file', file as Blob);
-			const response = await PhanCongChuNhiemApiRequest.upload(formData);
+			const response = await phanCongChuNhiemApiRequest.upload(formData);
 			if (response.status === 200) {
 				toast({ description: response.payload.message });
 			} else {

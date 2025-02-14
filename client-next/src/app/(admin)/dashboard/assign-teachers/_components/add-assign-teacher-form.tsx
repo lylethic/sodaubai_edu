@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PhanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
+import { phanCongChuNhiemApiRequest } from '@/apiRequests/phanCongChuNhiem';
 import { useToast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
 import {
@@ -73,7 +73,7 @@ export default function AssignTeacherAddForm({
 	const handleCreate = async (values: CreatePhanCongChuNhiemBodyType) => {
 		setLoading(true);
 		try {
-			const response = await PhanCongChuNhiemApiRequest.create({ ...values });
+			const response = await phanCongChuNhiemApiRequest.create({ ...values });
 			toast({ description: response.payload.message });
 			form.reset();
 			if (onSuccess) onSuccess();

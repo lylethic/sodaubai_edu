@@ -78,10 +78,13 @@ const teacherApiRequest = {
 		});
 	},
 
-	teachersBySchoolNoLimit: (id: number | null) =>
-		http.get<TeacherResType>(`/Teachers/teachers-by-school?schoolId=${id}`, {
-			cache: 'no-store',
-		}),
+	teachersBySchoolNoLimit: (page: QueryType, schoolId: number) =>
+		http.get<TeacherResType>(
+			`/Teachers/teachers-by-school?pageNumber=${page.pageNumber}&pageSize=${page.pageSize}&schoolId=${schoolId}`,
+			{
+				cache: 'no-store',
+			}
+		),
 
 	delete: (id: number) => http.delete<MessageResType>(`/Teachers/${id}`),
 
