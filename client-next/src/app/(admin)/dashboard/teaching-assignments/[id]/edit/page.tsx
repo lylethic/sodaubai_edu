@@ -49,13 +49,14 @@ export default async function TeachingAssignmentsEditPage({ params }: Props) {
 	try {
 		const { payload } = await getDetail(Number(params.id), token.value);
 		result = payload.data;
+		console.log(result);
 	} catch (error) {}
 
 	return (
 		<Suspense fallback={<LoadingSpinner />}>
 			<div className='py-6'>
 				<h1 className='text-center text-lg font-medium uppercase'>
-					cập nhật nội dung phân công chủ nhiệm
+					cập nhật nội dung phân công giảng dạy
 				</h1>
 				<div className='flex flex-col items-center justify-center '>
 					{!result ? (

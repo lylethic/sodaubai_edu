@@ -213,8 +213,9 @@ namespace server.Repositories
       {
         var find = "SELECT * FROM PhanCongGiangDay WHERE phanCongGiangDayId  = @id";
         var phancongSDB = await _context.PhanCongGiangDays
+          .AsNoTracking()
           .FromSqlRaw(find, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
+          .ToListAsync();
 
         if (phancongSDB is null)
         {

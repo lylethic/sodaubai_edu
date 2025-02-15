@@ -47,7 +47,7 @@ export const phanCongGiangDayApiRequest = {
 		http.delete<MessageResType>(`/PhanCongGiangDays/${id}`),
 
 	bulkdelete: (ids: number[]) =>
-		http.delete<MessageResType>('/PhanCongGiangDays', ids),
+		http.delete<MessageResType>('/PhanCongGiangDays/bulk-delete', ids),
 
 	upload: (formData: FormData) =>
 		http.post<MessageResType>('/PhanCongGiangDays/upload', formData),

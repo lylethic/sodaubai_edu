@@ -53,7 +53,7 @@ export default function TeachingAssignmentList() {
 	const handleEdit = useCallback(
 		(data: PhanCongGiangDayType) =>
 			router.push(
-				`/dashboard/teaching-assignment/${data.phanCongGiangDayId}/edit`
+				`/dashboard/teaching-assignments/${data.phanCongGiangDayId}/edit`
 			),
 		[]
 	);
