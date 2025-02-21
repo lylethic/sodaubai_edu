@@ -3,6 +3,7 @@ using server.Data;
 using server.Dtos;
 using server.IService;
 using server.Models;
+using server.Types.Weekly;
 
 namespace server.Repositories
 {
@@ -43,27 +44,72 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new ResponseData<WeeklyEvaluation>(500, $"Có lỗi xảy ra tại server...{ex.Message}");
+        return new ResponseData<WeeklyEvaluation>(500, $"Có lỗi xảy ra tại server...");
         throw new Exception(ex.Message);
       }
     }
 
-    public async Task<ResponseData<WeeklyEvaluation>> GetAll()
+    public async Task<ResponseData<WeeklyEvaluation>> GetAllByWeek(int weekId)
     {
       try
       {
+        if (weekId == 0)
+        {
+          return new ResponseData<WeeklyEvaluation>(400, "Vui lòng nhập mã tuần học");
+        }
+
         var result = await _context.WeeklyEvaluations
+            .Where(x => x.WeekId == weekId)
             .Include(x => x.Teacher)
             .Include(x => x.Class)
             .AsNoTracking()
             .ToListAsync();
 
+        if (result is null)
+          return new ResponseData<WeeklyEvaluation>(404, "Tuần học này chưa có thống kê");
 
         return new ResponseData<WeeklyEvaluation>(200, "Thành công", result);
       }
       catch (Exception ex)
       {
         return new ResponseData<WeeklyEvaluation>(500, "Có lỗi xảy ra tại server...");
+        throw new Exception(ex.Message);
+      }
+    }
+
+    public async Task<ResponseData<WeeklyEvaluationRes>> GetAllScoreByWeek(int weekId)
+    {
+      try
+      {
+        if (weekId == 0)
+        {
+          return new ResponseData<WeeklyEvaluationRes>(400, "Vui lòng nhập mã tuần học");
+        }
+
+        var result = await _context.WeeklyEvaluations
+            .Where(x => x.WeekId == weekId)
+            .Include(x => x.Teacher)
+            .Include(x => x.Class)
+            .Select(static x => new WeeklyEvaluationRes
+            {
+              WeeklyEvaluationId = x.WeeklyEvaluationId,
+              WeekId = x.WeekId,
+              ClassId = x.ClassId,
+              TeacherId = x.TeacherId,
+              ClassName = x.Class.ClassName,
+              TotalScore = x.TotalScore,
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
+        if (result is null)
+          return new ResponseData<WeeklyEvaluationRes>(404, "Tuần học này chưa có thống kê");
+
+        return new ResponseData<WeeklyEvaluationRes>(200, "Thành công", result);
+      }
+      catch (Exception ex)
+      {
+        return new ResponseData<WeeklyEvaluationRes>(500, "Có lỗi xảy ra tại server...");
         throw new Exception(ex.Message);
       }
     }
@@ -80,7 +126,7 @@ namespace server.Repositories
           .FirstOrDefaultAsync();
 
         if (result is null)
-          return new ResponseData<WeeklyEvaluation>(404, "Dữ liệu không tồn tại");
+          return new ResponseData<WeeklyEvaluation>(404, "Không tìm thấy hoặc dữ liệu không tồn tại");
 
         return new ResponseData<WeeklyEvaluation>(200, "Thành công", result);
       }

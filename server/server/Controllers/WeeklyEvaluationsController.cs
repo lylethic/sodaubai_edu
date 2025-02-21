@@ -19,9 +19,31 @@ namespace server.Controllers
 
     // GET: api/<WeeklyEvaluationsController>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(int weekId)
     {
-      var result = await _weeklyEvaluation.GetAll();
+      var result = await _weeklyEvaluation.GetAllByWeek(weekId);
+      if (result.StatusCode == 200)
+      {
+        return Ok(new
+        {
+          status = result.StatusCode,
+          message = result.Message,
+          data = result.ListData
+        });
+      }
+
+      return StatusCode(result.StatusCode, new
+      {
+        status = result.StatusCode,
+        message = result.Message
+      });
+    }
+
+    // GET: api/<WeeklyEvaluationsController>
+    [HttpGet("get-score-by-week")]
+    public async Task<IActionResult> GetAllScoreByWeek(int weekId)
+    {
+      var result = await _weeklyEvaluation.GetAllScoreByWeek(weekId);
       if (result.StatusCode == 200)
       {
         return Ok(new

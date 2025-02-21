@@ -15,6 +15,7 @@ import {
 	FerrisWheel,
 	Handshake,
 	School2,
+	ChartLineIcon,
 } from 'lucide-react';
 import React from 'react';
 
@@ -36,9 +37,9 @@ export const sidebarNavItems: SidebarNavItem[] = [
 		title: 'tài khoản',
 	},
 	{
-		href: '/dashboard/notify',
-		icon: BellIcon,
-		title: 'thông báo',
+		href: '/dashboard/statistics',
+		icon: ChartLineIcon,
+		title: 'thống kê',
 	},
 	{
 		href: '/dashboard/reports',

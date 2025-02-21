@@ -72,7 +72,7 @@ namespace server.Controllers
         {
           status = result.StatusCode,
           message = result.Message,
-          data = result.PhanCongGiangDayBia
+          data = result.MapData
         });
       }
 
@@ -103,33 +103,15 @@ namespace server.Controllers
         {
           status = result.StatusCode,
           message = result.Message,
-          data = result.MapData
+          data = result.ListMapData
         });
       }
 
-      if (result.StatusCode == 400)
+      return StatusCode(result.StatusCode, new
       {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      if (result.StatusCode == 404)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-      return StatusCode(500,
-        new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        status = result.StatusCode,
+        message = result.Message,
+      });
     }
 
     // POST api/<PhanCongGiangDaysController>
@@ -139,44 +121,7 @@ namespace server.Controllers
     {
       var result = await _pc.CreatePC_GiangDay_BiaSDB(model);
 
-      if (result.StatusCode == 400)
-      {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      if (result.StatusCode == 404)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      if (result.StatusCode == 409)
-      {
-        return Conflict(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.PhanCongGiangDayBia
-        });
-      }
-
-      return StatusCode(500,
+      return StatusCode(result.StatusCode,
        new
        {
          status = result.StatusCode,

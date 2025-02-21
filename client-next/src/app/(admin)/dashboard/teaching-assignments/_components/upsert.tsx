@@ -35,6 +35,7 @@ import { phanCongGiangDayApiRequest } from '@/apiRequests/phanCongGiangDay';
 import SchoolSelect from '@/app/(admin)/_components/school-select';
 import SoDauBaiSelect from '@/app/(admin)/_components/sodaubai-select';
 import TeachersBySchoolSelect from '@/app/(admin)/_components/teacher-by-school-select';
+import { useAppContext } from '@/app/app-provider';
 
 type TeachingAssignmentType = PhanCongGiangDayResType['data'];
 
@@ -43,6 +44,7 @@ export default function TeachingAssignmentUpSert({
 }: {
 	data?: TeachingAssignmentType;
 }) {
+	const { user } = useAppContext();
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
@@ -72,6 +74,9 @@ export default function TeachingAssignmentUpSert({
 	};
 
 	const handleUpdate = async (_values: UpdatePhanCongBodyType) => {
+		// if (!user) {
+		// 	toast({ description: 'Không có thông tin người dùng!' });
+		// }
 		if (!data) return;
 		setLoading(true);
 
@@ -126,6 +131,7 @@ export default function TeachingAssignmentUpSert({
 						</FormItem>
 					)}
 				/>
+
 				<FormField
 					name='schoolId'
 					render={({ field }) => (

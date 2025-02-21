@@ -49,6 +49,7 @@ namespace server.Repositories
             classId = x.Teacher.Classes.First().ClassId,
             className = x.Teacher.Classes.First().ClassName,
           })
+          .AsNoTracking()
           .ToListAsync() ?? throw new Exception("Empty");
 
         if (phancongSBD.Count == 0)
@@ -179,25 +180,27 @@ namespace server.Repositories
             teacherName = x.Teacher.Fullname,
             classId = x.Teacher.Classes.First().ClassId,
             className = x.Teacher.Classes.First().ClassName,
-          }).FirstOrDefaultAsync() ?? throw new Exception("Empty");
+          })
+          .AsNoTracking()
+          .ToListAsync() ?? throw new Exception("Empty");
 
         if (phancongSBD is null)
         {
           return new PhanCongGiangDayBiaResType(404, "Không có dữ liệu");
         }
 
-        var result = new MapData
+        var result = phancongSBD.Select(x => new MapData
         {
-          PhanCongGiangDayId = phancongSBD.PhanCongGiangDayId,
-          TeacherId = phancongSBD.TeacherId,
-          BiaSoDauBaiId = phancongSBD.BiaSoDauBaiId,
-          Status = phancongSBD.Status,
-          DateCreated = phancongSBD.DateCreated,
-          DateUpdated = phancongSBD.DateUpdated,
-          ClassId = phancongSBD.classId,
-          ClassName = phancongSBD.className,
-          Fullname = phancongSBD.teacherName
-        };
+          PhanCongGiangDayId = x.PhanCongGiangDayId,
+          TeacherId = x.TeacherId,
+          BiaSoDauBaiId = x.BiaSoDauBaiId,
+          Status = x.Status,
+          DateCreated = x.DateCreated,
+          DateUpdated = x.DateUpdated,
+          ClassId = x.classId,
+          ClassName = x.className,
+          Fullname = x.teacherName
+        }).OrderBy(x => x.ClassId).ToList();
 
         return new PhanCongGiangDayBiaResType(200, "Thành công", result);
       }
@@ -211,25 +214,51 @@ namespace server.Repositories
     {
       try
       {
-        var find = "SELECT * FROM PhanCongGiangDay WHERE phanCongGiangDayId  = @id";
-        var phancongSDB = await _context.PhanCongGiangDays
-          .AsNoTracking()
-          .FromSqlRaw(find, new SqlParameter("@id", id))
-          .ToListAsync();
+        var query = @"SELECT pc.phanCongGiangDayId, 
+                      pc.biaSoDauBaiId, 
+                      pc.teacherId, 
+                      pc.status, 
+                      pc.dateCreated, 
+                      pc.dateUpdated, 
+                      t.fullname,
+                      c.className,
+                      c.classId
+                      FROM PhanCongGiangDay as pc
+                      LEFT JOIN TEACHER AS T ON pc.teacherId = T.teacherId
+                      LEFT JOIN CLASS AS C ON t.teacherId = c.teacherId
+                      WHERE phanCongGiangDayId  = @id";
 
-        if (phancongSDB is null)
-        {
+        var phancongSoDauBai = await _context.PhanCongGiangDays
+            .FromSqlRaw(query, new SqlParameter("@id", id))
+            .Select(static x => new
+            {
+              x.BiaSoDauBaiId,
+              x.PhanCongGiangDayId,
+              x.TeacherId,
+              x.Status,
+              x.DateCreated,
+              x.DateUpdated,
+              teacherName = x.Teacher.Fullname,
+              classId = x.Teacher.Classes.First().ClassId,
+              className = x.Teacher.Classes.First().ClassName,
+            })
+            .AsNoTracking()
+            .FirstOrDefaultAsync() ?? throw new Exception("Empty");
+
+        if (phancongSoDauBai is null)
           return new PhanCongGiangDayBiaResType(404, "Không tìm thấy bản ghi phân công giảng dạy");
-        }
 
-        var result = new PC_GiangDay_BiaSDBDto
+        var result = new MapData
         {
-          PhanCongGiangDayId = id,
-          TeacherId = phancongSDB.TeacherId,
-          BiaSoDauBaiId = phancongSDB.BiaSoDauBaiId,
-          Status = phancongSDB.Status,
-          DateCreated = phancongSDB.DateCreated,
-          DateUpdated = phancongSDB.DateUpdated
+          PhanCongGiangDayId = phancongSoDauBai.PhanCongGiangDayId,
+          TeacherId = phancongSoDauBai.TeacherId,
+          BiaSoDauBaiId = phancongSoDauBai.BiaSoDauBaiId,
+          Status = phancongSoDauBai.Status,
+          DateCreated = phancongSoDauBai.DateCreated,
+          DateUpdated = phancongSoDauBai.DateUpdated,
+          ClassId = phancongSoDauBai.classId,
+          ClassName = phancongSoDauBai.className,
+          Fullname = phancongSoDauBai.teacherName
         };
 
         return new PhanCongGiangDayBiaResType(200, "Thành công", result);

@@ -33,12 +33,10 @@ export async function generateMetadata(
 		result.phanCongGiangDayId;
 
 	return {
-		title:
-			'Phân công giáo viên' + result.fullname + 'dạy lớp' + result.className,
+		title: 'Phân công giáo viên ' + result.fullname,
 		openGraph: {
 			...baseOpenGraph,
-			title:
-				'Phân công giáo viên' + result.fullname + 'dạy lớp' + result.className,
+			title: 'Phân công giáo viên ' + result.fullname,
 			url,
 		},
 		alternates: {
@@ -59,6 +57,7 @@ export default async function TeahingAssignmentsDetailPage({
 	try {
 		const { payload } = await getDetail(Number(params.id), token.value);
 		result = payload.data;
+		console.log(result);
 	} catch (error) {}
 
 	return (
@@ -97,7 +96,7 @@ export default async function TeahingAssignmentsDetailPage({
 					<Table className='border'>
 						<TableBody>
 							<TableRow>
-								<TableCell>Mã phân công</TableCell>
+								<TableCell>Mã phân công giảng dạy</TableCell>
 								<TableCell>{result.phanCongGiangDayId}</TableCell>
 							</TableRow>
 							<TableRow>
@@ -107,6 +106,14 @@ export default async function TeahingAssignmentsDetailPage({
 							<TableRow>
 								<TableCell>Mã giáo viên</TableCell>
 								<TableCell>{result.teacherId}</TableCell>
+							</TableRow>
+							<TableRow>
+								<TableCell>Giáo viên</TableCell>
+								<TableCell>{result.fullname}</TableCell>
+							</TableRow>
+							<TableRow>
+								<TableCell>Mã lớp học</TableCell>
+								<TableCell>{result.classId}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Tên lớp hiển thị</TableCell>

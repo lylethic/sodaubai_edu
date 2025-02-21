@@ -21,6 +21,7 @@ export const PhanCongGiangDayRes = z.object({
 		biaSoDauBaiId: z.number(),
 		teacherId: z.number(),
 		fullname: z.string(),
+		classId: z.number(),
 		className: z.string(),
 		status: z.boolean(),
 		dateCreated: z.date().nullable(),

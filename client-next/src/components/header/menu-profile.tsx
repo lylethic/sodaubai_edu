@@ -51,18 +51,9 @@ export default function MenuProfile() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild className='cursor-pointer'>
-				{information ? (
+				{information && (
 					<Image
 						src={information.photoPath || '/images/programmer.png'}
-						alt='avatar'
-						className='h-8 w-8 rounded-[50%]'
-						width={40}
-						height={40}
-						priority
-					/>
-				) : (
-					<Image
-						src={'/images/programmer.png'}
 						alt='avatar'
 						className='h-8 w-8 rounded-[50%]'
 						width={40}

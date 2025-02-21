@@ -83,7 +83,7 @@ export function SearchForm({
 		// Only trigger when debouncedQuery or pagination changes
 		// Prevent duplicate calls when switching between pages
 	}, [debouncedQuery, pageNumber, pageSize]);
-	console.log('pageNumber, pageSize: ', pageNumber + ' - ' + pageSize);
+	// console.log('pageNumber, pageSize: ', pageNumber + ' - ' + pageSize);
 
 	useEffect(() => {
 		if (searchQuery.trim() !== '') {
