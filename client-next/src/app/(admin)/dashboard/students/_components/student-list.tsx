@@ -40,11 +40,11 @@ export default function StudentsList() {
 		setLoading(true);
 		setData([]);
 		try {
-			const response = await studentApiRequest.students(
+			const { payload } = await studentApiRequest.students(
 				query,
 				selectedSchoolId
 			);
-			const { status, data, pagination } = response.payload;
+			const { status, data, pagination } = payload;
 			const totalResults = pagination?.totalResults;
 
 			if ((!data && status === 404) || Array(data).length === 0) {

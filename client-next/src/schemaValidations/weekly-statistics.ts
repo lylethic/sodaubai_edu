@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const classSchema = z.object({
+const ClassSchema = z.object({
 	classId: z.number(),
 	gradeId: z.number(),
 	teacherId: z.number(),
@@ -13,7 +13,7 @@ const classSchema = z.object({
 	dateUpdated: z.date(),
 });
 
-const teacherSchema = z.object({
+const TeacherSchema = z.object({
 	teacherId: z.number(),
 	accountId: z.number(),
 	schoolId: z.number(),
@@ -26,6 +26,22 @@ const teacherSchema = z.object({
 	dateUpdate: z.date(),
 	photoPath: z.string(),
 });
+
+export const ViewScoreListByWeekRes = z.object({
+	status: z.number(),
+	message: z.string(),
+	data: z.object({
+		weeklyEvaluationId: z.number(),
+		classId: z.number(),
+		weekId: z.number(),
+		teacherId: z.number(),
+		className: z.string(),
+		totalScore: z.number(),
+	}),
+});
+export type ViewScoreListByWeekResType = z.TypeOf<
+	typeof ViewScoreListByWeekRes
+>;
 
 export const WeeklyStatistics = z.object({
 	status: z.number(),
@@ -40,8 +56,8 @@ export const WeeklyStatistics = z.object({
 		description: z.string(),
 		createdAt: z.date(),
 		updatedAt: z.date(),
-		class: classSchema,
-		teacher: teacherSchema,
+		class: ClassSchema,
+		teacher: TeacherSchema,
 	}),
 });
 export type WeeklyStatisticsType = z.TypeOf<typeof WeeklyStatistics>;
