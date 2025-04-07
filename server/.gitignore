@@ -2,8 +2,9 @@
 [Bb]in/
 [Oo]bj/
 
-appsettings*.json
-appsettings*.json.user
+/server/server/appsettings.json
+/server/server/appsettings.Development.json
+/server/server/appsettings*.json.user
 
 # Logs
 Logs/
