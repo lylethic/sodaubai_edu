@@ -44,7 +44,7 @@ export default function Home() {
 							<p className='text-sm text-gray-500'>
 								Quản lý điểm tiết học của lớp học.
 							</p>
-							<Link href='/sodaubai-report' passHref>
+							<Link href='/statistics' passHref>
 								<Button className='bg-blue-700 mt-3 w-full capitalize'>
 									Thống kê
 								</Button>

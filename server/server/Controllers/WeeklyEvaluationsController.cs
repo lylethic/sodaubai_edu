@@ -41,9 +41,9 @@ namespace server.Controllers
 
     // GET: api/<WeeklyEvaluationsController>
     [HttpGet("get-score-by-week")]
-    public async Task<IActionResult> GetAllScoreByWeek(int weekId)
+    public async Task<IActionResult> GetAllScoreByWeek(int schoolId, int weekId, int gradeId)
     {
-      var result = await _weeklyEvaluation.GetAllScoreByWeek(weekId);
+      var result = await _weeklyEvaluation.GetAllScoreByWeek(schoolId, weekId, gradeId);
       if (result.StatusCode == 200)
       {
         return Ok(new

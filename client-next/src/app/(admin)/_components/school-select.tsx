@@ -35,10 +35,9 @@ const SchoolSelect = ({
 	useEffect(() => {
 		const getSchoolList = async () => {
 			try {
-				const response = await schoolApiRequest.getSchoolsNoPagination();
-				const result = Array.isArray(response.payload.data)
-					? response.payload.data
-					: [response.payload.data];
+				const { payload } = await schoolApiRequest.getSchoolsNoPagination();
+				const result = Array.isArray(payload.data) ? payload.data : [];
+
 				setSchools(result);
 				// if (result.length > 0 && !selectedSchoolId) {
 				// 	onSelectSchool(result[0].schoolId);

@@ -11,7 +11,7 @@ namespace server.IService
     Task<ResponseData<WeeklyEvaluation>> Delete(int id);
     Task<ResponseData<WeeklyEvaluation>> BulkDelete(List<int> ids);
     Task<ResponseData<WeeklyEvaluation>> GetAllByWeek(int weekId);
-    Task<ResponseData<WeeklyEvaluationRes>> GetAllScoreByWeek(int weekId);
+    Task<ResponseData<WeeklyEvaluationRes>> GetAllScoreByWeek(int schoolId, int weekId, int gradeId);
     Task<ResponseData<WeeklyEvaluation>> GetById(int id);
     Task<double> GetTotalScoreByWeekId(int id);
   }

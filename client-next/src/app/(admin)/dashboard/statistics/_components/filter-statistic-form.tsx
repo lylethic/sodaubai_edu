@@ -9,24 +9,17 @@ import {
 } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import WeekSelect from '@/app/(admin)/_components/week-select';
-import SchoolSelect from '@/app/(admin)/_components/school-select';
 import { useAppContext } from '@/app/app-provider';
 import GradeSelect from '@/app/(admin)/_components/grade-select';
 
 interface FilterProps {
 	weekId: number | null;
-	schoolId: number | null;
 	gradeId: number | null;
-	onFilterChange?: (
-		schoolId: number | null,
-		weekId: number | null,
-		gradeId: number | null
-	) => void;
+	onFilterChange?: (weekId: number | null, gradeId: number | null) => void;
 	onReset?: () => void;
 }
 
-export default function FilteWeek({
-	schoolId,
+export default function TeacherFilterStatisticByWeekPage({
 	weekId,
 	gradeId,
 	onFilterChange,
@@ -34,13 +27,8 @@ export default function FilteWeek({
 }: FilterProps) {
 	const form = useForm();
 	const { user } = useAppContext();
-
-	// admin 1 school
-	const roleIdFromAppContext = Number(user?.roleId);
-
 	// Initialize state with initial filters or default values
 	const [filters, setFilters] = useState({
-		schoolId: schoolId ?? null,
 		weekId: weekId ?? null,
 		gradeId: gradeId ?? null,
 	});
@@ -50,18 +38,14 @@ export default function FilteWeek({
 		const updatedFilters = { ...filters, [field]: value };
 		setFilters(updatedFilters);
 		if (onFilterChange) {
-			onFilterChange(
-				updatedFilters.schoolId,
-				updatedFilters.weekId,
-				updatedFilters.gradeId
-			);
+			onFilterChange(updatedFilters.weekId, updatedFilters.gradeId);
 		}
 	};
 
 	const handleReset = () => {
-		setFilters({ schoolId: null, weekId: null, gradeId: null });
+		setFilters({ weekId: null, gradeId: null });
 		if (onFilterChange) {
-			onFilterChange(null, null, null);
+			onFilterChange(null, null);
 		}
 		if (onReset) onReset();
 	};
@@ -71,22 +55,6 @@ export default function FilteWeek({
 			<span className='font-header'>Lọc dữ liệu</span>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(() => {})} className='space-y-8'>
-					{roleIdFromAppContext === 7 && (
-						<FormField
-							control={form.control}
-							name='schoolId'
-							render={({ field }) => (
-								<FormItem className='space-y-2'>
-									<FormLabel>Trường học</FormLabel>
-									<SchoolSelect
-										selectedSchoolId={schoolId}
-										onSelectSchool={(id) => handleFilterChange('schoolId', id)}
-									/>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-					)}
 					<FormField
 						control={form.control}
 						name='weekId'

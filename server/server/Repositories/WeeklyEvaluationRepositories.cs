@@ -77,17 +77,17 @@ namespace server.Repositories
       }
     }
 
-    public async Task<ResponseData<WeeklyEvaluationRes>> GetAllScoreByWeek(int weekId)
+    public async Task<ResponseData<WeeklyEvaluationRes>> GetAllScoreByWeek(int schoolId, int weekId, int gradeId)
     {
       try
       {
-        if (weekId == 0)
+        if (weekId == 0 || schoolId == 0 || gradeId == 0)
         {
-          return new ResponseData<WeeklyEvaluationRes>(400, "Vui lòng nhập mã tuần học");
+          return new ResponseData<WeeklyEvaluationRes>(400, "Vui lòng cung cấp dữ liệu để thông kê!");
         }
 
         var result = await _context.WeeklyEvaluations
-            .Where(x => x.WeekId == weekId)
+            .Where(x => x.WeekId == weekId && x.Class.SchoolId == schoolId && x.Class.GradeId == gradeId)
             .Include(x => x.Teacher)
             .Include(x => x.Class)
             .Select(static x => new WeeklyEvaluationRes
@@ -95,6 +95,8 @@ namespace server.Repositories
               WeeklyEvaluationId = x.WeeklyEvaluationId,
               WeekId = x.WeekId,
               ClassId = x.ClassId,
+              GradeId = x.Class.GradeId,
+              GradeName = x.Class.Grade.GradeName,
               TeacherId = x.TeacherId,
               ClassName = x.Class.ClassName,
               TotalScore = x.TotalScore,

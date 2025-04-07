@@ -1,16 +1,10 @@
 'use client';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
-import {
-	ViewScoreListByWeekResType,
-	WeeklyStatisticsType,
-} from '@/schemaValidations/weekly-statistics';
+import { ViewScoreListByWeekResType } from '@/schemaValidations/weekly-statistics';
 import { weeklyStatisticsApiRequest } from '@/apiRequests/weeklyStatistics';
-import FilteWeek from './statistic-filter-form';
-
-import { TrendingUp } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, LabelList, XAxis } from 'recharts';
 import {
 	Card,
@@ -27,11 +21,11 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart';
 import { useAppContext } from '@/app/app-provider';
+import TeacherFilterStatisticByWeekPage from '@/app/(admin)/dashboard/statistics/_components/filter-statistic-form';
 
-type WeeklyStatistic = WeeklyStatisticsType['data'];
 type WeeklyStatisticByWeek = ViewScoreListByWeekResType['data'];
 
-export default function StatisticsList() {
+export default function TeacherStatisticsList() {
 	const router = useRouter();
 	const { user } = useAppContext();
 
@@ -39,41 +33,23 @@ export default function StatisticsList() {
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [selectedWeek, setSelectedWeek] = useState<number>(0);
-	const [selectedSchool, setSelectedSchool] = useState<number>(0);
 	const [selectedGrade, setSelectedGrade] = useState<number>(0);
 
 	// admin 1 school
 	const schoolIdFromAppContext = Number(user?.schoolId);
 	const roleIdFromAppContext = Number(user?.roleId);
 
-	const fetchData = async (
-		schoolId: number,
-		weekId: number,
-		gradeId: number
-	) => {
+	const fetchData = async (weekId: number, gradeId: number) => {
 		setLoading(true);
 		setData([]);
-		let result;
 		try {
-			switch (roleIdFromAppContext) {
-				case 7:
-					result = await weeklyStatisticsApiRequest.viewScoreListByWeek(
-						schoolId,
-						weekId,
-						gradeId
-					);
-					break;
-				default:
-					result = await weeklyStatisticsApiRequest.viewScoreListByWeek(
-						schoolIdFromAppContext,
-						weekId,
-						gradeId
-					);
-					break;
-			}
-			const newData = Array.isArray(result.payload.data)
-				? result.payload.data
-				: [];
+			const { payload } = await weeklyStatisticsApiRequest.viewScoreListByWeek(
+				schoolIdFromAppContext,
+				weekId,
+				gradeId
+			);
+
+			const newData = Array.isArray(payload.data) ? payload.data : [];
 			setData(newData);
 
 			if (newData.length === 0) {
@@ -89,19 +65,17 @@ export default function StatisticsList() {
 	};
 
 	const handleFilterChange = (
-		schoolId: number | null,
 		weekId: number | null,
 		gradeId: number | null
 	) => {
-		setSelectedSchool(schoolId ?? 0);
 		setSelectedWeek(weekId ?? 0);
 		setSelectedGrade(gradeId ?? 0);
 	};
 
 	useEffect(() => {
 		if (loading) return;
-		fetchData(selectedSchool, selectedWeek, selectedGrade);
-	}, [selectedSchool, selectedWeek, selectedGrade]);
+		fetchData(selectedWeek, selectedGrade);
+	}, [selectedWeek, selectedGrade]);
 
 	const chartConfig = {
 		className: {
@@ -112,15 +86,14 @@ export default function StatisticsList() {
 
 	return (
 		<>
-			<FilteWeek
-				schoolId={selectedSchool}
+			<TeacherFilterStatisticByWeekPage
 				weekId={selectedWeek}
 				gradeId={selectedGrade}
 				onFilterChange={handleFilterChange}
 			/>
 
 			{data.length > 0 ? (
-				<Card>
+				<Card className='w-1/2 h-1/2'>
 					<CardHeader>
 						<CardTitle>Biểu đồ cột</CardTitle>
 						<CardDescription>
@@ -130,7 +103,12 @@ export default function StatisticsList() {
 
 					<CardContent>
 						<ChartContainer config={chartConfig}>
-							<BarChart accessibilityLayer data={data}>
+							<BarChart
+								data={data}
+								barSize={16} // 1rem width
+								height={150} // reduce height of chart
+								className='w-full'
+							>
 								<CartesianGrid vertical={false} />
 								<XAxis
 									dataKey='className'
@@ -142,7 +120,6 @@ export default function StatisticsList() {
 									cursor={false}
 									content={<ChartTooltipContent indicator='dashed' />}
 								/>
-
 								<Bar
 									dataKey='totalScore'
 									name='Tổng Điểm'

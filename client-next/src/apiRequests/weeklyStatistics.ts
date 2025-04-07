@@ -29,8 +29,8 @@ export const weeklyStatisticsApiRequest = {
 	viewScoreByWeekId: (weekId: number) =>
 		http.get(`/WeeklyEvaluations/get-score/${weekId}`),
 
-	viewScoreListByWeek: (weekId: number) =>
+	viewScoreListByWeek: (schoolId: number, weekId: number, gradeId: number) =>
 		http.get<ViewScoreListByWeekResType>(
-			`/WeeklyEvaluations/get-score-by-week?weekId=${weekId}`
+			`/WeeklyEvaluations/get-score-by-week?schoolId=${schoolId}&weekId=${weekId}&gradeId=${gradeId}`
 		),
 };
