@@ -2,6 +2,9 @@
 [Bb]in/
 [Oo]bj/
 
+appsettings*.json
+appsettings*.json.user
+
 # Logs
 Logs/
 
@@ -122,3 +125,4 @@ uploads/
 *.docx
 *.doc
 *.xlsx
+
