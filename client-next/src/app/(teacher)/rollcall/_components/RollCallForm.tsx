@@ -10,7 +10,9 @@ const RollCallForm = () => {
 		<FormProvider {...methods}>
 			<form onSubmit={handleSubmit}>
 				<RollCallsFormField />
-				<Button type='submit'>Lưu</Button>
+				<Button type='submit' className='flex mt-4 mb-2 w-full'>
+					Lưu
+				</Button>
 			</form>
 		</FormProvider>
 	);

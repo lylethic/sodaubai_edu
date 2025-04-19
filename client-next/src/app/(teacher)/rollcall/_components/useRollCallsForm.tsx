@@ -1,7 +1,6 @@
 import { rollcallApiRequest } from '@/apiRequests/rollcall';
 import { useToast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
-import { CreateRollCallBodyType } from '@/schemaValidations/rollcall-schema';
 import RollCallFormValues from '@/types/RollCallFormValues';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';

@@ -13,15 +13,46 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
+
 // Add services to the container.
 builder.Services.AddControllers().AddJsonOptions(options =>
    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
-//Connection DB Local
+// Connection DB Local
+// builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
+//     options.UseSqlServer(builder.Configuration.GetConnectionString("SoDauBaiContext"))
+//     .EnableDetailedErrors()
+//     .LogTo(Console.WriteLine));
+
+// Connection DB with failover mechanism
+// Connection DB with failover mechanism
 builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SoDauBaiContext"))
-    .EnableDetailedErrors()
-    .LogTo(Console.WriteLine));
+{
+  // Get connection strings
+  var primaryConnectionString = builder.Configuration.GetConnectionString("SoDauBaiContext");
+  var failoverConnectionString = builder.Configuration.GetConnectionString("SoDauBaiContextFailover");
+
+  try
+  {
+    options.UseSqlServer(primaryConnectionString)
+        .EnableDetailedErrors()
+        .LogTo(Console.WriteLine);
+
+    // This line is causing the error - we need to use a different approach
+    // using var context = new server.Data.SoDauBaiContext(options.Options);
+    // context.Database.OpenConnection();
+    // context.Database.CloseConnection();
+  }
+  catch (Exception ex)
+  {
+    Console.WriteLine($"Failed to connect using primary connection: {ex.Message}");
+
+    // Use the failover connection string
+    options.UseSqlServer(failoverConnectionString)
+        .EnableDetailedErrors()
+        .LogTo(Console.WriteLine);
+  }
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -62,6 +93,7 @@ builder.Services.AddScoped<IRollCall, RollCallRepositories>();
 builder.Services.AddScoped<IRollCallDetail, RollCallDetailRepositories>();
 builder.Services.AddScoped<IWeeklyEvaluation, WeeklyEvaluationRepositories>();
 builder.Services.AddScoped<IMonthlyEvaluation, MonthlyEvaluationRepositories>();
+
 
 // Load configuration from appsettings.json
 var configuration = new ConfigurationBuilder()

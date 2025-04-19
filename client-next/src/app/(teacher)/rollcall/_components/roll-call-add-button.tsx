@@ -29,11 +29,12 @@ export default function RollCallAddButton({
 				</Button>
 			</DialogTrigger>
 			<DialogContent
-				className='sm:max-w-md max-h-[80vh] overflow-y-auto'
+				className='max-w-xl max-h-[80vh] overflow-y-auto'
 				aria-describedby={undefined}
 			>
 				<DialogHeader>
 					<DialogTitle>Điểm danh</DialogTitle>
+					<div className='border-b border-gray-200 mt-2 mb-4'></div>
 				</DialogHeader>
 				<RollCallForm />
 			</DialogContent>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import DayOfTheWeek from '@/app/(admin)/_components/dayOfTheWeek';
@@ -16,8 +16,8 @@ import useRollCallsFormFields from './useRollCallsFormFields';
 import WeekSelect from '@/app/(admin)/_components/week-select';
 import LopHocSelect from '@/app/(admin)/_components/lopHoc-select';
 import { useAppContext } from '@/app/app-provider';
-import TeachersBySchoolSelect from '@/app/(admin)/_components/teacher-by-school-select';
 import StudentByClassSelect from '@/app/(admin)/_components/student-select';
+import StudentList from '../../students/_components/student-list';
 
 const RollCallsFormField = () => {
 	const { user } = useAppContext();
@@ -30,8 +30,10 @@ const RollCallsFormField = () => {
 		removeRollCallDetail,
 	} = useRollCallsFormFields();
 	const schoolId = user?.schoolId;
+	const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
 	return (
-		<>
+		<div className='flex flex-col w-full'>
 			<div>
 				<Label>Tuần học</Label>
 				<Controller
@@ -83,6 +85,13 @@ const RollCallsFormField = () => {
 					placeholder='Hiện diện...'
 				/>
 			</div>
+
+			{/* Open list students here to check attendance */}
+			{/* <StudentList
+				isOpen={isDialogOpen}
+				onOpenChange={(value) => setIsDialogOpen(value)}
+			/> */}
+
 			<div className='flex items-center justify-end my-2'>
 				<Button
 					type='button'
@@ -93,7 +102,6 @@ const RollCallsFormField = () => {
 					<Plus /> Học sinh vắng
 				</Button>
 			</div>
-
 			{fields.map((field, index) => (
 				<div
 					key={field.id}
@@ -154,7 +162,7 @@ const RollCallsFormField = () => {
 					</Button>
 				</div>
 			))}
-		</>
+		</div>
 	);
 };
 

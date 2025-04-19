@@ -57,7 +57,7 @@ export default function AssignTeacherAddForm({
 }: Props) {
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
-	const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(0);
+	const [selectedSchoolId, setSelectedSchoolId] = useState<number>(0);
 
 	const form = useForm<CreatePhanCongChuNhiemBodyType>({
 		resolver: zodResolver(CreatePhanCongChuNhiemBody),
