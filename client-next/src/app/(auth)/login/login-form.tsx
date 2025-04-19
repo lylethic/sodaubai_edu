@@ -128,16 +128,16 @@ const LoginForm = () => {
 					)}
 				/>
 
-				{loading ? (
-					<>
-						<Loader2 className='mr-2 h-4 w-4 animate-spin' />
-						Đang xử lý...
-					</>
-				) : (
-					<Button type='submit' className='!mt-8 w-full'>
-						Đăng nhập
-					</Button>
-				)}
+				<Button type='submit' className='!mt-8 w-full'>
+					{loading ? (
+						<>
+							<Loader2 className='mr-2 h-4 w-4 animate-spin' />
+							Đang xử lý...
+						</>
+					) : (
+						'Đăng nhập'
+					)}
+				</Button>
 			</form>
 		</Form>
 	);
