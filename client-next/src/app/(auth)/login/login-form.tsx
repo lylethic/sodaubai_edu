@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import { decodeJWT, handleErrorApi } from '@/lib/utils';
 import { useAppContext } from '@/app/app-provider';
 import { JwtAccessTokenPayload } from '@/types/jwt';
+import { Loader2 } from 'lucide-react';
 
 const LoginForm = () => {
 	const [loading, setLoading] = useState(false);
@@ -127,9 +128,16 @@ const LoginForm = () => {
 					)}
 				/>
 
-				<Button type='submit' className='!mt-8 w-full'>
-					Đăng nhập
-				</Button>
+				{loading ? (
+					<>
+						<Loader2 className='mr-2 h-4 w-4 animate-spin' />
+						Đang xử lý...
+					</>
+				) : (
+					<Button type='submit' className='!mt-8 w-full'>
+						Đăng nhập
+					</Button>
+				)}
 			</form>
 		</Form>
 	);

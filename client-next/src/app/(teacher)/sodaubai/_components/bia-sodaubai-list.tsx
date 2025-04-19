@@ -11,9 +11,6 @@ import { BiaSoDauBaiResType } from '@/schemaValidations/biaSoDauBai.schema';
 import { getBiaSoDauBaisColumns } from './columns';
 import SodauBaiSearchForm from './search-sodaubai-form';
 import { useAppContext } from '@/app/app-provider';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ListTodo } from 'lucide-react';
 
 type BiaSoDauBaiType = BiaSoDauBaiResType['data'];
 

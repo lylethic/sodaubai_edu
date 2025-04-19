@@ -4,7 +4,14 @@ import { decodeJWT } from './lib/utils';
 
 //
 const authPaths = ['/login', '/register'];
-const teacherPaths = ['/sodaubai', '/sodaubai/chitietsodaubai/:id*', '/report'];
+const teacherPaths = [
+	'/',
+	'/sodaubai',
+	'/statistics',
+	'/rollcall',
+	'/sodaubai/chitietsodaubai/:id*',
+	'/report',
+];
 const adminPaths = [
 	'/dashboard',
 	'/dashboard/accounts',
@@ -35,31 +42,45 @@ export function middleware(request: NextRequest) {
 	const decodeToken = decodeJWT(accessToken!);
 	const role = decodeToken?.RoleId ? Number(decodeToken.RoleId) : null;
 
+	// If already on an auth path, don't redirect again
+	const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
+
 	// Chưa đăng nhập thì không cho vào private paths
 	if (!accessToken) {
+		// Don't redirect if already on an auth path
 		if (
-			teacherPaths.some((path) => pathname.startsWith(path)) ||
-			adminPaths.some((path) => pathname.startsWith(path))
+			!isAuthPath &&
+			(teacherPaths.some((path) => pathname.startsWith(path)) ||
+				adminPaths.some((path) => pathname.startsWith(path)))
 		) {
 			return NextResponse.redirect(new URL('/login', request.url));
 		}
 	}
 
 	// Đăng nhập rồi thì không cho vào login/register nữa
-	if (authPaths.some((path) => pathname.startsWith(path)) && accessToken) {
-		return NextResponse.redirect(new URL('/sodaubai', request.url));
+	if (accessToken && isAuthPath) {
+		// Redirect based on role
+		if (role === 2) {
+			return NextResponse.redirect(new URL('/sodaubai', request.url));
+		} else if (role === 6 || role === 7) {
+			return NextResponse.redirect(new URL('/dashboard', request.url));
+		}
+		// If no specific role or other role, redirect to home
+		return NextResponse.redirect(new URL('/', request.url));
 	}
 
-	// teacher allowed
-	if (role === 2) {
-		if (adminPaths.some((path) => pathname.startsWith(path))) {
+	// Role-based access control
+	if (accessToken) {
+		// teacher allowed
+		if (role === 2 && adminPaths.some((path) => pathname.startsWith(path))) {
 			return NextResponse.redirect(new URL('/sodaubai', request.url));
 		}
-	}
 
-	// admin allowed
-	if (role === 6 || role === 7) {
-		if (teacherPaths.some((path) => pathname.startsWith(path))) {
+		// admin allowed
+		if (
+			(role === 6 || role === 7) &&
+			teacherPaths.some((path) => pathname.startsWith(path))
+		) {
 			return NextResponse.redirect(new URL('/dashboard', request.url));
 		}
 	}
@@ -71,15 +92,18 @@ export function middleware(request: NextRequest) {
 	});
 }
 
-// See "Matching Paths" below to learn more
+// Fixed matcher to include the root path
 export const config = {
 	matcher: [
+		'/',
 		'/sodaubai',
+		'/statistics',
 		'/login',
 		'/register',
 		'/dashboard',
 		'/dashboard/:path*',
 		'/report',
 		'/sodaubai/chitietsodaubai/:id*',
+		'/rollcall',
 	],
 };
