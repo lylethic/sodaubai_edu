@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { FormProvider } from 'react-hook-form';
 import useRollCallForm from './useRollCallsForm';
@@ -10,7 +12,7 @@ const RollCallForm = () => {
 		<FormProvider {...methods}>
 			<form onSubmit={handleSubmit}>
 				<RollCallsFormField />
-				<Button type='submit' className='flex mt-4 mb-2 w-full'>
+				<Button size={'lg'} type='submit' className='flex mt-4 mb-2'>
 					Lưu
 				</Button>
 			</form>

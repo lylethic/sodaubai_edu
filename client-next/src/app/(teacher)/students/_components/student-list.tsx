@@ -28,19 +28,26 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { toast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
 import { StudentListResType } from '@/schemaValidations/student.schema';
 import { PlusCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
 interface Props {
-	isOpen: boolean;
-	onOpenChange: (value: boolean) => void;
+	isOpen?: boolean;
+	classId: number;
+	schoolId?: number;
+	onOpenChange?: (value: boolean) => void;
+	onSelectStudents?: (selected: number[]) => void;
 }
 
-export default function StudentList({ isOpen, onOpenChange }: Props) {
-	const { user } = useAppContext();
+export default function StudentList({
+	isOpen,
+	classId,
+	schoolId,
+	onOpenChange,
+	onSelectStudents,
+}: Props) {
 	const [loading, setLoading] = useState(false);
 	const [students, setStudents] = useState<StudentListResType['data']>([]);
 	const [pageNumber, setPageNumber] = useState<number>(1);
@@ -48,33 +55,36 @@ export default function StudentList({ isOpen, onOpenChange }: Props) {
 	const [totalPageCount, setTotalPageCount] = useState<number>(0);
 	const [selectedStudent, setSelectedStudent] = useState<number[]>([]);
 
-	const school = user?.schoolId || 0;
-
 	const handleCheckboxChange = (id: number) => {
-		setSelectedStudent((prev) =>
-			prev.includes(id)
-				? prev.filter((accountId) => accountId !== id)
-				: [...prev, id]
-		);
+		const updated = selectedStudent.includes(id)
+			? selectedStudent.filter((accountId) => accountId !== id)
+			: [...selectedStudent, id];
+
+		setSelectedStudent(updated);
+		onSelectStudents?.(updated);
 	};
 
-	// select all
 	const handleSelectAll = () => {
+		let updated: number[] = [];
+
 		if (selectedStudent.length === students.length) {
-			setSelectedStudent([]); // Deselect all
+			updated = [];
 		} else {
-			setSelectedStudent(students.map((key) => key.studentId)); // Select all
+			updated = students.map((key) => key.studentId);
 		}
+
+		setSelectedStudent(updated);
+		onSelectStudents?.(updated);
 	};
 
-	const fetchData = async (schoolId: number) => {
+	const fetchData = async (schoolId: number, classId: number) => {
 		if (loading) return;
 		setLoading(true);
 
 		try {
 			const response = await studentApiRequest.studentsByClass(
 				Number(schoolId),
-				1
+				Number(classId)
 			);
 
 			const { data, pagination } = response.payload;
@@ -91,11 +101,10 @@ export default function StudentList({ isOpen, onOpenChange }: Props) {
 	};
 
 	useEffect(() => {
-		if (user) {
-			fetchData(school);
+		if (schoolId && classId) {
+			fetchData(schoolId, classId);
 		}
-	}, [user]);
-	if (selectedStudent.length > 0) console.log(selectedStudent);
+	}, [schoolId, classId]);
 
 	return (
 		<div>
@@ -110,7 +119,7 @@ export default function StudentList({ isOpen, onOpenChange }: Props) {
 					</Button>
 				</DialogTrigger>
 				<DialogContent
-					className='w-full max-w-4xl overflow-y-auto'
+					className='max-w-screen-xl max-h-[80vh] overflow-y-auto'
 					aria-describedby='dialog-description'
 				>
 					<DialogHeader>

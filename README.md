@@ -70,6 +70,10 @@ _Hình ảnh Teacher layout..._
 > client-next: yarn dev
 > server: dotnet watch run
 
+## Testing with Cypress
+
+> yarn run cypress:open
+
 ## 💡 Đóng góp
 
 Chúng tôi luôn chào đón các ý kiến đóng góp và pull request từ cộng đồng để phát triển dự án tốt hơn!
