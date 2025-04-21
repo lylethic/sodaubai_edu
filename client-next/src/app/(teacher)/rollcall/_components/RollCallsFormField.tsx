@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import DayOfTheWeek from '@/app/(admin)/_components/dayOfTheWeek';
 import { Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Plus, PlusCircle, Trash } from 'lucide-react';
+import { CheckCircle, Plus, Trash } from 'lucide-react';
 import {
 	Select,
 	SelectContent,
@@ -21,19 +21,11 @@ import {
 	TableHeader,
 	TableRow,
 } from '@/components/ui/table';
-import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from '@/components/ui/dialog';
 import useRollCallsFormFields from './useRollCallsFormFields';
 import WeekSelect from '@/app/(admin)/_components/week-select';
 import LopHocSelect from '@/app/(admin)/_components/lopHoc-select';
 import { useAppContext } from '@/app/app-provider';
 import StudentByClassSelect from '@/app/(admin)/_components/student-select';
-import StudentList from '../../students/_components/student-list';
 import { StudentListResType } from '@/schemaValidations/student.schema';
 import { studentApiRequest } from '@/apiRequests/student';
 import { handleErrorApi } from '@/lib/utils';
@@ -50,15 +42,12 @@ const RollCallsFormField = () => {
 		addNewRollCallDetail,
 		removeRollCallDetail,
 	} = useRollCallsFormFields();
+
 	const schoolId = user?.schoolId;
 	const [selectedClassId, setSelectedClassId] = useState<number>(0);
 	const [loading, setLoading] = useState(false);
 	const [students, setStudents] = useState<StudentListResType['data']>([]);
-	const [pageNumber, setPageNumber] = useState<number>(1);
-	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
 	const [selectedStudent, setSelectedStudent] = useState<number[]>([]);
-	const [isOpen, setIsOpen] = useState(false);
 
 	const handleCheckboxChange = (id: number) => {
 		const updated = selectedStudent.includes(id)
@@ -86,12 +75,10 @@ const RollCallsFormField = () => {
 				Number(classId)
 			);
 
-			const { data, pagination } = response.payload;
+			const { data } = response.payload;
 			const results = Array.isArray(data) ? data : [];
-			const totalResults = pagination.totalResults;
 
 			setStudents(results);
-			setTotalPageCount(totalResults ? Math.ceil(totalResults) : 0);
 		} catch (error: any) {
 			handleErrorApi({ error });
 		} finally {
@@ -111,11 +98,11 @@ const RollCallsFormField = () => {
 		}
 	}, [schoolId, selectedClassId]);
 
-	console.log('Selected students:', selectedStudent); // Debug
-	console.log(selectedClassId);
-
 	return (
-		<div className='flex flex-col w-full'>
+		<div className='flex flex-col'>
+			<h1 className='text-lg uppercase text-center p-2 border-b my-2'>
+				Điểm danh học sinh
+			</h1>
 			<div>
 				<Label>Tuần học</Label>
 				<Controller
@@ -170,111 +157,128 @@ const RollCallsFormField = () => {
 				/>
 			</div>
 
-			{/* Open list students here to check attendance */}
-			<Dialog
-				open={isOpen}
-				onOpenChange={(value) => setIsOpen(value)}
-				modal={true}
-			>
-				<DialogTrigger asChild>
-					<Button
-						variant={'default'}
-						className='bg-green-600 text-white font-semibold my-4'
-					>
-						<PlusCircle />
-						Điểm danh
-					</Button>
-				</DialogTrigger>
-				<DialogContent
-					className='max-w-screen-xl max-h-[80vh] overflow-y-auto'
-					aria-describedby='dialog-description'
+			<h2 className='flex gap-2 mt-8'>
+				<CheckCircle /> Danh sách học sinh
+			</h2>
+			{students.length > 0 ? (
+				<Table className='w-full table-auto border-collapse min-w-[1000px] my-4 rounded-lg border'>
+					<TableHeader className='border-b text-left text-gray-400'>
+						<TableRow>
+							<TableHead scope='col' className='ps-4 py-3'>
+								<Checkbox
+									onCheckedChange={handleSelectAll}
+									checked={selectedStudent.length === students.length}
+								/>
+							</TableHead>
+							<TableHead scope='col' className='px-2'>
+								STT
+							</TableHead>
+							<TableHead scope='col' className='px-2'>
+								Mã học sinh
+							</TableHead>
+							<TableHead scope='col' className='px-2'>
+								Họ và tên
+							</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{students.map((item, index) => (
+							<TableRow key={item.studentId}>
+								<TableCell>
+									<Input
+										type='checkbox'
+										className='w-4 h-4 ms-2'
+										onChange={() => handleCheckboxChange(item.studentId)}
+										checked={selectedStudent.includes(item.studentId)}
+									/>
+								</TableCell>
+								<TableCell>{index + 1}</TableCell>
+								<TableCell>{item.studentId}</TableCell>
+								<TableCell>{item.fullname}</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			) : (
+				<>...</>
+			)}
+
+			{/*  */}
+			<div className='flex items-center justify-end my-2'>
+				<Button
+					type='button'
+					variant={'default'}
+					onClick={addNewRollCallDetail}
+					className='bg-blue-700 text-white'
 				>
-					<DialogHeader>
-						<DialogTitle>Điểm danh</DialogTitle>
-					</DialogHeader>
-					{students.length > 0 ? (
-						<Table className='w-full table-auto border-collapse min-w-[1000px] my-4 rounded-lg border'>
-							<TableHeader className='border-b text-left text-gray-400'>
-								<TableRow>
-									<TableHead scope='col' className='ps-4 py-3'>
-										<Checkbox
-											onCheckedChange={handleSelectAll}
-											checked={selectedStudent.length === students.length}
-										/>
-									</TableHead>
-									<TableHead scope='col' className='px-2'>
-										STT
-									</TableHead>
-									<TableHead scope='col' className='px-2'>
-										Mã học sinh
-									</TableHead>
-									<TableHead scope='col' className='px-2'>
-										Họ và tên
-									</TableHead>
-									<TableHead scope='col' className='px-2'>
-										Có phép
-									</TableHead>
-									<TableHead scope='col' className='px-2'>
-										Ghi chú
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{students.map((item, index) => (
-									<TableRow key={item.studentId}>
-										<TableCell>
-											<Input
-												{...register(`absences.${index}.description`)}
-												type='checkbox'
-												className='w-4 h-4 ms-2'
-												onChange={() => handleCheckboxChange(item.studentId)}
-												checked={selectedStudent.includes(item.studentId)}
-											/>
-										</TableCell>
-										<TableCell>
-											{index + 1 + (pageNumber - 1) * pageSize}
-										</TableCell>
-										<TableCell>{item.studentId}</TableCell>
-										<TableCell>{item.fullname}</TableCell>
-										<TableCell>
-											<Select
-												onValueChange={(value) =>
-													setValue(
-														`absences.${index}.isExcused`,
-														value === 'true'
-													)
-												}
-												defaultValue={
-													watch(`absences.${index}.isExcused`)
-														? 'true'
-														: 'false'
-												}
-											>
-												<SelectTrigger>
-													<SelectValue placeholder='Chọn phép...' />
-												</SelectTrigger>
-												<SelectContent>
-													<SelectItem value='true'>Có</SelectItem>
-													<SelectItem value='false'>Không</SelectItem>
-												</SelectContent>
-											</Select>
-										</TableCell>
-										<TableCell>
-											<Textarea
-												{...register(`absences.${index}.description`)}
-												rows={3}
-												placeholder='Ghi chú...'
-											/>
-										</TableCell>
-									</TableRow>
-								))}
-							</TableBody>
-						</Table>
-					) : (
-						<>!</>
-					)}
-				</DialogContent>
-			</Dialog>
+					<Plus /> Học sinh vắng
+				</Button>
+			</div>
+			{fields.map((field, index) => (
+				<div key={field.id} className='border p-4 rounded-xl mb-4 w-full'>
+					{/* 1-col on mobile, 3-cols on md+ */}
+					<div className='grid grid-cols-1 md:grid-cols-3 gap-4 w-full'>
+						{/* Student select */}
+						<div>
+							<Label>Tên học sinh vắng</Label>
+							<Controller
+								{...register(`absences.${index}.studentId`)}
+								render={({ field }) => (
+									<StudentByClassSelect
+										selectedSchoolId={Number(schoolId)}
+										selectedClassId={watch('rollCall.classId')}
+										selectedStudentId={field.value}
+										onSelectStudent={field.onChange}
+									/>
+								)}
+							/>
+						</div>
+
+						{/* Excused select */}
+						<div>
+							<Label>Có phép</Label>
+							<Select
+								onValueChange={(value) =>
+									setValue(`absences.${index}.isExcused`, value === 'true')
+								}
+								defaultValue={
+									watch(`absences.${index}.isExcused`) ? 'true' : 'false'
+								}
+							>
+								<SelectTrigger>
+									<SelectValue placeholder='Chọn phép...' />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value='true'>Có</SelectItem>
+									<SelectItem value='false'>Không</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						{/* Description input */}
+						<div>
+							<Label>Ghi chú</Label>
+							<Textarea
+								className='resize-none'
+								rows={4}
+								{...register(`absences.${index}.description`)}
+								placeholder='Ghi chú...'
+							/>
+						</div>
+					</div>
+
+					{/* Trash button aligned right */}
+					<div className='flex justify-end mt-3'>
+						<Button
+							variant='destructive'
+							type='button'
+							onClick={removeRollCallDetail(index)}
+						>
+							<Trash />
+						</Button>
+					</div>
+				</div>
+			))}
 		</div>
 	);
 };

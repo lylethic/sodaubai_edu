@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { formatDateToDDMMYYYY, handleErrorApi } from '@/lib/utils';
+import {
+	formatDateToDDMMYYYY,
+	formatDateToDDMMYYYYNoTime,
+	handleErrorApi,
+} from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/app/app-provider';
@@ -26,6 +30,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PaginationWithLinks } from '@/components/pagination-with-links';
+import { addHours, differenceInHours } from 'date-fns';
 
 type RollCallType = RollCallResType['data'];
 
@@ -176,62 +181,79 @@ export default function RollCallList({ filters }: FilterProps) {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{rollCalls.map((key, index) => (
-						<TableRow key={key.rollCallId + index}>
-							<TableCell>
-								<div className='flex items-center'>
-									<Input
-										id='checkbox-table-search-1'
-										type='checkbox'
-										className='w-4 h-4 ms-2'
-										onChange={() => handleCheckboxChange(key.rollCallId)}
-										checked={selected.includes(key.rollCallId)}
-									/>
-									<Label htmlFor='checkbox-table-search-1' className='sr-only'>
-										checkbox
-									</Label>
-								</div>
-							</TableCell>
-							<TableCell className='border-r'>{key.dayOfTheWeek}</TableCell>
-							<TableCell className='border-r'>
-								{key.dateAt ? formatDateToDDMMYYYY(key.dateAt) : ''}
-							</TableCell>
-							<TableCell className='border-r'>
-								{key.numberOfAttendants}
-							</TableCell>
-							<TableCell className='border-r'>
-								{(key.rollCallDetails?.length ?? 0) > 0 ? (
-									<Table className='border mt-2'>
-										<TableHeader className='border-b'>
-											<TableRow className='bg-gray-200'>
-												<TableHead>Mã học sinh</TableHead>
-												<TableHead>Họ và tên học sinh</TableHead>
-												<TableHead>Có phép</TableHead>
-												<TableHead>Lý do</TableHead>
-											</TableRow>
-										</TableHeader>
-										<TableBody>
-											{key.rollCallDetails?.map((detail) => (
-												<TableRow key={detail.absenceId}>
-													<TableCell>{detail.studentId}</TableCell>
-													<TableCell>{detail.student.fullname}</TableCell>
-													<TableCell>
-														{detail.isExcused ? 'Có phép' : 'Không phép'}
-													</TableCell>
-													<TableCell>{detail.description}</TableCell>
+					{rollCalls.map((key, index) => {
+						const createdAtVN = addHours(key.dateAt, 7);
+						const isDisabled = differenceInHours(new Date(), createdAtVN) > 2;
+						return (
+							<TableRow key={key.rollCallId + index}>
+								<TableCell>
+									<div className='flex items-center'>
+										<Input
+											id='checkbox-table-search-1'
+											type='checkbox'
+											className='w-4 h-4 ms-2'
+											onChange={() => handleCheckboxChange(key.rollCallId)}
+											checked={selected.includes(key.rollCallId)}
+										/>
+										<Label
+											htmlFor='checkbox-table-search-1'
+											className='sr-only'
+										>
+											checkbox
+										</Label>
+									</div>
+								</TableCell>
+								<TableCell className='border-r'>{key.dayOfTheWeek}</TableCell>
+								<TableCell className='border-r'>
+									{key.dateAt ? formatDateToDDMMYYYYNoTime(key.dateAt) : ''}
+								</TableCell>
+								<TableCell className='border-r'>
+									{key.numberOfAttendants}
+								</TableCell>
+								<TableCell className='border-r'>
+									{(key.rollCallDetails?.length ?? 0) > 0 ? (
+										<Table className='border mt-2'>
+											<TableHeader className='border-b'>
+												<TableRow className='bg-gray-200'>
+													<TableHead>Mã học sinh</TableHead>
+													<TableHead>Họ và tên học sinh</TableHead>
+													<TableHead>Có phép</TableHead>
+													<TableHead>Lý do</TableHead>
 												</TableRow>
-											)) ?? []}
-										</TableBody>
-									</Table>
-								) : (
-									'Không vắng'
-								)}
-							</TableCell>
-							<TableCell>
-								<RollCallDeleteDialog data={key} onDelete={handleDelete} />
-							</TableCell>
-						</TableRow>
-					))}
+											</TableHeader>
+											<TableBody>
+												{key.rollCallDetails?.map((detail) => (
+													<TableRow key={detail.absenceId}>
+														<TableCell>{detail.studentId}</TableCell>
+														<TableCell>{detail.student.fullname}</TableCell>
+														<TableCell>
+															{detail.isExcused ? 'Có phép' : 'Không phép'}
+														</TableCell>
+														<TableCell>{detail.description}</TableCell>
+													</TableRow>
+												)) ?? []}
+											</TableBody>
+										</Table>
+									) : (
+										'Không vắng'
+									)}
+								</TableCell>
+								<TableCell>
+									{isDisabled ? (
+										<span className='text-gray-400 italic'>
+											⏱ Hết thời gian xóa
+										</span>
+									) : (
+										<RollCallDeleteDialog
+											disabled={isDisabled}
+											data={key}
+											onDelete={handleDelete}
+										/>
+									)}
+								</TableCell>
+							</TableRow>
+						);
+					})}
 				</TableBody>
 			</Table>
 			<PaginationWithLinks

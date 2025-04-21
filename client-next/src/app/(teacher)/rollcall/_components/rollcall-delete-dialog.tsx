@@ -19,13 +19,16 @@ import {
 import { Button } from '@/components/ui/button';
 import { rollcallApiRequest } from '@/apiRequests/rollcall';
 import { RollCallResType } from '@/schemaValidations/rollcall-schema';
+import { Trash2 } from 'lucide-react';
 
 export default function RollCallDeleteDialog({
 	data,
 	onDelete,
+	disabled,
 }: {
 	data: RollCallResType['data'];
 	onDelete: (rollCallId: number) => void;
+	disabled: boolean;
 }) {
 	const { toast } = useToast();
 
@@ -44,8 +47,12 @@ export default function RollCallDeleteDialog({
 	return (
 		<AlertDialog>
 			<AlertDialogTrigger asChild>
-				<Button title='Xóa' className='bg-red-500 text-white p-2 rounded'>
-					Xóa
+				<Button
+					title='Xóa'
+					className='bg-red-500 text-white p-2 rounded'
+					disabled={disabled}
+				>
+					<Trash2 />
 				</Button>
 			</AlertDialogTrigger>
 			<AlertDialogContent>

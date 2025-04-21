@@ -130,10 +130,7 @@ const LoginForm = () => {
 
 				<Button type='submit' className='!mt-8 w-full'>
 					{loading ? (
-						<>
-							<Loader2 className='mr-2 h-4 w-4 animate-spin' />
-							Đang xử lý...
-						</>
+						<Loader2 className='mr-2 h-4 w-4 animate-spin' />
 					) : (
 						'Đăng nhập'
 					)}
