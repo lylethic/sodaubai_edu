@@ -110,7 +110,6 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 						title='Quay về'
 					>
 						<ArrowLeft />
-						Trang chủ
 					</Button>
 				</div>
 				<FormProvider {...form}>

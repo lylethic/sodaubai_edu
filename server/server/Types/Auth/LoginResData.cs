@@ -1,4 +1,6 @@
-﻿namespace server.Types.Auth
+﻿using server.Dtos;
+
+namespace server.Types.Auth
 {
   public class LoginResData
   {

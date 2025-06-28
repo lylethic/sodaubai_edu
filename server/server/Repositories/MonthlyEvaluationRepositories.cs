@@ -9,6 +9,7 @@ namespace server.Repositories
   public class MonthlyEvaluationRepositories : IMonthlyEvaluation
   {
     private readonly SoDauBaiContext _context;
+
     public MonthlyEvaluationRepositories(SoDauBaiContext context)
     {
       this._context = context;
@@ -16,24 +17,23 @@ namespace server.Repositories
 
     public async Task<ResponseData<MonthlyEvaluation>> Create(MonthlyEvaluationDto model)
     {
-      try
-      {
-        if (model is null)
-          return new ResponseData<MonthlyEvaluation>(400, "Vui lòng cung cấp thông tin!");
+      //try
+      //{
+      //  if (model is null)
+      //    return new ResponseData<MonthlyEvaluation>(400, "Vui lòng cung cấp thông tin!");
 
-        var monthlyEvaluation = new MonthlyEvaluation
-        {
-          MonthEvaluation = model.MonthEvaluation,
+      //  var monthlyEvaluation = new MonthlyEvaluation
+      //  {
+      //    MonthEvaluation = model.MonthEvaluation
+      //  };
 
-        };
 
-
-      }
-      catch (System.Exception ex)
-      {
-        return new ResponseData<MonthlyEvaluation>(500, "Có lỗi xảy ra tại server...");
-        throw new Exception(ex.Message);
-      }
+      //}
+      //catch (Exception ex)
+      //{
+      //  return new ResponseData<MonthlyEvaluation>(500, "Có lỗi xảy ra tại server...");
+      //  throw new Exception(ex.Message);
+      //}
       throw new NotImplementedException();
     }
 

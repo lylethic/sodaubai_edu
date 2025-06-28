@@ -3,13 +3,12 @@ using ExcelDataReader;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using server.Dtos;
+using server.Helpers;
 using server.IService;
 using server.Models;
-using server.Types;
 using server.Types.Account;
 using System.Data;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace server.Repositories
 {
@@ -22,21 +21,15 @@ namespace server.Repositories
     public AccountRespositories(Data.SoDauBaiContext context, IMapper map, IAuth auth)
     {
       _context = context;
-      _map = map;
       _auth = auth;
+      _map = map;
     }
 
-    private static bool IsValidEmail(string email)
-    {
-      var regex = @"^[\w\.-]+@gmail\.com$";
-      return Regex.IsMatch(email, regex);
-    }
-
-    public async Task<AccountsResType> CreateAccount(RegisterDto acc)
+    public async Task<AccountsResType> CreateAsync(CreateAccountDto acc)
     {
       try
       {
-        if (!IsValidEmail(acc.Email))
+        if (!ValidatorHepler.IsValidEmail(acc.Email))
         {
           return new AccountsResType
           {
@@ -85,10 +78,9 @@ namespace server.Repositories
             SELECT CAST(SCOPE_IDENTITY() as int);
         ";
 
-        acc.DateCreated = DateTime.UtcNow;
-        acc.DateUpdated = null;
+        acc = acc with { DateCreated = DateTime.UtcNow, DateUpdated = null };
 
-        var accountId = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
+        var addItem = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
             new SqlParameter("@Email", acc.Email),
             new SqlParameter("@RoleId", acc.RoleId),
             new SqlParameter("@SchoolId", acc.SchoolId),
@@ -116,7 +108,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> GetAccount(int id)
+    public async Task<AccountsResType> GetAsync(int id)
     {
       try
       {
@@ -169,7 +161,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> GetAccountById(int id)
+    public async Task<AccountsResType> GetByIdForUpdate(int id)
     {
       try
       {
@@ -183,7 +175,7 @@ namespace server.Repositories
               RoleId = acc.RoleId,
               SchoolId = acc.SchoolId,
               Email = acc.Email,
-              Password = acc.PasswordSalt
+              Password = null
             })
             .FirstOrDefaultAsync();
 
@@ -201,7 +193,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> GetAccounts(int? schoolId)
+    public async Task<AccountsResType> GetAllAsync(int? schoolId)
     {
       try
       {
@@ -244,7 +236,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> GetAccountsBySchoolId(QueryObjects? queryObject)
+    public async Task<AccountsResType> GetBySchoolIdAsync(QueryObjects? queryObject)
     {
       try
       {
@@ -292,7 +284,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> GetAccountsByRole(int? roleId, int? schoolId)
+    public async Task<AccountsResType> GetAllByRoleAsync(int? roleId, int? schoolId)
     {
       try
       {
@@ -335,19 +327,19 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> UpdateAccount(int accountId, AccountBody model)
+    public async Task<AccountsResType> UpdateAsync(int accountId, UpdateAccountDto model)
     {
       try
       {
-        if (!IsValidEmail(model.Email))
+        if (!ValidatorHepler.IsValidEmail(model.Email))
         {
           return new AccountsResType(400, "Định dạng không hợp lệ");
         }
 
-        var query = "SELECT * FROM ACCOUNT WHERE AccountId = @accountId";
+        var query = "SELECT * FROM ACCOUNT WHERE AccountId = @addItem";
 
         var existingAccount = await _context.Accounts
-          .FromSqlRaw(query, new SqlParameter("@accountId", accountId))
+          .FromSqlRaw(query, new SqlParameter("@addItem", accountId))
           .FirstOrDefaultAsync();
 
         if (existingAccount is null)
@@ -400,8 +392,8 @@ namespace server.Repositories
         {
           queryBuilder.Length -= 2;
 
-          queryBuilder.Append(" WHERE AccountId = @accountId");
-          parameters.Add(new SqlParameter("@accountId", accountId));
+          queryBuilder.Append(" WHERE AccountId = @addItem");
+          parameters.Add(new SqlParameter("@addItem", accountId));
 
           // Execute the update query
           var updateQuery = queryBuilder.ToString();
@@ -422,14 +414,14 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> DeleteAccount(int accountId)
+    public async Task<AccountsResType> DeleteAsync(int accountId)
     {
       try
       {
         // Find account
-        string findAccount = "SELECT * FROM Account WHERE AccountId = @accountId";
+        string findAccount = "SELECT * FROM Account WHERE AccountId = @addItem";
         var account = await _context.Accounts
-          .FromSqlRaw(findAccount, new SqlParameter("@accountId", accountId))
+          .FromSqlRaw(findAccount, new SqlParameter("@addItem", accountId))
           .FirstOrDefaultAsync();
 
         // Check account null??
@@ -439,9 +431,9 @@ namespace server.Repositories
         }
 
         // Delete query
-        var deleteQuery = "DELETE FROM Account WHERE AccountId = @accountId";
+        var deleteQuery = "DELETE FROM Account WHERE AccountId = @addItem";
         await _context.Database
-          .ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@accountId", accountId));
+          .ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@addItem", accountId));
 
         return new AccountsResType(200, "Xóa thành công");
       }
@@ -452,7 +444,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> ImportExcel(IFormFile file)
+    public async Task<AccountsResType> ImportExcelAsync(IFormFile file)
     {
       try
       {
@@ -505,7 +497,7 @@ namespace server.Repositories
                   DateUpdated = null
                 };
 
-                if (!IsValidEmail(accountDto.Email))
+                if (!ValidatorHepler.IsValidEmail(accountDto.Email))
                 {
                   continue;
                 }
@@ -538,7 +530,6 @@ namespace server.Repositories
                   DateUpdated = accountDto.DateUpdated,
                 };
 
-
                 await _context.Accounts.AddAsync(newAccount);
                 await _context.SaveChangesAsync();
               }
@@ -556,7 +547,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> BulkDelete(List<int> ids)
+    public async Task<AccountsResType> BulkDeleteAsync(List<int> ids)
     {
       await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -590,7 +581,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<AccountsResType> RelativeSearchAccounts(QueryObjects? queryObject)
+    public async Task<AccountsResType> RelativeSearchAsync(QueryObjects? queryObject)
     {
       try
       {

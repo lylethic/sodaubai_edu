@@ -14,4 +14,8 @@
 
     public bool Status { get; set; }
   }
+
+  public record AcademicYearCreateDto(string DisplayAcademicYearName, DateTime? YearStart, DateTime? YearEnd, string? Description, bool Status);
+
+  public record AcademicYearUpdateDto(string DisplayAcademicYearName, DateTime? YearStart, DateTime? YearEnd, string? Description, bool Status);
 }

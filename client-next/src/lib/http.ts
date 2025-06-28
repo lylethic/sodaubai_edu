@@ -102,7 +102,7 @@ const request = async <Response>(
 		method,
 	});
 
-	// console.log(res);
+	console.log(res);
 
 	const payload: Response = await res.json();
 	const data = {

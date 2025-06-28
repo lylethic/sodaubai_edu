@@ -8,24 +8,24 @@ using server.IService;
 using server.Repositories;
 using System.Text;
 using System.Text.Json.Serialization;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-
 // Add services to the container.
-builder.Services.AddControllers().AddJsonOptions(options =>
-   options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+builder.Services
+  .AddControllers(options => options.SuppressAsyncSuffixInActionNames = false) // keep method names with Async visible in routing for clarity or consistency
+  .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); // Prevents infinite reference loops in JSON serialization.
 
 // Connection DB Local
-// builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
-//     options.UseSqlServer(builder.Configuration.GetConnectionString("SoDauBaiContext"))
-//     .EnableDetailedErrors()
-//     .LogTo(Console.WriteLine));
+//builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("SoDauBaiContext"))
+//    .EnableDetailedErrors()
+//    .LogTo(Console.WriteLine));
 
-// Connection DB with failover mechanism
-// Connection DB with failover mechanism
+#region: Connection DB with failover mechanism
 builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
 {
   // Get connection strings
@@ -39,9 +39,9 @@ builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
         .LogTo(Console.WriteLine);
 
     // This line is causing the error - we need to use a different approach
-    // using var context = new server.Data.SoDauBaiContext(options.Options);
-    // context.Database.OpenConnection();
-    // context.Database.CloseConnection();
+    //using var context = new server.Data.SoDauBaiContext(options.Options);
+    //context.Database.OpenConnection();
+    //context.Database.CloseConnection();
   }
   catch (Exception ex)
   {
@@ -53,6 +53,7 @@ builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
         .LogTo(Console.WriteLine);
   }
 });
+#endregion
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -69,7 +70,7 @@ builder.Services.AddCors(options =>
   });
 });
 
-// Inject app Dependencies (Dependecy Injecteion)
+#region: * Inject app Dependencies (Dependecy Injecteion)
 builder.Services.AddScoped<IAuth, AuthRepositories>();
 builder.Services.AddScoped<ITokenService, TokenRepositories>();
 builder.Services.AddScoped<IAccount, AccountRespositories>();
@@ -93,7 +94,7 @@ builder.Services.AddScoped<IRollCall, RollCallRepositories>();
 builder.Services.AddScoped<IRollCallDetail, RollCallDetailRepositories>();
 builder.Services.AddScoped<IWeeklyEvaluation, WeeklyEvaluationRepositories>();
 builder.Services.AddScoped<IMonthlyEvaluation, MonthlyEvaluationRepositories>();
-
+#endregion
 
 // Load configuration from appsettings.json
 var configuration = new ConfigurationBuilder()
@@ -122,10 +123,8 @@ builder.Services.AddAuthentication(options =>
   };
 });
 
-
 // Cloudinary
-builder.Services.Configure<CloudinarySetting>
-  (builder.Configuration.GetSection("CloudinarySettings"));
+builder.Services.Configure<CloudinarySetting>(builder.Configuration.GetSection("CloudinarySettings"));
 builder.Services.AddScoped<IPhotoService, PhotoRepositories>();
 
 // Add AutoMapper and configure profiles
@@ -165,7 +164,6 @@ builder.Services.AddAuthorization(options =>
   });
 });
 
-
 builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<server.Data.SoDauBaiContext>();
 
 //
@@ -177,7 +175,6 @@ if (app.Environment.IsDevelopment())
   app.UseSwagger();
   app.UseSwaggerUI();
 }
-
 
 app.UseHttpsRedirection();
 

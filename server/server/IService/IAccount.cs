@@ -9,26 +9,26 @@ namespace server.IService
 
     Task<int> GetCountAccountsBySchool(int schoolId);
 
-    Task<AccountsResType> GetAccounts(int? schoolId);
+    Task<AccountsResType> GetAllAsync(int? schoolId);
 
-    Task<AccountsResType> GetAccountsByRole(int? roleId, int? schoolId);
+    Task<AccountsResType> GetAllByRoleAsync(int? roleId, int? schoolId);
 
-    Task<AccountsResType> GetAccount(int id);
+    Task<AccountsResType> GetAsync(int id);
 
-    Task<AccountsResType> GetAccountById(int id);
+    Task<AccountsResType> GetByIdForUpdate(int id);
 
-    Task<AccountsResType> CreateAccount(RegisterDto model);
+    Task<AccountsResType> CreateAsync(CreateAccountDto item);
 
-    Task<AccountsResType> UpdateAccount(int accountId, AccountBody model);
+    Task<AccountsResType> UpdateAsync(int id, UpdateAccountDto item);
 
-    Task<AccountsResType> DeleteAccount(int id);
+    Task<AccountsResType> DeleteAsync(int id);
 
-    Task<AccountsResType> ImportExcel(IFormFile file);
+    Task<AccountsResType> ImportExcelAsync(IFormFile file);
 
-    Task<AccountsResType> BulkDelete(List<int> ids);
+    Task<AccountsResType> BulkDeleteAsync(List<int> ids);
 
-    Task<AccountsResType> GetAccountsBySchoolId(QueryObjects? queryObject);
+    Task<AccountsResType> GetBySchoolIdAsync(QueryObjects? queryObject);
 
-    Task<AccountsResType> RelativeSearchAccounts(QueryObjects? queryObject);
+    Task<AccountsResType> RelativeSearchAsync(QueryObjects? queryObject);
   }
 }

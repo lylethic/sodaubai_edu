@@ -1,11 +1,14 @@
-using System;
-
 namespace server.Models;
 
 public class Error
 {
-  public string Field { get; set; }
-  public string Message { get; set; }
+  public string? Field { get; set; }
+  public string? Message { get; set; }
+
+  public Error()
+  {
+    Console.WriteLine("Error class instance!");
+  }
 
   public Error(string field, string message)
   {

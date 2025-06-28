@@ -17,7 +17,7 @@ namespace server.Repositories
       this._context = context;
     }
 
-    public async Task<ResponseData<AcademicYearDto>> CreateAcademicYear(AcademicYearDto model)
+    public async Task<ResponseData<AcademicYearDto>> CreateAsync(AcademicYearDto model)
     {
       try
       {
@@ -32,8 +32,8 @@ namespace server.Repositories
           return new ResponseData<AcademicYearDto>(409, "Năm học đã tồn tại");
         }
 
-        var sqlInsert = @"INSERT INTO AcademicYear (displayAcademicYear_Name, YearStart, YearEnd, Description, Status) 
-                          VALUES (@displayAcademicYear_Name, @YearStart ,@YearEnd, @Description, @Status);
+        var sqlInsert = @"INSERT INTO AcademicYear (DisplayAcademicYear_Name, YearStart, YearEnd, Description, Status) 
+                          VALUES (@DisplayAcademicYear_Name, @YearStart ,@YearEnd, @Description, @Status);
                           SELECT CAST(SCOPE_IDENTITY() as int);"
         ;
 
@@ -65,7 +65,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<ResponseData<AcademicYearDto>> GetAcademicYear(int id)
+    public async Task<ResponseData<AcademicYearDto>> GetAsync(int id)
     {
       try
       {
@@ -98,7 +98,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<ResponseData<List<AcademicYearDto>>> GetAcademicYears()
+    public async Task<ResponseData<List<AcademicYearDto>>> GetAllAsync()
     {
       try
       {
@@ -135,7 +135,7 @@ namespace server.Repositories
       }
     }
 
-    public async Task<ResponseData<AcademicYearDto>> UpdateAcademicYear(int id, AcademicYearDto model)
+    public async Task<ResponseData<AcademicYearDto>> UpdateAsync(int id, AcademicYearDto model)
     {
       using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -222,6 +222,63 @@ namespace server.Repositories
       }
     }
 
+    public async Task<ResponseData<AcademicYearDto>> DeleteAsync(int id)
+    {
+      try
+      {
+        var find = "SELECT * FROM AcademicYear WHERE AcademicYearId = @id";
+        var academicYear = await _context.AcademicYears
+          .FromSqlRaw(find, new SqlParameter("@id", id))
+          .FirstOrDefaultAsync();
+
+        if (academicYear is null)
+        {
+          return new ResponseData<AcademicYearDto>(404, "AcademicYear not found");
+        }
+
+        var deleteQuery = "DELETE FROM AcademicYear WHERE AcademicYearId = @id";
+        await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
+        return new ResponseData<AcademicYearDto>(200, "Deleted");
+      }
+      catch (Exception ex)
+      {
+        return new ResponseData<AcademicYearDto>(500, $"Server error: {ex.Message}");
+      }
+    }
+
+    public async Task<ResponseData<string>> BulkDeleteAsync(List<int> ids)
+    {
+      await using var transaction = await _context.Database.BeginTransactionAsync();
+
+      try
+      {
+        if (ids is null || ids.Count == 0)
+        {
+          return new ResponseData<string>(400, "Không có id nào được nhập");
+        }
+
+        var idList = string.Join(",", ids);
+
+        var deleteQuery = $"DELETE FROM AcademicYear WHERE AcademicYearId IN ({idList})";
+
+        var delete = await _context.Database.ExecuteSqlRawAsync(deleteQuery);
+
+        if (delete == 0)
+        {
+          return new ResponseData<string>(404, "Không tìm thấy năm học");
+        }
+
+        await transaction.CommitAsync();
+
+        return new ResponseData<string>(200, "Đã xóa");
+      }
+      catch (Exception ex)
+      {
+        await transaction.RollbackAsync();
+        return new ResponseData<string>(500, $"Server error: {ex.Message}");
+      }
+    }
+
     public async Task<ResponseData<string>> ImportExcel(IFormFile file)
     {
       try
@@ -291,63 +348,6 @@ namespace server.Repositories
       catch (Exception ex)
       {
         throw new Exception($"Error while uploading file: {ex.Message}");
-      }
-    }
-
-    public async Task<ResponseData<AcademicYearDto>> DeleteAcademicYear(int id)
-    {
-      try
-      {
-        var find = "SELECT * FROM AcademicYear WHERE AcademicYearId = @id";
-        var academicYear = await _context.AcademicYears
-          .FromSqlRaw(find, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
-
-        if (academicYear is null)
-        {
-          return new ResponseData<AcademicYearDto>(404, "AcademicYear not found");
-        }
-
-        var deleteQuery = "DELETE FROM AcademicYear WHERE AcademicYearId = @id";
-        await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
-        return new ResponseData<AcademicYearDto>(200, "Deleted");
-      }
-      catch (Exception ex)
-      {
-        return new ResponseData<AcademicYearDto>(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<ResponseData<string>> BulkDelete(List<int> ids)
-    {
-      await using var transaction = await _context.Database.BeginTransactionAsync();
-
-      try
-      {
-        if (ids is null || ids.Count == 0)
-        {
-          return new ResponseData<string>(400, "Không có id nào được nhập");
-        }
-
-        var idList = string.Join(",", ids);
-
-        var deleteQuery = $"DELETE FROM AcademicYear WHERE AcademicYearId IN ({idList})";
-
-        var delete = await _context.Database.ExecuteSqlRawAsync(deleteQuery);
-
-        if (delete == 0)
-        {
-          return new ResponseData<string>(404, "Không tìm thấy năm học");
-        }
-
-        await transaction.CommitAsync();
-
-        return new ResponseData<string>(200, "Đã xóa");
-      }
-      catch (Exception ex)
-      {
-        await transaction.RollbackAsync();
-        return new ResponseData<string>(500, $"Server error: {ex.Message}");
       }
     }
   }

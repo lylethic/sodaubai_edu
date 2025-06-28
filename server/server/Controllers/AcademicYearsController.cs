@@ -23,7 +23,7 @@ namespace server.Controllers
     public async Task<IActionResult> GetAcademicYears([FromQuery] QueryObject? query)
     {
       query ??= new QueryObject();
-      var result = await _acaYearRepo.GetAcademicYears();
+      var result = await _acaYearRepo.GetAllAsync();
 
       if (result.StatusCode == 200)
       {
@@ -57,7 +57,7 @@ namespace server.Controllers
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAcademicYear(int id)
     {
-      var result = await _acaYearRepo.GetAcademicYear(id);
+      var result = await _acaYearRepo.GetAsync(id);
 
       if (result.StatusCode != 200)
       {
@@ -76,7 +76,7 @@ namespace server.Controllers
     [HttpPut("{id}")]
     public async Task<IActionResult> PutAcademicYear(int id, AcademicYearDto model)
     {
-      var academicYears = await _acaYearRepo.UpdateAcademicYear(id, model);
+      var academicYears = await _acaYearRepo.UpdateAsync(id, model);
 
       if (academicYears.StatusCode != 200)
       {
@@ -91,7 +91,7 @@ namespace server.Controllers
     [HttpPost]
     public async Task<IActionResult> PostAcademicYear(AcademicYearDto model)
     {
-      var academicYears = await _acaYearRepo.CreateAcademicYear(model);
+      var academicYears = await _acaYearRepo.CreateAsync(model);
 
       if (academicYears.StatusCode != 200)
       {
@@ -106,7 +106,7 @@ namespace server.Controllers
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAcademicYear(int id)
     {
-      var academicYears = await _acaYearRepo.DeleteAcademicYear(id);
+      var academicYears = await _acaYearRepo.DeleteAsync(id);
 
       if (academicYears.StatusCode != 200)
       {
@@ -120,7 +120,7 @@ namespace server.Controllers
     [HttpDelete("bulkdelete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var academicYears = await _acaYearRepo.BulkDelete(ids);
+      var academicYears = await _acaYearRepo.BulkDeleteAsync(ids);
 
       if (academicYears.StatusCode != 200)
       {

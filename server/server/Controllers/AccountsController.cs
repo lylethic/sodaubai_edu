@@ -1,5 +1,4 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using server.Dtos;
 using server.IService;
@@ -40,7 +39,7 @@ namespace server.Controllers
 
       try
       {
-        var result = await _acc.GetAccounts(schoolId);
+        var result = await _acc.GetAllAsync(schoolId);
         if (result.StatusCode == 200)
         {
           var data = result.Data ?? [];
@@ -96,7 +95,7 @@ namespace server.Controllers
     public async Task<IActionResult> GetAccountsByRole([FromQuery] QueryObject? queryObject, int? roleId = null, int? schoolId = null)
     {
       queryObject ??= new QueryObject();
-      var result = await _acc.GetAccountsByRole(roleId, schoolId);
+      var result = await _acc.GetAllByRoleAsync(roleId, schoolId);
       if (result.StatusCode == 404)
       {
         return NotFound(new
@@ -140,7 +139,7 @@ namespace server.Controllers
     [HttpGet, Route("get-accounts-by-school")]
     public async Task<IActionResult> GetAccountsBySchool([FromQuery] QueryObjects? queryObject)
     {
-      var result = await _acc.GetAccountsBySchoolId(queryObject);
+      var result = await _acc.GetBySchoolIdAsync(queryObject);
       if (result.StatusCode == 404)
       {
         return NotFound(new
@@ -169,7 +168,7 @@ namespace server.Controllers
     [HttpGet("{id}")]
     public async Task<IActionResult> GetAccountById(int id)
     {
-      var result = await _acc.GetAccount(id);
+      var result = await _acc.GetAsync(id);
 
       if (result.StatusCode == 200)
       {
@@ -199,7 +198,7 @@ namespace server.Controllers
     [HttpGet, Route("detail/{id}")]
     public async Task<IActionResult> GetAccountByIdToEdit(int id)
     {
-      var account = await _acc.GetAccountById(id);
+      var account = await _acc.GetByIdForUpdate(id);
 
       if (account.StatusCode == 200)
       {
@@ -230,7 +229,7 @@ namespace server.Controllers
         return BadRequest("Page number and page size must be positive integers.");
       }
 
-      var results = await _acc.RelativeSearchAccounts(queryObject);
+      var results = await _acc.RelativeSearchAsync(queryObject);
 
       if (results.StatusCode == 404)
       {
@@ -273,9 +272,9 @@ namespace server.Controllers
     // PUT: api/Auth/5
     [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPut, Route("{id}")]
-    public async Task<IActionResult> UpdateAccount(int id, AccountBody model)
+    public async Task<IActionResult> UpdateAccount(int id, UpdateAccountDto model)
     {
-      var result = await _acc.UpdateAccount(id, model);
+      var result = await _acc.UpdateAsync(id, model);
       if (result.StatusCode == 200)
       {
         return Ok(new
@@ -304,9 +303,9 @@ namespace server.Controllers
     // POST: api/Auth
     [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPost]
-    public async Task<IActionResult> CreateAccount(RegisterDto account)
+    public async Task<IActionResult> CreateAccount(CreateAccountDto account)
     {
-      var result = await _acc.CreateAccount(account);
+      var result = await _acc.CreateAsync(account);
 
       if (result.StatusCode == 422)
       {
@@ -351,7 +350,7 @@ namespace server.Controllers
     [HttpDelete, Route("{id}")]
     public async Task<IActionResult> DeleteAccount(int id)
     {
-      var result = await _acc.DeleteAccount(id);
+      var result = await _acc.DeleteAsync(id);
 
       if (result.StatusCode == 404)
       {
@@ -382,7 +381,7 @@ namespace server.Controllers
     [HttpDelete, Route("bulk-delete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var result = await _acc.BulkDelete(ids);
+      var result = await _acc.BulkDeleteAsync(ids);
       if (result.StatusCode == 200)
       {
         return Ok(new
@@ -422,7 +421,7 @@ namespace server.Controllers
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> ImportExcel(IFormFile file)
     {
-      var result = await _acc.ImportExcel(file);
+      var result = await _acc.ImportExcelAsync(file);
 
       if (result.StatusCode == 400)
       {
