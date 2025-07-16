@@ -1,5 +1,5 @@
-using server.Dtos;
-using server.Models;
+using server.Application.Dtos;
+using server.Domain.Entities;
 
 namespace server.Types.PhanCongGDBia
 {

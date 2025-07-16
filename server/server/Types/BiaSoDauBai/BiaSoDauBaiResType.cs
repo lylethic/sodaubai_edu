@@ -1,68 +1,68 @@
-﻿using server.Dtos;
+﻿using server.Application.Dtos;
 
 namespace server.Types.BiaSoDauBai
 {
-  public class BiaSoDauBaiResType : ModelResType
-  {
-    public int? TotalCount { get; set; } = 0;
-
-    public List<BiaSoDauBaiDto>? ListBiaSoDauBaiDto { get; set; }
-    public BiaSoDauBaiDto? BiaSoDauBaiDto { get; set; }
-    public Models.BiaSoDauBai? BiaSoDauBai { get; set; }
-    public List<Models.BiaSoDauBai>? BiaSoDauBaiList { get; set; }
-    public BiaSoDauBaiRes? BiaSoDauBaiRes { get; set; }
-    public List<BiaSoDauBaiRes> ListBiaSoDauBaiRes { get; set; } = [];
-
-
-    public BiaSoDauBaiResType() { }
-
-    public BiaSoDauBaiResType(int statusCode, string message)
+    public class BiaSoDauBaiResType : ModelResType
     {
-      StatusCode = statusCode;
-      Message = message;
-    }
+        public int? TotalCount { get; set; } = 0;
 
-    public BiaSoDauBaiResType(int statusCode, string message, BiaSoDauBaiDto biaSoDauBaiDto)
-    {
-      StatusCode = statusCode;
-      Message = message;
-      BiaSoDauBaiDto = biaSoDauBaiDto;
-    }
+        public List<BiaSoDauBaiDto>? ListBiaSoDauBaiDto { get; set; }
+        public BiaSoDauBaiDto? BiaSoDauBaiDto { get; set; }
+        public Domain.Entities.BiaSoDauBai? BiaSoDauBai { get; set; }
+        public List<Domain.Entities.BiaSoDauBai>? BiaSoDauBaiList { get; set; }
+        public BiaSoDauBaiRes? BiaSoDauBaiRes { get; set; }
+        public List<BiaSoDauBaiRes> ListBiaSoDauBaiRes { get; set; } = [];
 
-    public BiaSoDauBaiResType(int statusCode, string message, List<Models.BiaSoDauBai> biaSoDauBai)
-    {
-      StatusCode = statusCode;
-      Message = message;
-      BiaSoDauBaiList = biaSoDauBai;
-    }
 
-    public BiaSoDauBaiResType(int statusCode, string message, BiaSoDauBaiRes biaSoDauBaiRes)
-    {
-      StatusCode = statusCode;
-      Message = message;
-      BiaSoDauBaiRes = biaSoDauBaiRes;
-    }
+        public BiaSoDauBaiResType() { }
 
-    public BiaSoDauBaiResType(int statusCode, string message, List<BiaSoDauBaiRes> listBiaSoDauBaiRes, int? totalResults)
-    {
-      StatusCode = statusCode;
-      Message = message;
-      ListBiaSoDauBaiRes = listBiaSoDauBaiRes;
-      this.TotalCount = totalResults;
-    }
+        public BiaSoDauBaiResType(int statusCode, string message)
+        {
+            StatusCode = statusCode;
+            Message = message;
+        }
 
-    public BiaSoDauBaiResType(int statusCode, string message, List<BiaSoDauBaiRes> listBiaSoDauBaiRes)
-    {
-      StatusCode = statusCode;
-      Message = message;
-      ListBiaSoDauBaiRes = listBiaSoDauBaiRes;
-    }
+        public BiaSoDauBaiResType(int statusCode, string message, BiaSoDauBaiDto biaSoDauBaiDto)
+        {
+            StatusCode = statusCode;
+            Message = message;
+            BiaSoDauBaiDto = biaSoDauBaiDto;
+        }
 
-    public BiaSoDauBaiResType(int statusCode, string message, List<BiaSoDauBaiDto> listBiaSoDauBaiDto)
-    {
-      StatusCode = statusCode;
-      Message = message;
-      ListBiaSoDauBaiDto = listBiaSoDauBaiDto;
+        public BiaSoDauBaiResType(int statusCode, string message, List<Domain.Entities.BiaSoDauBai> biaSoDauBai)
+        {
+            StatusCode = statusCode;
+            Message = message;
+            BiaSoDauBaiList = biaSoDauBai;
+        }
+
+        public BiaSoDauBaiResType(int statusCode, string message, BiaSoDauBaiRes biaSoDauBaiRes)
+        {
+            StatusCode = statusCode;
+            Message = message;
+            BiaSoDauBaiRes = biaSoDauBaiRes;
+        }
+
+        public BiaSoDauBaiResType(int statusCode, string message, List<BiaSoDauBaiRes> listBiaSoDauBaiRes, int? totalResults)
+        {
+            StatusCode = statusCode;
+            Message = message;
+            ListBiaSoDauBaiRes = listBiaSoDauBaiRes;
+            this.TotalCount = totalResults;
+        }
+
+        public BiaSoDauBaiResType(int statusCode, string message, List<BiaSoDauBaiRes> listBiaSoDauBaiRes)
+        {
+            StatusCode = statusCode;
+            Message = message;
+            ListBiaSoDauBaiRes = listBiaSoDauBaiRes;
+        }
+
+        public BiaSoDauBaiResType(int statusCode, string message, List<BiaSoDauBaiDto> listBiaSoDauBaiDto)
+        {
+            StatusCode = statusCode;
+            Message = message;
+            ListBiaSoDauBaiDto = listBiaSoDauBaiDto;
+        }
     }
-  }
 }

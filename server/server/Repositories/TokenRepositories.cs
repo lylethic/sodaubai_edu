@@ -1,6 +1,6 @@
 ﻿using Microsoft.IdentityModel.Tokens;
-using server.Dtos;
-using server.IService;
+using server.Application.Interfaces;
+using server.Application.Dtos;
 using server.Types.Auth;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -34,7 +34,7 @@ namespace server.Repositories
         audience: _config["JwtSettings:Audience"],
         claims: claims,
         signingCredentials: signinCredentials,
-        expires: DateTime.UtcNow.AddHours(Convert.ToDouble(_config["JwtSettings:AccessTokenExpirationHours"]))
+        expires: DateTime.Now.AddHours(Convert.ToDouble(_config["JwtSettings:AccessTokenExpirationHours"]))
         );
 
       var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
@@ -88,7 +88,7 @@ namespace server.Repositories
         Console.WriteLine($"Token expires at: {expirationTime} UTC");
 
         // Check if the token has already expired
-        if (expirationTime < DateTime.UtcNow)
+        if (expirationTime < DateTime.Now)
         {
           Console.WriteLine("Access token has expired.");
           isExpired = true;
@@ -157,7 +157,7 @@ namespace server.Repositories
 
         }
 
-        if (tokenStored.ExpiresAt < DateTime.UtcNow)
+        if (tokenStored.ExpiresAt < DateTime.Now)
         {
           // Delete expired refresh token
           _context.Sessions.Remove(tokenStored);
@@ -184,7 +184,7 @@ namespace server.Repositories
           Data = new LoginResData
           {
             Token = newAccessToken,
-            ExpiresAt = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+            ExpiresAt = DateTime.Now.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
           }
         };
       }
@@ -201,7 +201,7 @@ namespace server.Repositories
         HttpOnly = true,
         Secure = true,
         SameSite = SameSiteMode.Strict, // Prevent CSRF attacks
-        Expires = DateTime.UtcNow.AddHours(Convert.ToDouble(_config["JwtSettings:AccessTokenExpirationHours"])),
+        Expires = DateTime.Now.AddHours(Convert.ToDouble(_config["JwtSettings:AccessTokenExpirationHours"])),
       };
       try
       {
@@ -220,7 +220,7 @@ namespace server.Repositories
         HttpOnly = true,
         Secure = true,
         SameSite = SameSiteMode.Strict,
-        Expires = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+        Expires = DateTime.Now.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
       };
       try
       {
@@ -239,7 +239,7 @@ namespace server.Repositories
         HttpOnly = true,
         Secure = true,
         SameSite = SameSiteMode.Strict,
-        Expires = DateTime.UtcNow.AddHours(-1) // Set expiration date to the past
+        Expires = DateTime.Now.AddHours(-1) // Set expiration date to the past
       };
       try
       {
@@ -258,7 +258,7 @@ namespace server.Repositories
         HttpOnly = true,
         Secure = true,
         SameSite = SameSiteMode.Strict,
-        Expires = DateTime.UtcNow.AddMonths(-1) // Set expiration date to the past
+        Expires = DateTime.Now.AddMonths(-1) // Set expiration date to the past
       };
       try
       {

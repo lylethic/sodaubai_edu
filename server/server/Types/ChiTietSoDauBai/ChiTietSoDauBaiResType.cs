@@ -1,4 +1,4 @@
-﻿using server.Dtos;
+﻿using server.Application.Dtos;
 using server.Types.Week;
 
 namespace server.Types.ChiTietSoDauBai

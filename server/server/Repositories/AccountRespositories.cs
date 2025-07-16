@@ -2,13 +2,13 @@
 using ExcelDataReader;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using server.Dtos;
-using server.Helpers;
-using server.IService;
-using server.Models;
+using server.Application.Dtos;
+using server.Domain.Entities;
 using server.Types.Account;
 using System.Data;
 using System.Text;
+using server.Application.Interfaces;
+using server.Common.Utils;
 
 namespace server.Repositories
 {
@@ -78,7 +78,7 @@ namespace server.Repositories
             SELECT CAST(SCOPE_IDENTITY() as int);
         ";
 
-        acc = acc with { DateCreated = DateTime.UtcNow, DateUpdated = null };
+        acc = acc with { DateCreated = DateTime.Now, DateUpdated = null };
 
         var addItem = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
             new SqlParameter("@Email", acc.Email),
@@ -103,7 +103,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -156,7 +155,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -188,7 +186,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -230,8 +227,7 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        Console.WriteLine($"Error occurred: {ex.Message}, Inner Exception: {ex.InnerException?.Message}");
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
+
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -278,8 +274,7 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        Console.WriteLine($"Error occurred: {ex.Message}, Inner Exception: {ex.InnerException?.Message}");
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
+
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -322,7 +317,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -380,7 +374,7 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        var currentDate = DateTime.UtcNow;
+        var currentDate = DateTime.Now;
         if (currentDate != model.DateUpdated)
         {
           queryBuilder.Append("DateUpdated = @DateUpdated, ");
@@ -409,7 +403,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -439,7 +432,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -448,7 +440,7 @@ namespace server.Repositories
     {
       try
       {
-        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
         if (file is not null && file.Length > 0)
         {
@@ -487,13 +479,13 @@ namespace server.Repositories
                   break;
                 }
 
-                var accountDto = new Dtos.RegisterDto
+                var accountDto = new RegisterDto
                 {
                   RoleId = Convert.ToInt16(reader.GetValue(1)),
                   SchoolId = Convert.ToInt16(reader.GetValue(2)),
                   Email = reader.GetValue(3).ToString() ?? "email",
                   Password = reader.GetValue(4)?.ToString() ?? string.Empty,
-                  DateCreated = DateTime.UtcNow,
+                  DateCreated = DateTime.Now,
                   DateUpdated = null
                 };
 
@@ -575,8 +567,7 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        await transaction.RollbackAsync();
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
+
         throw new Exception($"Server error: {ex.Message}");
       }
     }
@@ -636,7 +627,6 @@ namespace server.Repositories
       }
       catch (Exception ex)
       {
-        return new AccountsResType(500, "Có lỗi xảy ra tại máy chủ. Vui lòng liên hệ quản trị viên để sớm khắc phục");
         throw new Exception($"Server error: {ex.Message}");
       }
     }

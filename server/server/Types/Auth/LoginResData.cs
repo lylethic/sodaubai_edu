@@ -1,4 +1,4 @@
-﻿using server.Dtos;
+﻿using server.Application.Dtos;
 
 namespace server.Types.Auth
 {

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using server.Data;
-using server.Dtos;
-using server.IService;
-using server.Models;
+using server.Application.Dtos;
+using server.Domain.Entities;
 using server.Types.Weekly;
+using server.Application.Interfaces;
 
 namespace server.Repositories
 {
@@ -33,7 +33,7 @@ namespace server.Repositories
           WeekNameEvaluation = model.WeekNameEvaluation,
           TotalScore = await GetTotalScoreByWeekId(model.WeekId),
           Description = model.Description,
-          CreatedAt = DateTime.UtcNow,
+          CreatedAt = DateTime.Now,
           UpdatedAt = null
         };
 
@@ -159,7 +159,7 @@ namespace server.Repositories
         data.Description = model.Description;
         data.WeekNameEvaluation = model.WeekNameEvaluation;
         data.TotalScore = model.TotalScore;
-        data.UpdatedAt = DateTime.UtcNow;
+        data.UpdatedAt = DateTime.Now;
 
         await _context.SaveChangesAsync();
 

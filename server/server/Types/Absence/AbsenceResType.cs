@@ -1,4 +1,4 @@
-﻿using server.Models;
+﻿using server.Domain.Entities;
 
 namespace server.Types.Absence
 {

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using server.Data;
-using server.Dtos;
-using server.IService;
-using server.Models;
+using server.Application.Dtos;
+using server.Domain.Entities;
+using server.Application.Interfaces;
 
 namespace server.Repositories
 {

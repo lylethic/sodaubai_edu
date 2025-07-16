@@ -1,12 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using server.Dtos;
-using server.IService;
-using server.Models;
+using server.Application.Dtos;
+using server.Domain.Entities;
 using server.Types;
 using server.Types.Auth;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using server.Application.Interfaces;
 
 namespace server.Repositories
 {
@@ -110,8 +110,8 @@ namespace server.Repositories
     //   {
     //     AccountId = user.AccountId,
     //     Token = refreshToken,
-    //     ExpiresAt = DateTime.UtcNow.AddMonths(Convert.ToInt16(_config["JwtSettings:RefreshTokenExpirationMonths"])), // Expires của refreshToken 
-    //     CreatedAt = DateTime.UtcNow,
+    //     ExpiresAt = DateTime.Now.AddMonths(Convert.ToInt16(_config["JwtSettings:RefreshTokenExpirationMonths"])), // Expires của refreshToken 
+    //     CreatedAt = DateTime.Now,
     //   };
 
     //   await _context.Sessions.AddAsync(session);
@@ -135,7 +135,7 @@ namespace server.Repositories
     //     {
     //       Token = accessToken,
     //       RefreshToken = refreshToken,
-    //       ExpiresAt = DateTime.UtcNow.AddMonths(Convert.ToInt16(_config["JwtSettings:RefreshTokenExpirationMonths"])).ToString(),
+    //       ExpiresAt = DateTime.Now.AddMonths(Convert.ToInt16(_config["JwtSettings:RefreshTokenExpirationMonths"])).ToString(),
     //     }
     //   };
     // }
@@ -203,8 +203,8 @@ namespace server.Repositories
       {
         AccountId = user.AccountId,
         Token = accessToken,
-        ExpiresAt = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
-        CreatedAt = DateTime.UtcNow,
+        ExpiresAt = DateTime.Now.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+        CreatedAt = DateTime.Now,
       };
 
       await _context.Sessions.AddAsync(session);
@@ -227,7 +227,7 @@ namespace server.Repositories
         Data = new LoginResData
         {
           Token = accessToken,
-          ExpiresAt = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+          ExpiresAt = DateTime.Now.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
         }
       };
     }
@@ -336,8 +336,8 @@ namespace server.Repositories
       {
         AccountId = user.AccountId,
         Token = accessToken,
-        ExpiresAt = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
-        CreatedAt = DateTime.UtcNow,
+        ExpiresAt = DateTime.Now.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+        CreatedAt = DateTime.Now,
       };
 
       await _context.Sessions.AddAsync(tokenResult);
@@ -350,7 +350,7 @@ namespace server.Repositories
         Data = new LoginResData
         {
           Token = accessToken,
-          ExpiresAt = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+          ExpiresAt = DateTime.Now.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
         }
       };
     }

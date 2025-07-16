@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using server.Models;
+using server.Domain.Entities;
 
 namespace server.Data;
 

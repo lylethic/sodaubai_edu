@@ -1,100 +1,55 @@
+using DotNetEnv;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using server;
-using server.Dtos;
-using server.IService;
-using server.Repositories;
+using Microsoft.OpenApi.Models;
+using server.Common.Settings;
+using server.Application.Dtos;
 using System.Text;
 using System.Text.Json.Serialization;
+using System.Data;
+using server.Common.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+Env.Load();
 
 // Add services to the container.
 builder.Services
   .AddControllers(options => options.SuppressAsyncSuffixInActionNames = false) // keep method names with Async visible in routing for clarity or consistency
   .AddJsonOptions(options => options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles); // Prevents infinite reference loops in JSON serialization.
 
-// Connection DB Local
-//builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
-//    options.UseSqlServer(builder.Configuration.GetConnectionString("SoDauBaiContext"))
-//    .EnableDetailedErrors()
-//    .LogTo(Console.WriteLine));
-
-#region: Connection DB with failover mechanism
 builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
 {
-  // Get connection strings
-  var primaryConnectionString = builder.Configuration.GetConnectionString("SoDauBaiContext");
-  var failoverConnectionString = builder.Configuration.GetConnectionString("SoDauBaiContextFailover");
+    var primaryConnectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING_SQLSERVER");
 
-  try
-  {
     options.UseSqlServer(primaryConnectionString)
         .EnableDetailedErrors()
         .LogTo(Console.WriteLine);
-
-    // This line is causing the error - we need to use a different approach
-    //using var context = new server.Data.SoDauBaiContext(options.Options);
-    //context.Database.OpenConnection();
-    //context.Database.CloseConnection();
-  }
-  catch (Exception ex)
-  {
-    Console.WriteLine($"Failed to connect using primary connection: {ex.Message}");
-
-    // Use the failover connection string
-    options.UseSqlServer(failoverConnectionString)
-        .EnableDetailedErrors()
-        .LogTo(Console.WriteLine);
-  }
 });
-#endregion
+
+// Register IDbConnection that gets the connection from DbContext
+builder.Services.AddScoped<IDbConnection>(provider =>
+{
+    var context = provider.GetRequiredService<server.Data.SoDauBaiContext>();
+    return context.Database.GetDbConnection();
+});
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // **CORS Configuration**
 builder.Services.AddCors(options =>
 {
-  options.AddPolicy("MyCors", policy =>
-  {
-    policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials(); // Allow credentials
-  });
+    options.AddPolicy("MyCors", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3001")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); // Allow credentials
+    });
 });
 
-#region: * Inject app Dependencies (Dependecy Injecteion)
-builder.Services.AddScoped<IAuth, AuthRepositories>();
-builder.Services.AddScoped<ITokenService, TokenRepositories>();
-builder.Services.AddScoped<IAccount, AccountRespositories>();
-builder.Services.AddScoped<IRole, RoleRepositories>();
-builder.Services.AddScoped<ISchool, SchoolRepositories>();
-builder.Services.AddScoped<ITeacher, TeacherRepositories>();
-builder.Services.AddScoped<IStudent, StudentRepositories>();
-builder.Services.AddScoped<IAcademicYear, AcademicYearRepositories>();
-builder.Services.AddScoped<ISemester, SemesterRepositories>();
-builder.Services.AddScoped<ISubject, SubjectRepositories>();
-builder.Services.AddScoped<ISubject_Assgm, SubjectAssgmRepositories>();
-builder.Services.AddScoped<IGrade, GradeRepositories>();
-builder.Services.AddScoped<IClass, ClassRepositories>();
-builder.Services.AddScoped<IPhanCongGiangDaySoDauBai, PhanCongGiangDaySoDauBaiRepositories>();
-builder.Services.AddScoped<IClassify, ClassifyRepositories>();
-builder.Services.AddScoped<IBiaSoDauBai, BiaSoDauBaiRepositories>();
-builder.Services.AddScoped<IWeek, WeekRepositories>();
-builder.Services.AddScoped<IChiTietSoDauBai, ChiTietSoDauBaiRepositories>();
-builder.Services.AddScoped<IPC_ChuNhiem, PCChuNhiemRepositories>();
-builder.Services.AddScoped<IRollCall, RollCallRepositories>();
-builder.Services.AddScoped<IRollCallDetail, RollCallDetailRepositories>();
-builder.Services.AddScoped<IWeeklyEvaluation, WeeklyEvaluationRepositories>();
-builder.Services.AddScoped<IMonthlyEvaluation, MonthlyEvaluationRepositories>();
-#endregion
+builder.Services.RegisterServices();
 
 // Load configuration from appsettings.json
 var configuration = new ConfigurationBuilder()
@@ -103,77 +58,106 @@ var configuration = new ConfigurationBuilder()
     .Build();
 
 //Add JWT authentication
-builder.Services.AddAuthentication(options =>
-{
-  options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-  options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-  options.SaveToken = true;
-  options.TokenValidationParameters = new TokenValidationParameters
-  {
-    ValidateIssuer = true,
-    ValidateAudience = true,
-    ValidateLifetime = true,
-    ValidateIssuerSigningKey = true,
-    ValidIssuer = configuration["JwtSettings:Issuer"],
-    ValidAudience = configuration["JwtSettings:Audience"],
-    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!))
-  };
-});
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+        };
+    });
 
 // Cloudinary
 builder.Services.Configure<CloudinarySetting>(builder.Configuration.GetSection("CloudinarySettings"));
-builder.Services.AddScoped<IPhotoService, PhotoRepositories>();
-
-// Add AutoMapper and configure profiles
-builder.Services.AddAutoMapper(typeof(Program));
 
 // Add authorization with a custom policy to check RoleId
 builder.Services.AddAuthorization(options =>
 {
-  options.AddPolicy("SuperAdmin", policy =>
-  {
-    policy.RequireClaim("RoleId", "7");
-  });
+    options.AddPolicy("SuperAdmin", policy =>
+    {
+        policy.RequireClaim("RoleId", "7");
+    });
 
-  options.AddPolicy("Admin", policy =>
-  {
-    policy.RequireClaim("RoleId", "6");
-  });
+    options.AddPolicy("Admin", policy =>
+    {
+        policy.RequireClaim("RoleId", "6");
+    });
 
-  options.AddPolicy("Teacher", policy =>
-  {
-    policy.RequireClaim("RoleId", "2");
-  });
+    options.AddPolicy("Teacher", policy =>
+    {
+        policy.RequireClaim("RoleId", "2");
+    });
 
-  options.AddPolicy("Student", policy =>
-  {
-    policy.RequireClaim("RoleId", "1");
-  });
+    options.AddPolicy("Student", policy =>
+    {
+        policy.RequireClaim("RoleId", "1");
+    });
 
-  options.AddPolicy("AdminAndTeacher", policy =>
-  {
-    policy.RequireClaim("RoleId", "2", "6");
-  });
+    options.AddPolicy("AdminAndTeacher", policy =>
+    {
+        policy.RequireClaim("RoleId", "2", "6");
+    });
 
-  options.AddPolicy("SuperAdminAndAdmin", policy =>
-  {
-    policy.RequireClaim("RoleId", "6", "7");
-  });
+    options.AddPolicy("SuperAdminAndAdmin", policy =>
+    {
+        policy.RequireClaim("RoleId", "6", "7");
+    });
 });
 
-builder.Services.AddIdentityApiEndpoints<IdentityUser>().AddEntityFrameworkStores<server.Data.SoDauBaiContext>();
+builder.Services.RegisterServices();
 
-//
+// Add API Versioning
+builder.Services.AddConfiguredApiVersioning();
+
+builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+                .AddEntityFrameworkStores<server.Data.SoDauBaiContext>();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer 12345abcdef'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" }
+            },
+            new List<string>()
+        }
+    });
+});
+
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 var app = builder.Build();
+
+// ensure database and tables exist
+{
+    using var scope = app.Services.CreateScope();
+    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    await context.Init();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  app.UseSwagger();
-  app.UseSwaggerUI();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
@@ -181,9 +165,12 @@ app.UseHttpsRedirection();
 app.UseCors("MyCors");
 
 app.UseRouting();
-app.UseMiddleware<JWTHeaderMiddleware>();
+//app.UseMiddleware<JWTHeaderMiddleware>();
+app.UseMiddleware<InterceptorHttpLoggingMiddleware>();
+app.UseMiddleware<ErrorHandlerMiddleware>();
 
 app.UseAuthentication();
+
 app.UseAuthorization();
 
 app.MapControllers();

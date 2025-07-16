@@ -44,7 +44,7 @@ const LoginForm = () => {
 		setLoading(true);
 		try {
 			const result = await authApiRequest.login(values);
-			// console.log(result);
+			console.log(result);
 
 			const decodeToken = decodeJWT<JwtAccessTokenPayload>(
 				result.payload.data.token

@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using server.Data;
-using server.Dtos;
-using server.IService;
-using server.Models;
+using server.Application.Dtos;
+using server.Domain.Entities;
 using server.Types.RollCall;
+using server.Application.Interfaces;
 
 namespace server.Repositories
 {
@@ -35,7 +35,7 @@ namespace server.Repositories
           WeekId = model.WeekId,
           DayOfTheWeek = model.DayOfTheWeek,
           DateAt = model.DateAt,
-          DateCreated = DateTime.UtcNow,
+          DateCreated = DateTime.Now,
           DateUpdated = null,
           NumberOfAttendants = model.NumberOfAttendants,
         };
@@ -157,7 +157,7 @@ namespace server.Repositories
         rollCall.DayOfTheWeek = model.DayOfTheWeek;
         rollCall.DateAt = model.DateAt;
         rollCall.NumberOfAttendants = model.NumberOfAttendants;
-        rollCall.DateUpdated = DateTime.UtcNow;
+        rollCall.DateUpdated = DateTime.Now;
 
         await _context.SaveChangesAsync();
 
@@ -303,7 +303,7 @@ namespace server.Repositories
         existingRollCall.DayOfTheWeek = model.DayOfTheWeek;
         existingRollCall.DateAt = model.DateAt;
         existingRollCall.NumberOfAttendants = model.NumberOfAttendants;
-        existingRollCall.DateUpdated = DateTime.UtcNow;
+        existingRollCall.DateUpdated = DateTime.Now;
 
         _context.RollCalls.Update(existingRollCall);
         await _context.SaveChangesAsync();

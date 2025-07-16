@@ -1,8 +1,8 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Options;
-using server.Dtos;
-using server.IService;
+using server.Application.Interfaces;
+using server.Application.Dtos;
 
 namespace server.Repositories
 {
