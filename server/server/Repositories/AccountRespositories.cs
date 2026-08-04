@@ -198,7 +198,7 @@ namespace server.Repositories
       try
       {
         var accountsQuery = from account in _context.Accounts
-                            join role in _context.Roles on account.RoleId equals role.RoleId into roleGroup
+                            join role in _context.Roles on account.RoleId equals role.Id into roleGroup
                             from role in roleGroup.DefaultIfEmpty()
                             join school in _context.Schools on account.SchoolId equals school.SchoolId into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
@@ -245,7 +245,7 @@ namespace server.Repositories
 
         // Use LINQ to join tables and select specific columns
         var accountsQuery = from account in _context.Accounts
-                            join role in _context.Roles on account.RoleId equals role.RoleId into roleGroup
+                            join role in _context.Roles on account.RoleId equals role.Id into roleGroup
                             from role in roleGroup.DefaultIfEmpty()
                             join school in _context.Schools on account.SchoolId equals school.SchoolId into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()

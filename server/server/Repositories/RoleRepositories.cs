@@ -1,20 +1,21 @@
-﻿using ClosedXML.Excel;
+using ClosedXML.Excel;
 using ExcelDataReader;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
 using server.Dtos;
 using server.IService;
+using server.Models;
 using server.Types.Role;
 using System.Text;
 
 namespace server.Repositories
 {
-  public class RoleRepositories : IRole
+  public class RoleRepositories : BaseRepository<Role>, IRole
   {
     private readonly SoDauBaiContext _context;
 
-    public RoleRepositories(SoDauBaiContext context)
+    public RoleRepositories(SoDauBaiContext context) : base(context)
     {
       this._context = context;
     }
@@ -59,26 +60,18 @@ namespace server.Repositories
       }
     }
 
-    public async Task<RoleResType> GetRoles()
+    public async Task<RoleResType> GetRoles(QueryObject request)
     {
       try
       {
-        var query = @"SELECT * FROM Role
-                      ORDER BY RoleId ";
-
-        var roles = await _context.Roles
-          .FromSqlRaw(query)
-          .AsNoTracking()
-          .ToListAsync() ?? throw new Exception("Empty");
-
-        var result = roles.Select(x => new RoleDto
+        var result = await GetOffsetPagedAsync(request.PageSize, (request.PageNumber - 1) * request.PageSize);
+        return new RoleResType(200, "Thành công", new
         {
-          RoleId = x.RoleId,
-          NameRole = x.NameRole,
-          Description = x.Description,
-        }).ToList();
-
-        return new RoleResType(200, "Thành công", result);
+          data = result.Items,
+          pageNumber = result.PageNumber,
+          pageSize = result.PageSize,
+          totalCount = result.TotalCount
+        });
       }
       catch (Exception ex)
       {
@@ -99,7 +92,7 @@ namespace server.Repositories
 
         var result = roles.Select(x => new RoleDto
         {
-          RoleId = x.RoleId,
+          RoleId = x.Id,
           NameRole = x.NameRole,
           Description = x.Description,
 
@@ -375,7 +368,7 @@ namespace server.Repositories
         Console.WriteLine($"ID: {string.Join(",", ids)}");
 
         var roles = await _context.Roles
-          .Where(x => ids.Contains(x.RoleId))
+          .Where(x => ids.Contains(x.Id))
           .ToListAsync();
 
         if (roles is null || !roles.Any())
@@ -396,7 +389,7 @@ namespace server.Repositories
           for (int i = 0; i < roles.Count; i++)
           {
             var role = roles[i];
-            worksheet.Cell(i + 2, 1).Value = role.RoleId;
+            worksheet.Cell(i + 2, 1).Value = role.Id;
             worksheet.Cell(i + 2, 2).Value = role.NameRole;
             worksheet.Cell(i + 2, 3).Value = role.Description;
           }

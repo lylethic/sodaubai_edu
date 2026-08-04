@@ -1,66 +1,41 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using server.Applications;
 using server.Dtos;
+using server.Interfaces;
 using server.IService;
 
-namespace server.Controllers
+namespace server.Controllers.v1
 {
-  [Route("api/[controller]")]
+  [ApiVersion("1.0")]
+  [Route("api/v{version:apiVersion}/[controller]")]
   [ApiController]
   [Authorize]
-  public class RolesController : ControllerBase
+  public class RolesController : BaseApiController
   {
     private readonly IRole _roleRepo;
 
-    public RolesController(IRole roleRepo)
+    public RolesController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IRole roleRepo) : base(mapper, httpContextAccessor, logger)
     {
       _roleRepo = roleRepo;
     }
 
-    [HttpGet("count-number-of-roles")]
-    public async Task<IActionResult> GetCountAccounts()
-    {
-      var result = await _roleRepo.GetCountRoles();
-      return Ok(result);
-    }
-
     // GET: api/Roles`  
     [HttpGet]
-    public async Task<IActionResult> GetRoles(QueryObject? queryObject)
+    public async Task<IActionResult> GetRoles([FromQuery] QueryObject request)
     {
-      queryObject ??= new QueryObject();
-      var result = await _roleRepo.GetRoles();
-
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.RoleData ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
-        var paginagedData = data
-        .Skip((queryObject.PageNumber - 1) * queryObject.PageSize)
-        .Take(queryObject.PageSize)
-        .ToList();
-
-        return StatusCode(200, new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = paginagedData,
-          pagination = new
-          {
-            queryObject.PageNumber,
-            queryObject.PageSize,
-            totalResults,
-            totalPages
-          }
-        });
+        var result = await _roleRepo.GetRoles(request);
+        return Success(result.Data);
+      }
+      catch (Exception ex)
+      {
+        return Error(ex.Message);
       }
 
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
     [HttpGet("get-roles-no-pagination")]

@@ -1,18 +1,27 @@
+using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using server;
 using server.Dtos;
+using server.Interfaces;
 using server.IService;
 using server.Repositories;
+using server.Services.Logging;
 using System.Text;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+builder.Logging.AddSimpleConsole(options =>
+{
+  options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
+  options.SingleLine = true; // Makes logs cleaner
+  options.IncludeScopes = false;
+  options.TimestampFormat = "[HH:mm:ss] ";
+});
 
 // Add services to the container.
 builder.Services
@@ -56,7 +65,45 @@ builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
 #endregion
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+  options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+  {
+    Name = "Authorization",
+    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+    Scheme = "Bearer",
+    BearerFormat = "JWT",
+    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+    Description = "Enter your JWT token."
+  });
+
+  options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+  {
+    {
+      new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+      {
+        Reference = new Microsoft.OpenApi.Models.OpenApiReference
+        {
+          Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+          Id = "Bearer"
+        }
+      },
+      Array.Empty<string>()
+    }
+  });
+});
+builder.Services.AddApiVersioning(options =>
+    {
+      options.DefaultApiVersion = new ApiVersion(1, 0);
+      options.AssumeDefaultVersionWhenUnspecified = true;
+      options.ReportApiVersions = true;
+    })
+    .AddApiExplorer(options =>
+    {
+      options.GroupNameFormat = "'v'VVV";
+      options.SubstituteApiVersionInUrl = true;
+    });
+
 
 // **CORS Configuration**
 builder.Services.AddCors(options =>
@@ -71,6 +118,7 @@ builder.Services.AddCors(options =>
 });
 
 #region: * Inject app Dependencies (Dependecy Injecteion)
+builder.Services.AddTransient<ILogManager, LoggerManager>();
 builder.Services.AddScoped<IAuth, AuthRepositories>();
 builder.Services.AddScoped<ITokenService, TokenRepositories>();
 builder.Services.AddScoped<IAccount, AccountRespositories>();

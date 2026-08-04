@@ -181,8 +181,8 @@ namespace server.Repositories
       }
 
       // Lay ten role
-      var getRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == user.RoleId);
-      var role = getRole?.RoleId;
+      var getRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == user.RoleId);
+      var role = getRole?.Id;
 
       // Add additional claims
       var claims = new List<Claim>()
@@ -318,7 +318,7 @@ namespace server.Repositories
 
 
       // Optionally, log the user in after registering (generate tokens)
-      var getRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleId == user.RoleId);
+      var getRole = await _context.Roles.FirstOrDefaultAsync(r => r.Id == user.RoleId);
       var role = getRole?.NameRole;
       var claims = new List<Claim>
       {

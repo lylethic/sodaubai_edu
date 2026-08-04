@@ -2,7 +2,17 @@
 {
   public class QueryObject
   {
-    public int PageNumber { get; set; } = 1;
-    public int PageSize { get; set; } = 20;
+    private int? _pageNumber;
+    private int? _pageSize;
+    public int PageNumber
+    {
+      get => _pageNumber ?? 1;
+      set => _pageNumber = value;
+    }
+    public int PageSize
+    {
+      get => _pageSize > 100 ? 100 : (_pageSize ?? 20);
+      set => _pageSize = value;
+    }
   }
 }

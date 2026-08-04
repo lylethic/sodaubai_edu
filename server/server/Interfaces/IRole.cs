@@ -5,7 +5,7 @@ namespace server.IService
 {
   public interface IRole
   {
-    Task<RoleResType> GetRoles();
+    Task<RoleResType> GetRoles(QueryObject request);
 
     Task<RoleResType> GetRolesNoPagnination();
 

@@ -10,6 +10,7 @@ namespace server.Types.Role
     public RoleDto? RolebyId { get; set; }
 
     public List<Error>? Errors { get; set; }
+    public object Data { get; set; }
 
     public RoleResType() { }
 
@@ -19,11 +20,11 @@ namespace server.Types.Role
       this.Message = message;
     }
 
-    public RoleResType(int statusCode, string message, List<RoleDto> data)
+    public RoleResType(int statusCode, string message, object data)
     {
       this.StatusCode = statusCode;
       this.Message = message;
-      this.RoleData = data;
+      this.Data = data;
     }
 
     public RoleResType(int statusCode, string message, RoleDto data)
