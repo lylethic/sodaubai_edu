@@ -1,4 +1,4 @@
-﻿namespace server.Dtos
+﻿namespace server.Applications.ResponseModel
 {
   public class PaginatedResponse<T>
   {

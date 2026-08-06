@@ -3,6 +3,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using server.Applications;
+using server.Applications.ResponseModel;
 using server.Dtos;
 using server.Interfaces;
 using server.IService;
@@ -11,7 +12,6 @@ namespace server.Controllers.v1
 {
   [ApiVersion("1.0")]
   [Route("api/v{version:apiVersion}/[controller]")]
-  [ApiController]
   [Authorize]
   public class RolesController : BaseApiController
   {
@@ -20,6 +20,7 @@ namespace server.Controllers.v1
     public RolesController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IRole roleRepo) : base(mapper, httpContextAccessor, logger)
     {
       _roleRepo = roleRepo;
+      _mapper = mapper;
     }
 
     // GET: api/Roles`  
@@ -29,37 +30,18 @@ namespace server.Controllers.v1
       try
       {
         var result = await _roleRepo.GetRoles(request);
-        return Success(result.Data);
+        var data = new PaginatedResponse<RoleDto>
+        {
+          Items = _mapper.Map<IEnumerable<RoleDto>>(result.Items),
+          TotalCount = result.TotalCount,
+          PageNumber = result.PageNumber,
+          PageSize = result.PageSize
+        };
+        return Success(data);
       }
       catch (Exception ex)
       {
         return Error(ex.Message);
-      }
-
-    }
-
-    [HttpGet("get-roles-no-pagination")]
-    public async Task<IActionResult> GetRolesNoPagination()
-    {
-      try
-      {
-        var result = await _roleRepo.GetRolesNoPagnination();
-
-        if (result.StatusCode == 200)
-        {
-          return StatusCode(200, new
-          {
-            statusCode = result.StatusCode,
-            message = result.Message,
-            data = result.RoleData
-          });
-        }
-
-        return StatusCode(500, result);
-      }
-      catch (Exception ex)
-      {
-        return StatusCode(500, $"Server error: {ex.Message}");
       }
     }
 
@@ -68,22 +50,7 @@ namespace server.Controllers.v1
     public async Task<IActionResult> GetRole(int id)
     {
       var result = await _roleRepo.GetRole(id);
-
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.RolebyId
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
+      return Success(_mapper.Map<RoleDto>(result));
     }
 
     // PUT: api/Roles/5
@@ -92,16 +59,7 @@ namespace server.Controllers.v1
     public async Task<IActionResult> PutRole(int id, RoleDto role)
     {
       var result = await _roleRepo.UpdateRole(id, role);
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      return Ok(result);
+      return Success(_mapper.Map<RoleDto>(result));
     }
 
     // POST: api/Roles
@@ -110,21 +68,7 @@ namespace server.Controllers.v1
     public async Task<IActionResult> Create(RoleDto role)
     {
       var result = await _roleRepo.AddRole(role);
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.RoleData
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
+      return Success(_mapper.Map<RoleDto>(result));
     }
 
     // DELETE: api/Roles/5
@@ -133,32 +77,7 @@ namespace server.Controllers.v1
     public async Task<IActionResult> DeleteRole(int id)
     {
       var result = await _roleRepo.DeleteRole(id);
-
-      if (result.StatusCode == 404)
-      {
-        return StatusCode(404, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          error = result.Errors
-        });
-      }
-
-      if (result.StatusCode == 200)
-      {
-        return StatusCode(200, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
-
+      return Success(result);
     }
 
     [Authorize(Policy = "SuperAdminAndAdmin")]
@@ -166,31 +85,7 @@ namespace server.Controllers.v1
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
       var result = await _roleRepo.BulkDelete(ids);
-
-      if (result.StatusCode == 200)
-      {
-        return StatusCode(200, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
-      }
-
-      if (result.StatusCode == 404)
-      {
-        return StatusCode(404, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
-
+      return Success(result);
     }
 
     [Authorize(Policy = "SuperAdminAndAdmin")]
@@ -241,6 +136,5 @@ namespace server.Controllers.v1
 
       return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
-
   }
 }

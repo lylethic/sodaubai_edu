@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using server.Applications.ResponseModel;
 using server.Data;
 using server.Dtos;
 using server.Models;
@@ -34,6 +35,7 @@ namespace server.Repositories
       }
 
       var data = await query
+          .Where(x => x.Deleted == false)
           .OrderBy(x => x.Id)
           .Take(request.Limit + 1)
           .ToListAsync();
@@ -66,6 +68,7 @@ namespace server.Repositories
       var totalCount = await query.CountAsync();
 
       var data = await query
+          .Where(x => x.Deleted == false)
           .OrderBy(x => x.Id)
           .Skip(offset)
           .Take(limit)
@@ -87,7 +90,7 @@ namespace server.Repositories
 
     public async Task<TEntity?> GetByIdAsync(int id)
     {
-      return await _dbSet.FindAsync(id);
+      return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Deleted == false);
     }
 
     public async Task<TEntity> AddAsync(TEntity entity)
@@ -111,6 +114,33 @@ namespace server.Repositories
         return false;
 
       _dbSet.Remove(entity);
+      await _context.SaveChangesAsync();
+      return true;
+    }
+
+    public async Task<bool> SoftDeleteAsync(int id)
+    {
+      var entity = await GetByIdAsync(id);
+      if (entity == null)
+        return false;
+      entity.Deleted = true;
+      entity.DateUpdated = DateTime.Now;
+      _dbSet.Update(entity);
+      await _context.SaveChangesAsync();
+      return true;
+    }
+
+    public async Task<bool> BulkDeleteAsync(List<int> ids)
+    {
+      if (ids is null || ids.Count == 0)
+      {
+        return false;
+      }
+      var entities = await _dbSet.Where(x => ids.Contains(x.Id)).ToListAsync();
+      if (entities.Count == 0)
+        return false;
+
+      _dbSet.RemoveRange(entities);
       await _context.SaveChangesAsync();
       return true;
     }

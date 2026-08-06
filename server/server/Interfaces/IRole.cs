@@ -1,28 +1,26 @@
-﻿using server.Dtos;
+﻿using server.Applications.ResponseModel;
+using server.Dtos;
+using server.Models;
 using server.Types.Role;
 
 namespace server.IService
 {
   public interface IRole
   {
-    Task<RoleResType> GetRoles(QueryObject request);
+    Task<PaginatedResponse<Role>> GetRoles(QueryObject request);
 
-    Task<RoleResType> GetRolesNoPagnination();
+    Task<Role> GetRole(int id);
 
-    Task<RoleResType> GetRole(int id);
+    Task<Role> AddRole(RoleDto role);
 
-    Task<RoleResType> AddRole(RoleDto role);
+    Task<Role> UpdateRole(int id, RoleDto role);
 
-    Task<RoleResType> UpdateRole(int id, RoleDto role);
-
-    Task<RoleResType> DeleteRole(int id);
+    Task<bool> DeleteRole(int id);
 
     Task<string> ImportExcel(IFormFile file);
 
-    Task<RoleResType> BulkDelete(List<int> ids);
+    Task<bool> BulkDelete(List<int> ids);
 
     Task<RoleResType> ExportRolesExcel(List<int> ids, string filePath);
-
-    Task<int> GetCountRoles();
   }
 }

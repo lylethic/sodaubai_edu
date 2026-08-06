@@ -24,6 +24,7 @@
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
     <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
     <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="ClosedXML" Version="0.102.1" />
     <PackageReference Include="CloudinaryDotNet" Version="1.26.0" />
     <PackageReference Include="Dapper" Version="2.1.66" />
@@ -50,6 +51,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Common\" />
     <Folder Include="Domain\" />
     <Folder Include="Services\" />
     <Folder Include="Services\Logging\" />

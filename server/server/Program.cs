@@ -1,9 +1,12 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using server;
+using server.Applications.AutoMappers;
+using server.Common;
 using server.Dtos;
 using server.Interfaces;
 using server.IService;
@@ -33,6 +36,12 @@ builder.Services
 //    options.UseSqlServer(builder.Configuration.GetConnectionString("SoDauBaiContext"))
 //    .EnableDetailedErrors()
 //    .LogTo(Console.WriteLine));
+
+builder.Services.AddControllers(options =>
+{
+  options.Conventions.Add(new RouteTokenTransformerConvention(
+      new SlugifyParameterTransformer()));
+});
 
 #region: Connection DB with failover mechanism
 builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
@@ -142,6 +151,11 @@ builder.Services.AddScoped<IRollCall, RollCallRepositories>();
 builder.Services.AddScoped<IRollCallDetail, RollCallDetailRepositories>();
 builder.Services.AddScoped<IWeeklyEvaluation, WeeklyEvaluationRepositories>();
 builder.Services.AddScoped<IMonthlyEvaluation, MonthlyEvaluationRepositories>();
+builder.Services.AddScoped<IUser, UserRepositories>();
+builder.Services.AddScoped<IPermission, PermissionRepositories>();
+builder.Services.AddScoped<IRolePermission, RolePermissionRepositories>();
+builder.Services.AddScoped<IUserRole, UserRoleRepositories>();
+builder.Services.AddScoped<IUserPermission, UserPermissionRepositories>();
 #endregion
 
 // Load configuration from appsettings.json
@@ -170,6 +184,10 @@ builder.Services.AddAuthentication(options =>
     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JwtSettings:SecretKey"]!))
   };
 });
+
+// AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddAutoMapper(typeof(AppAutomapper));
 
 // Cloudinary
 builder.Services.Configure<CloudinarySetting>(builder.Configuration.GetSection("CloudinarySettings"));

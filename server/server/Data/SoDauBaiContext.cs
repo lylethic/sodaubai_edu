@@ -60,6 +60,12 @@ public partial class SoDauBaiContext : DbContext
 
   public virtual DbSet<WeeklyEvaluation> WeeklyEvaluations { get; set; }
 
+  public virtual DbSet<User> Users { get; set; }
+  public virtual DbSet<Permission> Permissions { get; set; }
+  public virtual DbSet<RolePermission> RolePermissions { get; set; }
+  public virtual DbSet<UserRole> UserRoles { get; set; }
+  public virtual DbSet<UserPermission> UserPermissions { get; set; }
+
   protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
       => optionsBuilder.UseSqlServer("Name=ConnectionStrings:SoDauBaiContext");
 
@@ -776,6 +782,96 @@ public partial class SoDauBaiContext : DbContext
               .HasForeignKey(d => d.WeekId)
               .OnDelete(DeleteBehavior.SetNull)
               .HasConstraintName("FK__WeeklyEva__weekI__2DB1C7EE");
+    });
+
+
+    modelBuilder.Entity<User>(entity =>
+    {
+      entity.ToTable("User");
+      entity.HasKey(e => e.Id);
+      
+      entity.Property(e => e.Id).HasColumnName("Id").UseIdentityColumn();
+      entity.Property(e => e.SchoolId).HasColumnName("SchoolId");
+      entity.Property(e => e.Email).HasColumnName("Email").HasMaxLength(50).IsUnicode(false).IsRequired();
+      entity.HasIndex(e => e.Email).IsUnique();
+      entity.Property(e => e.Username).HasColumnName("Username").HasMaxLength(100).IsUnicode(false);
+      entity.Property(e => e.Avatar).HasColumnName("Avatar").HasMaxLength(500).IsUnicode(false);
+      entity.Property(e => e.PasswordHash).HasColumnName("PasswordHash").HasMaxLength(200).IsUnicode(false).IsRequired();
+      entity.Property(e => e.DateCreated).HasColumnName("DateCreated").HasColumnType("datetime2").HasDefaultValueSql("(getutcdate())");
+      entity.Property(e => e.CreatedBy).HasColumnName("CreatedBy");
+      entity.Property(e => e.DateUpdated).HasColumnName("DateUpdated").HasColumnType("datetime2");
+      entity.Property(e => e.UpdatedBy).HasColumnName("UpdatedBy");
+      entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
+
+      entity.HasOne(d => d.School).WithMany()
+            .HasForeignKey(d => d.SchoolId);
+    });
+
+    modelBuilder.Entity<Permission>(entity =>
+    {
+      entity.ToTable("Permission");
+      entity.HasKey(e => e.Id);
+      
+      entity.Property(e => e.Id).HasColumnName("Id").UseIdentityColumn();
+      entity.Property(e => e.Name).HasColumnName("Name").HasMaxLength(255).IsRequired();
+      entity.Property(e => e.Description).HasColumnName("Description").HasColumnType("nvarchar(max)");
+      entity.Property(e => e.DateCreated).HasColumnName("DateCreated").HasColumnType("datetime2").HasDefaultValueSql("(getutcdate())");
+      entity.Property(e => e.CreatedBy).HasColumnName("CreatedBy");
+      entity.Property(e => e.DateUpdated).HasColumnName("DateUpdated").HasColumnType("datetime2");
+      entity.Property(e => e.UpdatedBy).HasColumnName("UpdatedBy");
+      entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
+    });
+
+    modelBuilder.Entity<RolePermission>(entity =>
+    {
+      entity.ToTable("RolePermission");
+      entity.HasKey(e => new { e.RoleId, e.PermissionId });
+      entity.Ignore(e => e.Id);
+
+      entity.Property(e => e.RoleId).HasColumnName("RoleId");
+      entity.Property(e => e.PermissionId).HasColumnName("PermissionId");
+      entity.Property(e => e.DateCreated).HasColumnName("DateCreated").HasColumnType("datetime").HasDefaultValueSql("(getdate())");
+      entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
+
+      entity.HasOne(d => d.Role).WithMany(p => p.RolePermissions)
+            .HasForeignKey(d => d.RoleId);
+      entity.HasOne(d => d.Permission).WithMany(p => p.RolePermissions)
+            .HasForeignKey(d => d.PermissionId);
+    });
+
+    modelBuilder.Entity<UserRole>(entity =>
+    {
+      entity.ToTable("UserRole");
+      entity.HasKey(e => new { e.RoleId, e.UserId });
+      entity.Ignore(e => e.Id);
+      
+      entity.Property(e => e.RoleId).HasColumnName("RoleId");
+      entity.Property(e => e.UserId).HasColumnName("UserId");
+      entity.Property(e => e.DateCreated).HasColumnName("DateCreated").HasColumnType("datetime2").HasDefaultValueSql("(getutcdate())");
+      entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
+
+      entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)
+            .HasForeignKey(d => d.RoleId);
+      entity.HasOne(d => d.User).WithMany(p => p.UserRoles)
+            .HasForeignKey(d => d.UserId);
+    });
+
+    modelBuilder.Entity<UserPermission>(entity =>
+    {
+      entity.ToTable("UserPermission");
+      entity.HasKey(e => new { e.UserId, e.PermissionId });
+      entity.Ignore(e => e.Id);
+
+      entity.Property(e => e.UserId).HasColumnName("UserId");
+      entity.Property(e => e.PermissionId).HasColumnName("PermissionId");
+      entity.Property(e => e.IsGranted).HasColumnName("IsGranted").HasDefaultValue(true);
+      entity.Property(e => e.DateCreated).HasColumnName("DateCreated").HasColumnType("datetime2").HasDefaultValueSql("(getutcdate())");
+      entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
+
+      entity.HasOne(d => d.User).WithMany(p => p.UserPermissions)
+            .HasForeignKey(d => d.UserId);
+      entity.HasOne(d => d.Permission).WithMany(p => p.UserPermissions)
+            .HasForeignKey(d => d.PermissionId);
     });
 
     OnModelCreatingPartial(modelBuilder);

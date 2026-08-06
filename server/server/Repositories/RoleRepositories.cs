@@ -8,282 +8,87 @@ using server.IService;
 using server.Models;
 using server.Types.Role;
 using System.Text;
+using AutoMapper;
+using server.Applications.ResponseModel;
 
 namespace server.Repositories
 {
   public class RoleRepositories : BaseRepository<Role>, IRole
   {
-    private readonly SoDauBaiContext _context;
+    private readonly IMapper _mapper;
 
-    public RoleRepositories(SoDauBaiContext context) : base(context)
+    public RoleRepositories(SoDauBaiContext context, IMapper mapper) : base(context)
     {
-      this._context = context;
+      this._mapper = mapper;
     }
 
-    public async Task<RoleResType> GetRole(int id)
+    protected override IQueryable<Role> ApplySearchFilter(IQueryable<Role> query, string searchTerm)
     {
-      try
+      query = query.Where(x => x.Deleted == false);
+      if (string.IsNullOrWhiteSpace(searchTerm))
       {
-        var query = @"SELECT * 
-                      FROM ROLE 
-                      WHERE RoleId = @id";
-
-        var role = await _context.Roles
-          .FromSqlRaw(query, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
-
-        if (role is null)
-        {
-          return new RoleResType
-          {
-            StatusCode = 404,
-            Message = "Lỗi xảy ra khi xác thực dữ liệu...",
-            Errors =
-             [
-               new("RoleId", "Không tìm thấy")
-             ]
-          };
-        }
-
-        var result = new RoleDto
-        {
-          RoleId = id,
-          NameRole = role.NameRole,
-          Description = role.Description,
-        };
-
-        return new RoleResType(200, "Thành công", result);
+        return query;
       }
-      catch (Exception ex)
-      {
-        return new RoleResType(500, $"Server error: {ex.Message}");
-      }
+      return query.Where(x => x.NameRole.Contains(searchTerm) || x.Description.Contains(searchTerm));
     }
 
-    public async Task<RoleResType> GetRoles(QueryObject request)
+    public async Task<PaginatedResponse<Role>> GetRoles(QueryObject request)
     {
-      try
+      var result = await GetOffsetPagedAsync(request.PageSize, (request.PageNumber - 1) * request.PageSize, request.Keyword);
+
+      return new PaginatedResponse<Role>
       {
-        var result = await GetOffsetPagedAsync(request.PageSize, (request.PageNumber - 1) * request.PageSize);
-        return new RoleResType(200, "Thành công", new
-        {
-          data = result.Items,
-          pageNumber = result.PageNumber,
-          pageSize = result.PageSize,
-          totalCount = result.TotalCount
-        });
-      }
-      catch (Exception ex)
-      {
-        return new RoleResType(500, $"Có lỗi: {ex.Message}");
-      }
+        Items = result.Items,
+        PageNumber = result.PageNumber,
+        PageSize = result.PageSize,
+        TotalCount = result.TotalCount
+      };
     }
 
-    public async Task<RoleResType> GetRolesNoPagnination()
+    public async Task<Role> GetRole(int id)
     {
-      try
-      {
-
-        var query = @"SELECT * FROM Role";
-
-        var roles = await _context.Roles
-          .FromSqlRaw(query)
-          .ToListAsync() ?? throw new Exception("Empty");
-
-        var result = roles.Select(x => new RoleDto
-        {
-          RoleId = x.Id,
-          NameRole = x.NameRole,
-          Description = x.Description,
-
-        }).ToList();
-
-        return new RoleResType(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new RoleResType(500, $"Có lỗi: {ex.Message}");
-      }
+      var result = await GetByIdAsync(id) ?? throw new Exception("Role not found");
+      return result;
     }
 
-    public async Task<RoleResType> AddRole(RoleDto model)
+    public async Task<Role> AddRole(RoleDto model)
     {
-      try
-      {
-        var findRole = "SELECT * FROM ROLE WHERE RoleId = @roleId";
-
-        var role = await _context.Roles
-          .FromSqlRaw(findRole, new SqlParameter("@roleId", model.RoleId))
-          .FirstOrDefaultAsync();
-
-        if (role is not null)
-        {
-          return new RoleResType
-          {
-            StatusCode = 409,
-            Message = "Lỗi xảy ra khi xác thực dữ liệu...",
-            Errors =
-            [
-              new("NameRole", "Vai trò đã tồn tại")
-            ]
-          };
-        }
-
-        var sqlInsert = @"INSERT INTO ROLE (NameRole, Description) 
-                          VALUES (@NameRole, @Description);
-                          SELECT CAST(SCOPE_IDENTITY() as int);";
-
-        var roleInsert = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
-          new SqlParameter("@NameRole", model.NameRole),
-          new SqlParameter("@Description", model.Description)
-        );
-
-        var result = new RoleDto
-        {
-          RoleId = roleInsert,
-          NameRole = model.NameRole,
-          Description = model.Description,
-        };
-
-        return new RoleResType(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new RoleResType(200, $"Server error: {ex.Message}");
-      }
+      var dto = _mapper.Map<Role>(model);
+      return await this.AddAsync(dto);
     }
 
-    public async Task<RoleResType> DeleteRole(int id)
+    public async Task<bool> DeleteRole(int id)
     {
-      try
-      {
-        var findRole = "SELECT * FROM ROLE WHERE RoleId = @id";
-        var role = await _context.Roles
-          .FromSqlRaw(findRole, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
-
-        if (role is null)
-        {
-          return new RoleResType
-          {
-            StatusCode = 404,
-            Message = "Lỗi xảy ra khi xác thực dữ liệu...",
-            Errors =
-             [
-               new("RoleId", "Vai trò không tìm thấy")
-             ]
-          };
-        }
-
-        var deleteQuery = "DELETE FROM ROLE WHERE RoleId = @id";
-        await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
-        return new RoleResType(200, "Xóa thành công");
-      }
-      catch (Exception ex)
-      {
-        return new RoleResType(500, $"Server error: {ex.Message}");
-      }
+      return await this.SoftDeleteAsync(id);
     }
 
-    public async Task<RoleResType> UpdateRole(int id, RoleDto model)
+    public async Task<Role> UpdateRole(int id, RoleDto model)
     {
-      try
-      {
-        var findRole = "SELECT * FROM ROLE WHERE RoleId = @id";
-        var existingRole = await _context.Roles
-          .FromSqlRaw(findRole, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
+      var existing = await GetByIdAsync(id);
+      if (existing == null) throw new Exception("Role not found");
 
-        if (existingRole is null)
-        {
-          return new RoleResType
-          {
-            StatusCode = 404,
-            Message = "Lỗi xảy ra khi xác thực dữ liệu...",
-            Errors =
-             [
-               new("RoleId", "Vai trò không tìm thấy")
-             ]
-          };
-        }
+      if (!string.IsNullOrEmpty(model.NameRole)) existing.NameRole = model.NameRole;
+      if (model.Description != null) existing.Description = model.Description;
+      
+      existing.DateUpdated = DateTime.Now;
 
-        // flag
-        bool hasChanges = false;
-
-        var queryBuilder = new StringBuilder("UPDATE ROLE SET ");
-        var parameters = new List<SqlParameter>();
-
-        if (!string.IsNullOrEmpty(model.NameRole) && model.NameRole != existingRole.NameRole)
-        {
-          queryBuilder.Append("NameRole = @NameRole, ");
-          parameters.Add(new SqlParameter("@NameRole", model.NameRole));
-          hasChanges = true;
-        }
-
-        if (existingRole.Description != model.Description)
-        {
-          queryBuilder.Append("Description = @Description, ");
-          parameters.Add(new SqlParameter("@Description", model.Description));
-          hasChanges = true;
-        }
-
-        if (hasChanges)
-        {
-          // Remove the last comma and space
-          if (queryBuilder.Length > 0)
-          {
-            queryBuilder.Length -= 2;
-          }
-
-          queryBuilder.Append(" WHERE RoleId = @id");
-          parameters.Add(new SqlParameter("@id", id));
-
-          var updateQuery = queryBuilder.ToString();
-          await _context.Database.ExecuteSqlRawAsync(updateQuery, [.. parameters]);
-
-          return new RoleResType(200, "Cập nhật thành công");
-        }
-        else
-        {
-          return new RoleResType(200, "No changes detected");
-        }
-      }
-      catch (Exception ex)
-      {
-        return new RoleResType(500, $"Server Error: {ex.Message}");
-      }
+      return await this.UpdateAsync(existing);
     }
 
-    public async Task<RoleResType> BulkDelete(List<int> ids)
+    public async Task<bool> BulkDelete(List<int> ids)
     {
       await using var transaction = await _context.Database.BeginTransactionAsync();
-
       try
       {
-        if (ids is null || ids.Count == 0)
-        {
-          return new RoleResType(400, "No IDs provided.");
-        }
-
-        var idList = string.Join(",", ids);
-
-        var deleteQuery = $"DELETE FROM Role WHERE RoleId IN ({idList})";
-
-        var delete = await _context.Database.ExecuteSqlRawAsync(deleteQuery);
-
-        if (delete == 0)
-        {
-          return new RoleResType(404, "No RoleId found to delete");
-        }
-
+        var result = await BulkDeleteAsync(ids);
         await transaction.CommitAsync();
 
-        return new RoleResType(200, "Deleted succesfully");
+        return true;
       }
       catch (Exception ex)
       {
         await transaction.RollbackAsync();
-        return new RoleResType(500, $"Server error: {ex.Message}");
+        return false;
       }
     }
 
@@ -406,19 +211,6 @@ namespace server.Repositories
       catch (Exception ex)
       {
         return new RoleResType(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<int> GetCountRoles()
-    {
-      try
-      {
-        var role = await _context.Roles.CountAsync();
-        return role;
-      }
-      catch (Exception ex)
-      {
-        throw new Exception($"Error: {ex.Message}");
       }
     }
   }

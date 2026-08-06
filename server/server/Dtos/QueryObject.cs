@@ -1,4 +1,6 @@
-﻿namespace server.Dtos
+﻿using Microsoft.AspNetCore.Mvc;
+
+namespace server.Dtos
 {
   public class QueryObject
   {
@@ -14,5 +16,8 @@
       get => _pageSize > 100 ? 100 : (_pageSize ?? 20);
       set => _pageSize = value;
     }
+
+    [FromQuery(Name = "keyword")]
+    public string? Keyword { get; set; } = null;
   }
 }
