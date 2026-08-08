@@ -138,18 +138,17 @@ namespace server.Repositories
           return new LoginResType(false, 401, "Invalid or expired access token.");
         }
 
-        var accountId = principal.FindFirst("AccountId")?.Value;
-        if (string.IsNullOrEmpty(accountId))
+        var userId = principal.FindFirst("UserId")?.Value;
+        if (string.IsNullOrEmpty(userId))
         {
-          return new LoginResType(false, 400, "Account ID claim not found.");
+          return new LoginResType(false, 400, "User ID claim not found.");
         }
 
         // REtrieve
         var tokenStored = _context.Sessions
-                         .Where(id => id.AccountId == Convert.ToInt16(accountId))
+                         .Where(id => id.AccountId == Convert.ToInt16(userId))
                          .OrderByDescending(s => s.ExpiresAt)
                          .FirstOrDefault();
-
 
         if (tokenStored is null)
         {

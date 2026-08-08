@@ -200,7 +200,7 @@ namespace server.Repositories
         var accountsQuery = from account in _context.Accounts
                             join role in _context.Roles on account.RoleId equals role.Id into roleGroup
                             from role in roleGroup.DefaultIfEmpty()
-                            join school in _context.Schools on account.SchoolId equals school.SchoolId into schoolGroup
+                            join school in _context.Schools on account.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
                             where schoolId == null || account.SchoolId == schoolId
                             select new AccountsResData
@@ -209,7 +209,7 @@ namespace server.Repositories
                               RoleId = account.RoleId,
                               SchoolId = account.SchoolId,
                               RoleName = role.NameRole,
-                              SchoolName = school.NameSchool,
+                              SchoolName = school.Name,
                               Email = account.Email,
                               DateCreated = account.DateCreated,
                               DateUpdated = account.DateUpdated
@@ -247,7 +247,7 @@ namespace server.Repositories
         var accountsQuery = from account in _context.Accounts
                             join role in _context.Roles on account.RoleId equals role.Id into roleGroup
                             from role in roleGroup.DefaultIfEmpty()
-                            join school in _context.Schools on account.SchoolId equals school.SchoolId into schoolGroup
+                            join school in _context.Schools on account.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
                             select new AccountsResData
                             {
@@ -255,7 +255,7 @@ namespace server.Repositories
                               RoleId = account.RoleId,
                               SchoolId = account.SchoolId,
                               RoleName = role.NameRole,
-                              SchoolName = school.NameSchool,
+                              SchoolName = school.Name,
                               Email = account.Email,
                               DateCreated = account.DateCreated,
                               DateUpdated = account.DateUpdated
@@ -620,7 +620,7 @@ namespace server.Repositories
             RoleId = account.RoleId,
             SchoolId = account.SchoolId,
             RoleName = account.Role.NameRole,
-            SchoolName = account.School.NameSchool,
+            SchoolName = account.School.Name,
             Email = account.Email,
             DateCreated = account.DateCreated,
             DateUpdated = account.DateUpdated

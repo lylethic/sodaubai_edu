@@ -106,13 +106,13 @@ namespace server.Repositories
                             from classes in classesGroup.DefaultIfEmpty()
                             join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.AcademicYearId into academicYearGroup
                             from academicYear in academicYearGroup.DefaultIfEmpty()
-                            join school in _context.Schools on classes.SchoolId equals school.SchoolId into schoolGroup
+                            join school in _context.Schools on classes.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
                             select new PhanCongData
                             {
                               PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
-                              SchoolId = school.SchoolId,
-                              SchoolName = school.NameSchool,
+                              SchoolId = school.Id,
+                              SchoolName = school.Name,
                               TeacherId = chuNhiem.TeacherId,
                               TeacherName = teacher.Fullname,
                               GradeId = classes.GradeId,
@@ -153,13 +153,13 @@ namespace server.Repositories
                             from classes in classesGroup.DefaultIfEmpty()
                             join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.AcademicYearId into academicYearGroup
                             from academicYear in academicYearGroup.DefaultIfEmpty()
-                            join school in _context.Schools on classes.SchoolId equals school.SchoolId into schoolGroup
+                            join school in _context.Schools on classes.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
                             select new PhanCongData
                             {
                               PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
                               SchoolId = classes.SchoolId,
-                              SchoolName = school.NameSchool,
+                              SchoolName = school.Name,
                               GradeId = classes.GradeId,
                               TeacherId = chuNhiem.TeacherId,
                               TeacherName = teacher.Fullname,
@@ -205,7 +205,7 @@ namespace server.Repositories
                             from classes in classesGroup.DefaultIfEmpty()
                             join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.AcademicYearId into academicYearGroup
                             from academicYear in academicYearGroup.DefaultIfEmpty()
-                            join school in _context.Schools on classes.SchoolId equals school.SchoolId into schoolGroup
+                            join school in _context.Schools on classes.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
                             where teacher.SchoolId == schoolId
                                     && (gradeId == null || classes.GradeId == gradeId)
@@ -214,7 +214,7 @@ namespace server.Repositories
                             {
                               PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
                               SchoolId = classes.SchoolId,
-                              SchoolName = school.NameSchool,
+                              SchoolName = school.Name,
                               TeacherId = chuNhiem.TeacherId,
                               TeacherName = teacher.Fullname,
                               GradeId = classes.GradeId,

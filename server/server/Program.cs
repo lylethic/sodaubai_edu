@@ -129,6 +129,7 @@ builder.Services.AddCors(options =>
 #region: * Inject app Dependencies (Dependecy Injecteion)
 builder.Services.AddTransient<ILogManager, LoggerManager>();
 builder.Services.AddScoped<IAuth, AuthRepositories>();
+builder.Services.AddScoped<IAuths, AuthsRepositories>();
 builder.Services.AddScoped<ITokenService, TokenRepositories>();
 builder.Services.AddScoped<IAccount, AccountRespositories>();
 builder.Services.AddScoped<IRole, RoleRepositories>();
@@ -201,7 +202,7 @@ builder.Services.AddAuthorization(options =>
 {
   options.AddPolicy("SuperAdmin", policy =>
   {
-    policy.RequireClaim("RoleId", "7");
+    policy.RequireClaim("RoleId", "7", "20");
   });
 
   options.AddPolicy("Admin", policy =>

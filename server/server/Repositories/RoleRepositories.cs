@@ -69,7 +69,7 @@ namespace server.Repositories
 
       if (!string.IsNullOrEmpty(model.NameRole)) existing.NameRole = model.NameRole;
       if (model.Description != null) existing.Description = model.Description;
-      
+
       existing.DateUpdated = DateTime.Now;
 
       return await this.UpdateAsync(existing);

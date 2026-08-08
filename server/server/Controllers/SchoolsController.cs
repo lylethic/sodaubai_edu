@@ -1,114 +1,53 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using server.Applications;
+using server.Applications.ResponseModel;
+using server.Common.Settings;
 using server.Dtos;
-using server.IService;
+using server.Interfaces;
 
 namespace server.Controllers
 {
-  [Route("api/[controller]")]
-  [ApiController]
+  [ApiVersion("1.0")]
+  [Route("api/v{version:apiVersion}/[controller]")]
   [Authorize]
-  public class SchoolsController : ControllerBase
+  public class SchoolsController : BaseApiController
   {
     private readonly ISchool _school;
-    public SchoolsController(ISchool school)
+    public SchoolsController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, ISchool school) : base(mapper, httpContextAccessor, logger)
     {
       this._school = school;
+      _mapper = mapper;
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetSchools([FromQuery] QueryObject? queryObject)
+    public async Task<IActionResult> GetSchools([FromQuery] QueryObject request)
     {
-      queryObject ??= new QueryObject();
-      var result = await _school.GetSchools();
-
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.SchoolDetails ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
-        var paginagedData = data
-        .Skip((queryObject.PageNumber - 1) * queryObject.PageSize)
-        .Take(queryObject.PageSize)
-        .ToList();
-
-        return StatusCode(200, new
+        var result = await _school.GetSchools(request);
+        var data = new PaginatedResponse<SchoolDto>
         {
-          status = result.StatusCode,
-          message = result.Message,
-          data = paginagedData,
-          pagination = new
-          {
-            queryObject.PageNumber,
-            queryObject.PageSize,
-            totalResults,
-            totalPages
-          }
-        });
+          Items = _mapper.Map<IEnumerable<SchoolDto>>(result.Items),
+          TotalCount = result.TotalCount,
+          PageNumber = result.PageNumber,
+          PageSize = result.PageSize
+        };
+        return Success(data);
       }
-
-      return StatusCode(500, new
+      catch (Exception ex)
       {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
-    }
-
-    [HttpGet("get-schools-no-pagination")]
-    public async Task<IActionResult> GetSchoolsNoPagination()
-    {
-      var result = await _school.GetSchoolsNoPagnination();
-
-      if (result.StatusCode == 200)
-      {
-        return StatusCode(200, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.SchoolData
-        });
+        return Error(ex.Message);
       }
-
-      return StatusCode(500, result);
     }
 
     [HttpGet, Route("{id}")]
     public async Task<IActionResult> GetSchoolById(int id)
     {
       var result = await _school.GetSchool(id);
-
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.SchoolDetail
-        });
-      }
-
-      if (result.StatusCode == 400)
-      {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      if (result.StatusCode == 404)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
+      return Success(_mapper.Map<SchoolDto>(result));
     }
 
     [HttpGet, Route("get-name-of-school/{id}")]
@@ -125,120 +64,35 @@ namespace server.Controllers
       }
     }
 
-    [Authorize(Policy = "SuperAdmin")]
+    [RequirePermission("CREATE")]
     [HttpPost]
     public async Task<IActionResult> CreateSchool(SchoolDto model)
     {
       var result = await _school.CreateSchool(model);
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = 200,
-          message = result.Message
-        });
-      }
-
-      if (result.StatusCode == 400)
-        return StatusCode(500, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-        });
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
+      return Success(_mapper.Map<SchoolDto>(result));
     }
 
-    [Authorize(Policy = "SuperAdmin")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, SchoolDetail model)
+    public async Task<IActionResult> Update(int id, SchoolDto model)
     {
       var result = await _school.UpdateSchool(id, model);
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = 200,
-          message = result.Message
-        });
-      }
-
-      if (result.StatusCode == 400)
-        return StatusCode(500, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-        });
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
+      return Success(_mapper.Map<SchoolDto>(result));
     }
 
-    [Authorize(Policy = "SuperAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
       var result = await _school.DeleteSchool(id);
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = 200,
-          message = result.Message
-        });
-      }
-
-      if (result.StatusCode == 400)
-        return StatusCode(500, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-        });
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
+      return Success(result);
     }
 
-    [Authorize(Policy = "SuperAdmin")]
     [HttpDelete("bulkdelete")]
-    public async Task<IActionResult> BulKDelete(List<int> ids)
+    public async Task<IActionResult> BulkDelete(List<int> ids)
     {
       var result = await _school.BulkDelete(ids);
-
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = 200,
-          message = result.Message
-        });
-      }
-
-      if (result.StatusCode == 400)
-        return StatusCode(500, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-        });
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message,
-      });
+      return Success(result);
     }
 
-    [Authorize(Policy = "SuperAdmin")]
     [HttpPost("upload")]
     public async Task<IActionResult> ImportExcelFile(IFormFile file)
     {
@@ -266,7 +120,6 @@ namespace server.Controllers
       });
     }
 
-    [Authorize(Policy = "SuperAdmin")]
     [HttpPost("export")]
     public async Task<IActionResult> ExportSchools([FromBody] List<int> ids)
     {

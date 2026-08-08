@@ -1,25 +1,25 @@
-﻿using server.Dtos;
+﻿using server.Applications.ResponseModel;
+using server.Dtos;
+using server.Models;
 using server.Types.School;
 
-namespace server.IService
+namespace server.Interfaces
 {
   public interface ISchool
   {
-    Task<SchoolResType> CreateSchool(SchoolDto model);
+    Task<School> CreateSchool(SchoolDto model);
 
-    Task<SchoolResType> GetSchool(int id);
+    Task<School> GetSchool(int id);
 
     Task<string> GetNameOfSchool(int id);
 
-    Task<SchoolResType> GetSchools();
+    Task<PaginatedResponse<School>> GetSchools(QueryObject request);
 
-    Task<SchoolResType> GetSchoolsNoPagnination();
+    Task<bool> DeleteSchool(int id);
 
-    Task<SchoolResType> DeleteSchool(int id);
+    Task<School> UpdateSchool(int id, SchoolDto model);
 
-    Task<SchoolResType> UpdateSchool(int id, SchoolDetail model);
-
-    Task<ResponseData<string>> BulkDelete(List<int> ids);
+    Task<bool> BulkDelete(List<int> ids);
 
     Task<ResponseData<string>> ImportExcelFile(IFormFile file);
 

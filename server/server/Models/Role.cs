@@ -9,7 +9,7 @@ public partial class Role : IBaseEntity
   public DateTime? DateUpdated { get; set; }
   public int? CreatedBy { get; set; }
   public int? UpdatedBy { get; set; }
-  public bool Deleted { get; set; }
+  public bool Deleted { get; set; } = false;
 
   public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
   public virtual ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();

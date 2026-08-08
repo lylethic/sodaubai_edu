@@ -2,21 +2,17 @@
 {
   public class SchoolDto
   {
-    public int SchoolId { get; set; }
+    public int Id { get; set; }
 
-    public byte ProvinceId { get; set; }
-
-    public byte DistrictId { get; set; }
-
-    public string NameSchool { get; set; } = null!;
-
-    public string Address { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
     public string PhoneNumber { get; set; } = null!;
 
     public string SchoolType { get; set; } = "công lập";
 
     public string? Description { get; set; }
+
+    public int? Level { get; set; } = 0;
   }
 
   public class SchoolDetail : SchoolDto

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using server.Models;
@@ -481,38 +481,23 @@ public partial class SoDauBaiContext : DbContext
 
     modelBuilder.Entity<School>(entity =>
     {
-      entity.HasKey(e => e.SchoolId).HasName("PK__School__129B97994F702CA8");
+      entity.HasKey(e => e.Id).HasName("PK__School__129B97994F702CA8");
 
       entity.ToTable("School");
 
       entity.HasIndex(e => e.PhoneNumber, "UQ__School__4849DA01E5AFEBAE").IsUnique();
 
-      entity.Property(e => e.SchoolId).HasColumnName("schoolId");
-      entity.Property(e => e.Address)
-              .HasMaxLength(200)
-              .HasColumnName("address");
-      entity.Property(e => e.DateCreated)
-              .HasColumnType("datetime")
-              .HasColumnName("dateCreated");
-      entity.Property(e => e.DateUpdated)
-              .HasColumnType("datetime")
-              .HasColumnName("dateUpdated");
-      entity.Property(e => e.Description)
-              .HasMaxLength(100)
-              .HasColumnName("description");
-      entity.Property(e => e.DistrictId).HasColumnName("districtId");
-      entity.Property(e => e.NameSchool)
-              .HasMaxLength(200)
-              .HasColumnName("nameSchool");
-      entity.Property(e => e.PhoneNumber)
-              .HasMaxLength(10)
-              .IsUnicode(false)
-              .IsFixedLength()
-              .HasColumnName("phoneNumber");
-      entity.Property(e => e.ProvinceId).HasColumnName("provinceId");
-      entity.Property(e => e.SchoolType)
-              .HasMaxLength(40)
-              .HasColumnName("schoolType");
+      entity.Property(e => e.Id).HasColumnName("Id");
+      entity.Property(e => e.DateCreated).HasColumnType("datetime");
+      entity.Property(e => e.DateUpdated).HasColumnType("datetime");
+      entity.Property(e => e.Description).HasMaxLength(100);
+      entity.Property(e => e.Name).HasMaxLength(200);
+      entity.Property(e => e.PhoneNumber).HasColumnType("VARCHAR(20)");
+      entity.Property(e => e.SchoolType).HasMaxLength(40);
+      entity.Property(e => e.CreatedBy).HasColumnName("CreatedBy");
+      entity.Property(e => e.UpdatedBy).HasColumnName("UpdatedBy");
+      entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
+      entity.Property(e => e.Level).HasColumnType("INT");
     });
 
     modelBuilder.Entity<Semester>(entity =>
@@ -789,7 +774,7 @@ public partial class SoDauBaiContext : DbContext
     {
       entity.ToTable("User");
       entity.HasKey(e => e.Id);
-      
+
       entity.Property(e => e.Id).HasColumnName("Id").UseIdentityColumn();
       entity.Property(e => e.SchoolId).HasColumnName("SchoolId");
       entity.Property(e => e.Email).HasColumnName("Email").HasMaxLength(50).IsUnicode(false).IsRequired();
@@ -811,7 +796,7 @@ public partial class SoDauBaiContext : DbContext
     {
       entity.ToTable("Permission");
       entity.HasKey(e => e.Id);
-      
+
       entity.Property(e => e.Id).HasColumnName("Id").UseIdentityColumn();
       entity.Property(e => e.Name).HasColumnName("Name").HasMaxLength(255).IsRequired();
       entity.Property(e => e.Description).HasColumnName("Description").HasColumnType("nvarchar(max)");
@@ -844,10 +829,11 @@ public partial class SoDauBaiContext : DbContext
       entity.ToTable("UserRole");
       entity.HasKey(e => new { e.RoleId, e.UserId });
       entity.Ignore(e => e.Id);
-      
+
       entity.Property(e => e.RoleId).HasColumnName("RoleId");
       entity.Property(e => e.UserId).HasColumnName("UserId");
       entity.Property(e => e.DateCreated).HasColumnName("DateCreated").HasColumnType("datetime2").HasDefaultValueSql("(getutcdate())");
+      entity.Property(e => e.DateUpdated).HasColumnName("DateUpdated").HasColumnType("datetime2");
       entity.Property(e => e.Deleted).HasColumnName("Deleted").HasDefaultValue(false);
 
       entity.HasOne(d => d.Role).WithMany(p => p.UserRoles)

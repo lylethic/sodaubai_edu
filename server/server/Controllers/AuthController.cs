@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using server.Dtos;
+using server.Interfaces;
 using server.IService;
 
 namespace server.Controllers
@@ -9,10 +10,10 @@ namespace server.Controllers
   [ApiController]
   public class AuthController : ControllerBase
   {
-    private readonly IAuth _authRepo;
+    private readonly IAuths _authRepo;
     private readonly ITokenService _tokenService;
 
-    public AuthController(IAuth authRepo, ITokenService tokenRepo)
+    public AuthController(IAuths authRepo, ITokenService tokenRepo)
     {
       _authRepo = authRepo;
       _tokenService = tokenRepo;
@@ -41,7 +42,7 @@ namespace server.Controllers
         message = result.Message,
         data = new
         {
-          token = result.Data.Token,
+          token = result.Data!.Token,
           expiresAt = result.Data.ExpiresAt
         }
       });
@@ -64,7 +65,7 @@ namespace server.Controllers
         message = result.Message,
         data = new
         {
-          token = result.Data.Token,
+          token = result.Data!.Token,
           expiresAt = result.Data.ExpiresAt
         }
       });
@@ -82,6 +83,16 @@ namespace server.Controllers
           message = result.Message,
           errors = result.Errors,
           statusCode = result.StatusCode,
+        });
+      }
+
+      if (result.Data == null)
+      {
+        return StatusCode(500, new
+        {
+          isSuccess = false,
+          statusCode = 500,
+          message = "An unexpected error occurred while generating the refresh token data."
         });
       }
 

@@ -10,7 +10,7 @@ public class AppAutomapper : Profile
   public AppAutomapper()
   {
     CreateMap<Role, RoleDto>().ReverseMap();
-    
+
     // User maps
     CreateMap<User, UserDto>().ReverseMap();
     CreateMap<User, CreateUserDto>().ReverseMap();
@@ -35,5 +35,8 @@ public class AppAutomapper : Profile
     CreateMap<UserPermission, UserPermissionDto>().ReverseMap();
     CreateMap<UserPermission, CreateUserPermissionDto>().ReverseMap();
     CreateMap<UserPermission, UpdateUserPermissionDto>().ReverseMap();
+
+    // School
+    CreateMap<School, SchoolDto>().ReverseMap();
   }
 }

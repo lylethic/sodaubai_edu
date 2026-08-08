@@ -62,7 +62,7 @@ namespace server.Repositories
 
         // Check if schoolId exists
         var schoolExists = await _context.Schools
-            .AnyAsync(c => c.SchoolId == model.SchoolId);
+            .AnyAsync(c => c.Id == model.SchoolId);
 
         if (!schoolExists)
         {
@@ -162,7 +162,7 @@ namespace server.Repositories
             {
               BiaSoDauBaiId = x.BiaSoDauBaiId,
               SchoolId = x.SchoolId,
-              SchoolName = x.School.NameSchool,
+              SchoolName = x.School.Name,
               AcademicyearId = x.AcademicyearId,
               NienKhoaName = x.Academicyear.DisplayAcademicYearName,
               ClassId = x.ClassId,
@@ -259,7 +259,7 @@ namespace server.Repositories
         var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
                                join lop in _context.Classes on biaSo.ClassId equals lop.ClassId into lopHocGroup
                                from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.SchoolId into schoolGroup
+                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
                                from truong in schoolGroup.DefaultIfEmpty()
                                join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.AcademicYearId into nienkhoaGroup
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
@@ -267,7 +267,7 @@ namespace server.Repositories
                                {
                                  BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
                                  SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.NameSchool,
+                                 SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
                                  NienKhoaName = nienKhoa.DisplayAcademicYearName,
                                  ClassId = biaSo.ClassId,
@@ -309,7 +309,7 @@ namespace server.Repositories
         var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
                                join lop in _context.Classes on biaSo.ClassId equals lop.ClassId into lopHocGroup
                                from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.SchoolId into schoolGroup
+                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
                                from truong in schoolGroup.DefaultIfEmpty()
                                join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.AcademicYearId into nienkhoaGroup
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
@@ -317,7 +317,7 @@ namespace server.Repositories
                                {
                                  BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
                                  SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.NameSchool,
+                                 SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
                                  NienKhoaName = nienKhoa.DisplayAcademicYearName,
                                  ClassId = biaSo.ClassId,
@@ -358,7 +358,7 @@ namespace server.Repositories
         var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
                                join lop in _context.Classes on biaSo.ClassId equals lop.ClassId into lopHocGroup
                                from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.SchoolId into schoolGroup
+                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
                                from truong in schoolGroup.DefaultIfEmpty()
                                join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.AcademicYearId into nienkhoaGroup
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
@@ -366,7 +366,7 @@ namespace server.Repositories
                                {
                                  BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
                                  SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.NameSchool,
+                                 SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
                                  NienKhoaName = nienKhoa.DisplayAcademicYearName,
                                  ClassId = biaSo.ClassId,
@@ -407,7 +407,7 @@ namespace server.Repositories
         var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
                                join lop in _context.Classes on biaSo.ClassId equals lop.ClassId into lopHocGroup
                                from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.SchoolId into schoolGroup
+                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
                                from truong in schoolGroup.DefaultIfEmpty()
                                join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.AcademicYearId into nienkhoaGroup
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
@@ -415,7 +415,7 @@ namespace server.Repositories
                                {
                                  biaSo.BiaSoDauBaiId,
                                  biaSo.SchoolId,
-                                 truong.NameSchool,
+                                 truong.Name,
                                  biaSo.AcademicyearId,
                                  nienKhoa.DisplayAcademicYearName,
                                  biaSo.ClassId,
@@ -437,7 +437,7 @@ namespace server.Repositories
         {
           BiaSoDauBaiId = x.BiaSoDauBaiId,
           SchoolId = x.SchoolId,
-          SchoolName = x.NameSchool ?? string.Empty,
+          SchoolName = x.Name ?? string.Empty,
           AcademicyearId = x.AcademicyearId,
           NienKhoaName = x.DisplayAcademicYearName ?? string.Empty,
           ClassId = x.ClassId,
@@ -471,7 +471,7 @@ namespace server.Repositories
         var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
                                join lop in _context.Classes on biaSo.ClassId equals lop.ClassId into lopHocGroup
                                from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.SchoolId into schoolGroup
+                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
                                from truong in schoolGroup.DefaultIfEmpty()
                                join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.AcademicYearId into nienkhoaGroup
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
@@ -481,7 +481,7 @@ namespace server.Repositories
                                {
                                  BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
                                  SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.NameSchool,
+                                 SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
                                  NienKhoaName = nienKhoa.DisplayAcademicYearName,
                                  ClassId = biaSo.ClassId,
@@ -766,7 +766,7 @@ namespace server.Repositories
         x.ClassId,
         x.SchoolId,
         x.AcademicyearId,
-        SchoolName = x.School.NameSchool,
+        SchoolName = x.School.Name,
         ClassName = x.Class.ClassName,
         NienKhoaName = x.Academicyear.DisplayAcademicYearName,
         TenGiaoVienChuNhiem = x.Class.Teacher.Fullname,

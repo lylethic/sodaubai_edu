@@ -65,7 +65,7 @@ namespace server.Repositories
         query = ApplySearchFilter(query, searchTerm);
       }
 
-      var totalCount = await query.CountAsync();
+      var totalCount = await query.Where(x => x.Deleted == false).CountAsync();
 
       var data = await query
           .Where(x => x.Deleted == false)
