@@ -1,21 +1,23 @@
-﻿using server.Dtos;
+using server.Applications.ResponseModel;
+using server.Dtos;
 using server.Types.LopHoc;
 
 namespace server.IService
 {
   public interface IClass
   {
-    Task<ResponseData<ClassDto>> CreateClass(ClassDto model);
-    Task<ResponseData<ClassDetails>> GetClass(int id);
-    Task<ResponseData<ClassDto>> GetClassDetail(int id);
-    Task<ResponseData<List<ClassList>>> ClassList(QueryObject? queryObject);
-    Task<ResponseData<List<ClassDetails>>> GetClasses();
-    Task<ResponseData<ClassDetails>> GetLopChuNhiemByTeacherID(int teacherId);
-    Task<ResponseData<ClassDto>> DeleteClass(int id);
-    Task<ResponseData<ClassDto>> UpdateClass(int id, ClassDto model);
-    Task<ResponseData<string>> ImportExcel(IFormFile file);
-    Task<ResponseData<string>> BulkDelete(List<int> ids);
-    Task<ResponseData<List<ClassDetails>>> GetClassesBySchool(int schoolId);
-    Task<ResponseData<List<ClassDto>>> CreateClasses(List<ClassDto> models);
+    Task<ClassDto> CreateClass(ClassDto model);
+    Task<ClassDetails> GetClass(int id);
+    Task<ClassDto> GetClassDetail(int id);
+    Task<PaginatedResponse<ClassList>> ClassList(QueryObject? queryObject);
+    Task<List<ClassDetails>> GetClasses(QueryObject? queryObject);
+    Task<ClassDetails> GetLopChuNhiemByTeacherID(int teacherId);
+    Task<bool> DeleteClass(int id);
+    Task<ClassDto> UpdateClass(int id, ClassDto model);
+    Task<string> ImportExcel(IFormFile file);
+    Task<bool> BulkDelete(List<int> ids);
+    Task<PaginatedResponse<ClassDetails>> GetClassesBySchool(int schoolId, QueryObject? queryObject);
+    Task<List<ClassDetails>> GetClassesBySchoolNoLimit(int schoolId);
+    Task<List<ClassDto>> CreateClasses(List<ClassDto> models);
   }
 }

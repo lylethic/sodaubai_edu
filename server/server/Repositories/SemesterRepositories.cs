@@ -98,7 +98,7 @@ namespace server.Repositories
             AcademicYearId = x.AcademicYearId,
             AcademicYear = new AcademicYear
             {
-              DisplayAcademicYearName = x.AcademicYear.DisplayAcademicYearName,
+              Name = x.AcademicYear.Name,
               YearStart = x.AcademicYear.YearStart,
               YearEnd = x.AcademicYear.YearEnd,
             }
@@ -119,7 +119,7 @@ namespace server.Repositories
           Status = semester.Status,
           Description = semester.Description,
           AcademicYearId = semester.AcademicYearId,
-          DisplayAcademicYearName = semester.AcademicYear.DisplayAcademicYearName,
+          DisplayAcademicYearName = semester.AcademicYear.Name,
           YearStart = semester.AcademicYear.YearStart,
           YearEnd = semester.AcademicYear.YearEnd,
         };
@@ -163,7 +163,7 @@ namespace server.Repositories
           Status = x.Status,
           Description = x.Description,
           AcademicYearId = x.AcademicYearId,
-          DisplayAcademicYearName = x.AcademicYear.DisplayAcademicYearName,
+          DisplayAcademicYearName = x.AcademicYear.Name,
           YearStart = x.AcademicYear.YearStart,
           YearEnd = x.AcademicYear.YearEnd,
         }).ToList();

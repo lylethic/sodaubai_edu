@@ -1,4 +1,4 @@
-﻿using ExcelDataReader;
+using ExcelDataReader;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
@@ -101,9 +101,9 @@ namespace server.Repositories
               s.DateCreated,
               s.DateUpdated,
               s.Account.SchoolId,
-              s.Account.School.Name,
+              SchoolName = s.Account.School.Name,
               s.Account.Email,
-              s.Class.ClassName,
+              ClassName = s.Class.Name,
               s.Address,
               s.DateOfBirth
             })
@@ -128,7 +128,7 @@ namespace server.Repositories
           DateCreated = student.DateCreated,
           DateUpdated = student.DateUpdated,
           SchoolId = student.SchoolId,
-          SchoolName = student.Name,
+          SchoolName = student.SchoolName,
           Email = student.Email,
           ClassName = student.ClassName,
           Address = student.Address,
@@ -167,7 +167,7 @@ namespace server.Repositories
                                      Email = account.Email,
                                      SchoolId = account.SchoolId,
                                      SchoolName = account.School.Name,
-                                     ClassName = student.Class.ClassName,
+                                     ClassName = student.Class.Name,
                                      Address = student.Address,
                                      DateOfBirth = student.DateOfBirth,
                                    };
@@ -212,7 +212,7 @@ namespace server.Repositories
                                      Email = account.Email,
                                      SchoolId = account.SchoolId,
                                      SchoolName = account.School.Name,
-                                     ClassName = student.Class.ClassName,
+                                     ClassName = student.Class.Name,
                                      Address = student.Address,
                                      DateOfBirth = student.DateOfBirth,
                                    };

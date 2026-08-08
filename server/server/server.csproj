@@ -57,6 +57,7 @@
     <Folder Include="Domain\" />
     <Folder Include="Services\" />
     <Folder Include="Services\Logging\" />
+    <Folder Include="Applications\Search\" />
   </ItemGroup>
 
 </Project>

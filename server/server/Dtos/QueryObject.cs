@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
 namespace server.Dtos
 {
@@ -19,5 +19,17 @@ namespace server.Dtos
 
     [FromQuery(Name = "keyword")]
     public string? Keyword { get; set; } = null;
+
+    [FromQuery(Name = "gradeId")]
+    public int? GradeId { get; set; }
+
+    [FromQuery(Name = "teacherId")]
+    public int? TeacherId { get; set; }
+
+    [FromQuery(Name = "academicYearId")]
+    public int? AcademicYearId { get; set; }
+
+    [FromQuery(Name = "schoolId")]
+    public int? SchoolId { get; set; }
   }
 }

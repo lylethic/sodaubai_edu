@@ -1,292 +1,166 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Asp.Versioning;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using server.Applications;
 using server.Dtos;
+using server.Interfaces;
 using server.IService;
 
 namespace server.Controllers
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  [Authorize]
-  public class ClassesController : ControllerBase
+  [ApiVersion("1.0")]
+  [Route("api/v{version:apiVersion}/[controller]")]
+  public class ClassesController : BaseApiController
   {
     private readonly IClass _func;
 
-    public ClassesController(IClass func)
+    public ClassesController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IClass func) : base(mapper, httpContextAccessor, logger)
     {
       this._func = func;
     }
 
-    // GET: api/<ClassesController>
     [HttpGet]
     public async Task<IActionResult> GetAllClasses([FromQuery] QueryObject? queryObject)
     {
-      queryObject ??= new QueryObject();
-      var result = await _func.GetClasses();
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.Data ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
-        var paginatedData = data.Skip((queryObject.PageNumber - 1) * queryObject.PageSize).Take(queryObject.PageSize).ToList();
+        queryObject ??= new QueryObject();
+        var paginatedData = await _func.GetClasses(queryObject);
 
-        return Ok(new
+        var meta = new
         {
-          status = result.StatusCode,
-          message = result.Message,
-          data = paginatedData,
-          pagination = new
-          {
-            queryObject.PageNumber,
-            queryObject.PageSize,
-            totalResults,
-            totalPages,
-          }
-        });
-      }
+          queryObject.PageNumber,
+          queryObject.PageSize,
+          count = paginatedData.Count
+        };
 
-      if (result.StatusCode == 404)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        return Success(new { data = paginatedData, meta = meta });
       }
-
-      return StatusCode(500, new
+      catch (Exception ex)
       {
-        status = result.StatusCode,
-        message = result.Message
-      });
+        return Error(ex.Message);
+      }
     }
 
     [HttpGet("class-list")]
     public async Task<IActionResult> GetClasses([FromQuery] QueryObject? queryObject)
     {
-      var result = await _func.ClassList(queryObject);
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
+        var result = await _func.ClassList(queryObject);
+        return Success(new
         {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
+          data = result.Items,
+          pagination = new
+          {
+            result.PageNumber,
+            result.PageSize,
+            result.TotalCount,
+            totalPages = (int)Math.Ceiling((double)result.TotalCount / result.PageSize)
+          }
         });
       }
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex.Message);
       }
-      return StatusCode(500, result);
     }
 
     [HttpGet, Route("get-class-by-school")]
     public async Task<IActionResult> GetClassesBySchool([FromQuery] int schoolId, [FromQuery] QueryObject? queryObject)
     {
-      queryObject ??= new QueryObject();
-      var result = await _func.GetClassesBySchool(schoolId);
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.Data ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
-        var paginatedData = data.Skip((queryObject.PageNumber - 1) * queryObject.PageSize).Take(queryObject.PageSize).ToList();
-
-        return Ok(new
+        if (schoolId == 0) return Error("Vui lòng nhập mã trường học");
+        var result = await _func.GetClassesBySchool(schoolId, queryObject);
+        return Success(new
         {
-          status = result.StatusCode,
-          message = result.Message,
-          data = paginatedData,
+          data = result.Items,
           pagination = new
           {
-            queryObject.PageNumber,
-            queryObject.PageSize,
-            totalResults,
-            totalPages,
+            result.PageNumber,
+            result.PageSize,
+            result.TotalCount,
+            totalPages = (int)Math.Ceiling((double)result.TotalCount / result.PageSize)
           }
         });
       }
-
-      if (result.StatusCode == 204)
+      catch (Exception ex)
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex.Message);
       }
-
-      if (result.StatusCode == 400)
-      {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
     [HttpGet("get-class-by-school-no-limit")]
-    public async Task<IActionResult> GetClassesBySchool([FromQuery] int schoolId)
+    public async Task<IActionResult> GetClassesBySchoolNoLimit([FromQuery] int schoolId)
     {
-      var result = await _func.GetClassesBySchool(schoolId);
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.Data ?? [];
-        var totalResults = data.Count;
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data,
-          pagination = new
-          {
-            totalResults,
-          }
-        });
+        var result = await _func.GetClassesBySchoolNoLimit(schoolId);
+        return Success(result);
       }
-
-      return StatusCode(result.StatusCode, new
+      catch (Exception ex)
       {
-        status = result.StatusCode,
-        message = result.Message
-      });
+        return Error(ex.Message);
+      }
     }
 
-
-    // GET api/<ClassesController>/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-      var result = await _func.GetClass(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _func.GetClass(id);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex.Message);
       }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
     [HttpGet("lop-chu-nhiem/{id}")]
     public async Task<IActionResult> GetLopChuNhiemByTeacherId(int id)
     {
-      var result = await _func.GetLopChuNhiemByTeacherID(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _func.GetLopChuNhiemByTeacherID(id);
+        return Success(result);
       }
-
-      return StatusCode(result.StatusCode, new
+      catch (Exception ex)
       {
-        status = result.StatusCode,
-        message = result.Message
-      });
+        return Error(ex.Message);
+      }
     }
 
-    // GET api/<ClassesController>/5
     [HttpGet("get-detail/{id}")]
     public async Task<IActionResult> GetDetail(int id)
     {
-      var result = await _func.GetClassDetail(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _func.GetClassDetail(id);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex.Message);
       }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
-
-    // POST api/<ClassesController>
     [HttpPost]
     [Authorize(Policy = "SuperAdminAndAdmin")]
     public async Task<IActionResult> CreateClass(ClassDto model)
     {
-      var result = await _func.CreateClass(model);
-
-      if (result.StatusCode == 404)
+      try
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        var result = await _func.CreateClass(model);
+        return Success(result);
       }
-      if (result.StatusCode == 409)
+      catch (Exception ex)
       {
-        return StatusCode(409, new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex.Message);
       }
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
-      }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
     [HttpPost("create")]
@@ -294,168 +168,78 @@ namespace server.Controllers
     {
       if (models == null || models.Count == 0)
       {
-        return BadRequest(new
-        {
-          status = 400,
-          message = "The request body must contain a non-empty list of ClassDto objects."
-        });
+        return Error("The request body must contain a non-empty list of ClassDto objects.");
       }
 
-      var result = await _func.CreateClasses(models);
-
-      if (result.StatusCode == 404)
+      try
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        var result = await _func.CreateClasses(models);
+        return Success(result);
       }
-
-      if (result.StatusCode == 409)
+      catch (Exception ex)
       {
-        return Conflict(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex.Message);
       }
-
-      if (result.StatusCode == 200)
-      {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = "Classes created successfully.",
-          data = result.Data
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
-    // PUT api/<ClassesController>/5
     [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateClass(int id, ClassDto model)
     {
-      var result = await _func.UpdateClass(id, model);
-
-      if (result.StatusCode == 404)
+      try
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        var result = await _func.UpdateClass(id, model);
+        return Success(result);
       }
-      if (result.StatusCode == 200)
+      catch (Exception ex)
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        return Error(ex.Message);
       }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
-    // DELETE api/<ClassesController>/5
     [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteClass(int id)
     {
-      var result = await _func.DeleteClass(id);
-
-      if (result.StatusCode == 404)
+      try
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        await _func.DeleteClass(id);
+        return Success("Đã xóa thành công");
       }
-      if (result.StatusCode == 200)
+      catch (Exception ex)
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        return Error(ex.Message);
       }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
 
     [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPost("upload")]
     public async Task<IActionResult> UploadExcelFile(IFormFile file)
     {
-      var result = await _func.ImportExcel(file);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        var result = await _func.ImportExcel(file);
+        return Success(result);
       }
-      if (result.StatusCode == 400)
+      catch (Exception ex)
       {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex.Message);
       }
-
-      return StatusCode(500, new { message = result.Message });
-
     }
 
     [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("bulkdelete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var result = await _func.BulkDelete(ids);
-
-      if (result.StatusCode == 404)
+      try
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message
-        });
+        await _func.BulkDelete(ids);
+        return Success("Thành công");
       }
-
-      if (result.StatusCode == 200)
+      catch (Exception ex)
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        return Error(ex.Message);
       }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message
-      });
     }
   }
 }

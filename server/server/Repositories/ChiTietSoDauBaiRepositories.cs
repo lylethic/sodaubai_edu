@@ -204,7 +204,7 @@ namespace server.Repositories
         var result = from ct in _context.ChiTietSoDauBais
                      join b in _context.BiaSoDauBais on ct.BiaSoDauBaiId equals b.BiaSoDauBaiId into bGroup
                      from b in bGroup.DefaultIfEmpty()
-                     join c in _context.Classes on b.ClassId equals c.ClassId into cGroup
+                     join c in _context.Classes on b.ClassId equals c.Id into cGroup
                      from c in cGroup.DefaultIfEmpty()
                      join t in _context.Teachers on c.TeacherId equals t.TeacherId into tGroup
                      from t in tGroup.DefaultIfEmpty()
@@ -216,7 +216,7 @@ namespace server.Repositories
                      {
                        ChiTietSoDauBaiId = ct.ChiTietSoDauBaiId,
                        BiaSoDauBaiId = ct.BiaSoDauBaiId,
-                       ClassName = c.ClassName,
+                       ClassName = c.Name,
                        SemesterId = ct.SemesterId,
                        SemesterName = ct.Semester.SemesterName,
                        WeekId = ct.WeekId,
@@ -346,7 +346,7 @@ namespace server.Repositories
                                             HocKy = semester.SemesterName,
                                             TenTuanHoc = week.WeekName,
                                             MonHoc = subject.SubjectName,
-                                            TenLop = bia.Class.ClassName,
+                                            TenLop = bia.Class.Name,
                                             XepLoai = xepLoai.ClassifyName
                                           });
 
@@ -548,7 +548,7 @@ namespace server.Repositories
           SchoolId = ct.BiaSoDauBai.SchoolId,
           ClassId = ct.BiaSoDauBai.ClassId,
           AcademicyearId = ct.BiaSoDauBai.AcademicyearId,
-          ClassName = ct.BiaSoDauBai.Class.ClassName,
+          ClassName = ct.BiaSoDauBai.Class.Name,
           TeacherId = ct.BiaSoDauBai.Class.TeacherId,
           TeacherFullName = ct.BiaSoDauBai.Class.Teacher.Fullname
         })
@@ -634,7 +634,7 @@ namespace server.Repositories
         var result = from ct in _context.ChiTietSoDauBais
                      join b in _context.BiaSoDauBais on ct.BiaSoDauBaiId equals b.BiaSoDauBaiId into bGroup
                      from b in bGroup.DefaultIfEmpty()
-                     join c in _context.Classes on b.ClassId equals c.ClassId into cGroup
+                     join c in _context.Classes on b.ClassId equals c.Id into cGroup
                      from c in cGroup.DefaultIfEmpty()
                      join t in _context.Teachers on c.TeacherId equals t.TeacherId into tGroup
                      from t in tGroup.DefaultIfEmpty()
@@ -647,7 +647,7 @@ namespace server.Repositories
                      {
                        ChiTietSoDauBaiId = ct.ChiTietSoDauBaiId,
                        BiaSoDauBaiId = ct.BiaSoDauBaiId,
-                       ClassName = c.ClassName,
+                       ClassName = c.Name,
                        SemesterId = ct.SemesterId,
                        SemesterName = ct.Semester.SemesterName,
                        WeekId = ct.WeekId,
@@ -874,7 +874,7 @@ namespace server.Repositories
                                         HocKy = semester.SemesterName,
                                         TenTuanHoc = week.WeekName,
                                         MonHoc = subject.SubjectName,
-                                        TenLop = bia.Class.ClassName,
+                                        TenLop = bia.Class.Name,
                                         XepLoai = xepLoai.ClassifyName
                                       }).ToListAsync();
 

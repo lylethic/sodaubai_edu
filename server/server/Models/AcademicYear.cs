@@ -1,10 +1,12 @@
-﻿namespace server.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
-public partial class AcademicYear
+namespace server.Models;
+
+public partial class AcademicYear : IBaseEntity
 {
-  public int AcademicYearId { get; set; }
+  public int Id { get; set; }
 
-  public string DisplayAcademicYearName { get; set; } = null!;
+  public string Name { get; set; } = null!;
 
   public DateTime? YearStart { get; set; }
 
@@ -13,6 +15,14 @@ public partial class AcademicYear
   public string? Description { get; set; }
 
   public bool Status { get; set; }
+
+  public bool Deleted { get; set; } = false;
+
+  public DateTime? DateCreated { get; set; }
+
+  public DateTime? DateUpdated { get; set; }
+
+  public string DisplayAcademicYearName => $"{YearStart?.Year} - {YearEnd?.Year}";
 
   public virtual ICollection<BiaSoDauBai> BiaSoDauBais { get; set; } = new List<BiaSoDauBai>();
 

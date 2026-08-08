@@ -98,7 +98,7 @@ namespace server.Repositories
               GradeId = x.Class.GradeId,
               GradeName = x.Class.Grade.GradeName,
               TeacherId = x.TeacherId,
-              ClassName = x.Class.ClassName,
+              ClassName = x.Class.Name,
               TotalScore = x.TotalScore,
             })
             .AsNoTracking()

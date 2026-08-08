@@ -1,8 +1,13 @@
-﻿namespace server.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace server.Models;
 
 public partial class School : IBaseEntity
 {
-  public int Id { get; set; }
+  public int SchoolId { get; set; }
+
+  [NotMapped]
+  public int Id { get => SchoolId; set => SchoolId = value; }
 
   public string Name { get; set; } = null!;
 

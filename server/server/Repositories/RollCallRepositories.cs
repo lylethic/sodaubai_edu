@@ -240,7 +240,7 @@ namespace server.Repositories
         var queryObject = from rollcall in _context.RollCalls
                           join w in _context.Weeks on rollcall.WeekId equals w.WeekId into weekGroup
                           from w in weekGroup.DefaultIfEmpty()
-                          join cl in _context.Classes on rollcall.ClassId equals cl.ClassId into classGroup
+                          join cl in _context.Classes on rollcall.ClassId equals cl.Id into classGroup
                           from cl in classGroup.DefaultIfEmpty()
                           where rollcall.WeekId == weekId && (classId == null || rollcall.ClassId == classId)
                           select new RollCallRes()
@@ -249,7 +249,7 @@ namespace server.Repositories
                             WeekId = rollcall.WeekId,
                             WeekName = w.WeekName,
                             ClassId = rollcall.ClassId,
-                            ClassName = cl.ClassName,
+                            ClassName = cl.Name,
                             DayOfTheWeek = rollcall.DayOfTheWeek,
                             DateAt = rollcall.DateAt,
                             DateCreated = rollcall.DateCreated,

@@ -1,4 +1,4 @@
-﻿using ExcelDataReader;
+using ExcelDataReader;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using server.Data;
@@ -95,7 +95,7 @@ namespace server.Repositories
             x.DateCreated,
             x.DateUpdated,
             x.AcademicYearId,
-            displayName = x.AcademicYear.DisplayAcademicYearName,
+            displayName = x.AcademicYear.Name,
             yearStart = x.AcademicYear.YearStart,
             yearEnd = x.AcademicYear.YearEnd,
           })
@@ -142,7 +142,7 @@ namespace server.Repositories
           {
             x.GradeId,
             x.AcademicYearId,
-            x.AcademicYear.DisplayAcademicYearName,
+            DisplayAcademicYearName = x.AcademicYear.DisplayAcademicYearName,
             x.AcademicYear.YearStart,
             x.AcademicYear.YearEnd,
             x.GradeName,
@@ -367,7 +367,7 @@ namespace server.Repositories
                   break;
                 }
                 var acaId = Convert.ToInt16(reader.GetValue(1));
-                var acadExisting = await _context.AcademicYears.AnyAsync(x => x.AcademicYearId == acaId);
+                var acadExisting = await _context.AcademicYears.AnyAsync(x => x.Id == acaId);
 
                 var myGrades = new Models.Grade
                 {

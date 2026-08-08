@@ -74,7 +74,7 @@ namespace server.Repositories
         var querySubject = from sub in _context.Subjects
                            join grade in _context.Grades on sub.GradeId equals grade.GradeId into gradeGroup
                            from grade in gradeGroup.DefaultIfEmpty()
-                           join acad in _context.AcademicYears on grade.AcademicYearId equals acad.AcademicYearId into acadGroup
+                           join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
                            from acad in acadGroup.DefaultIfEmpty()
                            where sub.SubjectId == id
                            select new SubjectRes
@@ -84,7 +84,7 @@ namespace server.Repositories
                              Status = sub.Status,
                              GradeId = grade.GradeId,
                              GradeName = grade.GradeName,
-                             DisplayAcademicYear_Name = acad.DisplayAcademicYearName,
+                             DisplayAcademicYear_Name = acad.Name,
                              YearStart = acad.YearStart.HasValue ? acad.YearStart.Value.ToString("dd/MM/yyyy") : "",
                              YearEnd = acad.YearEnd.HasValue ? acad.YearEnd.Value.ToString("dd/MM/yyyy") : ""
                            };
@@ -112,7 +112,7 @@ namespace server.Repositories
         var querySubject = from sub in _context.Subjects
                            join grade in _context.Grades on sub.GradeId equals grade.GradeId into gradeGroup
                            from grade in gradeGroup.DefaultIfEmpty()
-                           join acad in _context.AcademicYears on grade.AcademicYearId equals acad.AcademicYearId into acadGroup
+                           join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
                            from acad in acadGroup.DefaultIfEmpty()
                            select new SubjectRes
                            {
@@ -121,7 +121,7 @@ namespace server.Repositories
                              Status = sub.Status,
                              GradeId = grade.GradeId,
                              GradeName = grade.GradeName,
-                             DisplayAcademicYear_Name = acad.DisplayAcademicYearName,
+                             DisplayAcademicYear_Name = acad.Name,
                              YearStart = acad.YearStart.HasValue ? acad.YearStart.Value.ToString("dd/MM/yyyy") : "",
                              YearEnd = acad.YearEnd.HasValue ? acad.YearEnd.Value.ToString("dd/MM/yyyy") : ""
                            };

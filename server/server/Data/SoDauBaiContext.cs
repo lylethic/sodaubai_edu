@@ -71,29 +71,24 @@ public partial class SoDauBaiContext : DbContext
 
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
-    modelBuilder.Entity<AcademicYear>(entity =>
+    modelBuilder.Entity<AcademicYear>((entity =>
     {
-      entity.HasKey(e => e.AcademicYearId).HasName("PK__Academic__F8DBC284F22A4AB7");
+      entity.HasKey((System.Linq.Expressions.Expression<Func<AcademicYear, object?>>)(e => e.Id)).HasName("PK__Academic__F8DBC284F22A4AB7");
 
       entity.ToTable("AcademicYear");
 
-      entity.Property(e => e.AcademicYearId).HasColumnName("academicYearId");
-      entity.Property(e => e.Description)
-              .HasMaxLength(100)
-              .HasColumnName("description");
-      entity.Property(e => e.DisplayAcademicYearName)
-              .HasMaxLength(100)
-              .HasColumnName("displayAcademicYear_Name");
+      entity.Property((System.Linq.Expressions.Expression<Func<AcademicYear, int>>)(e => (int)e.Id)).HasColumnName("Id");
+      entity.Property((System.Linq.Expressions.Expression<Func<AcademicYear, string?>>)(e => e.Description))
+              .HasMaxLength(100);
+      entity.Property(e => e.Name)
+              .HasMaxLength(100);
       entity.Property(e => e.Status)
-              .HasDefaultValue(true)
-              .HasColumnName("status");
+              .HasDefaultValue(true);
       entity.Property(e => e.YearEnd)
-              .HasColumnType("datetime")
-              .HasColumnName("yearEnd");
+              .HasColumnType("datetime2");
       entity.Property(e => e.YearStart)
-              .HasColumnType("datetime")
-              .HasColumnName("yearStart");
-    });
+              .HasColumnType("datetime2");
+    }));
 
     modelBuilder.Entity<Account>(entity =>
     {
@@ -228,31 +223,22 @@ public partial class SoDauBaiContext : DbContext
 
     modelBuilder.Entity<Class>(entity =>
     {
-      entity.HasKey(e => e.ClassId).HasName("PK__Class__7577347EF2845A37");
-
+      entity.HasKey(e => e.Id).HasName("PK__Class__7577347EF2845A37");
       entity.ToTable("Class");
-
-      entity.Property(e => e.ClassId).HasColumnName("classId");
-      entity.Property(e => e.AcademicYearId).HasColumnName("academicYearId");
-      entity.Property(e => e.ClassName)
-              .HasMaxLength(50)
-              .HasColumnName("className");
+      entity.Property(e => e.Id);
+      entity.Property(e => e.AcademicYearId);
+      entity.Property(e => e.Name)
+              .HasMaxLength(50);
       entity.Property(e => e.DateCreated)
-              .HasColumnType("datetime")
-              .HasColumnName("dateCreated");
+              .HasColumnType("datetime2");
       entity.Property(e => e.DateUpdated)
-              .HasColumnType("datetime")
-              .HasColumnName("dateUpdated");
-      entity.Property(e => e.Description)
-              .HasMaxLength(100)
-              .HasColumnName("description");
-      entity.Property(e => e.GradeId).HasColumnName("gradeId");
-      entity.Property(e => e.NumberOfAttendants).HasColumnName("numberOfAttendants");
-      entity.Property(e => e.SchoolId).HasColumnName("schoolId");
-      entity.Property(e => e.Status)
-              .HasDefaultValue(true)
-              .HasColumnName("status");
-      entity.Property(e => e.TeacherId).HasColumnName("teacherId");
+              .HasColumnType("datetime2");
+      entity.Property(e => e.Description).HasMaxLength(100);
+      entity.Property(e => e.GradeId);
+      entity.Property(e => e.Quantity);
+      entity.Property(e => e.SchoolId);
+      entity.Property(e => e.Status).HasDefaultValue(true);
+      entity.Property(e => e.TeacherId);
 
       entity.HasOne(d => d.AcademicYear).WithMany(p => p.Classes)
               .HasForeignKey(d => d.AcademicYearId)

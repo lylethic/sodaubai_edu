@@ -1,21 +1,23 @@
-﻿using server.Dtos;
+using server.Applications.ResponseModel;
+using server.Dtos;
+using server.Models;
 
 namespace server.IService
 {
   public interface IAcademicYear
   {
-    Task<ResponseData<AcademicYearDto>> CreateAsync(AcademicYearDto model);
+    Task<PaginatedResponse<AcademicYear>> GetAcademicYears(QueryObject request);
 
-    Task<ResponseData<AcademicYearDto>> GetAsync(int id);
+    Task<AcademicYear> GetAcademicYear(int id);
 
-    Task<ResponseData<List<AcademicYearDto>>> GetAllAsync();
+    Task<AcademicYear> CreateAcademicYear(AcademicYearDto model);
 
-    Task<ResponseData<AcademicYearDto>> DeleteAsync(int id);
+    Task<AcademicYear> UpdateAcademicYear(int id, AcademicYearDto model);
 
-    Task<ResponseData<AcademicYearDto>> UpdateAsync(int id, AcademicYearDto model);
+    Task<bool> DeleteAcademicYear(int id);
 
-    Task<ResponseData<string>> BulkDeleteAsync(List<int> ids);
+    Task<bool> BulkDelete(List<int> ids);
 
-    Task<ResponseData<string>> ImportExcel(IFormFile file);
+    Task<string> ImportExcel(IFormFile file);
   }
 }

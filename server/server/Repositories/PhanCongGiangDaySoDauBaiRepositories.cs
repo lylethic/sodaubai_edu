@@ -46,8 +46,8 @@ namespace server.Repositories
             x.DateCreated,
             x.DateUpdated,
             teacherName = x.Teacher.Fullname,
-            classId = x.Teacher.Classes.First().ClassId,
-            className = x.Teacher.Classes.First().ClassName,
+            classId = x.Teacher.Classes.First().Id,
+            className = x.Teacher.Classes.First().Name,
           })
           .AsNoTracking()
           .ToListAsync() ?? throw new Exception("Empty");
@@ -178,8 +178,8 @@ namespace server.Repositories
             x.DateCreated,
             x.DateUpdated,
             teacherName = x.Teacher.Fullname,
-            classId = x.Teacher.Classes.First().ClassId,
-            className = x.Teacher.Classes.First().ClassName,
+            classId = x.Teacher.Classes.First().Id,
+            className = x.Teacher.Classes.First().Name,
           })
           .AsNoTracking()
           .ToListAsync() ?? throw new Exception("Empty");
@@ -239,8 +239,8 @@ namespace server.Repositories
               x.DateCreated,
               x.DateUpdated,
               teacherName = x.Teacher.Fullname,
-              classId = x.Teacher.Classes.First().ClassId,
-              className = x.Teacher.Classes.First().ClassName,
+              classId = x.Teacher.Classes.First().Id,
+              className = x.Teacher.Classes.First().Name,
             })
             .AsNoTracking()
             .FirstOrDefaultAsync() ?? throw new Exception("Empty");

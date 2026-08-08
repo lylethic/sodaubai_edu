@@ -40,7 +40,7 @@ namespace server.Repositories
 
         // Check if classId exists
         var classExists = await _context.Classes
-            .AnyAsync(c => c.ClassId == model.ClassId);
+            .AnyAsync(c => c.Id == model.ClassId);
 
         if (!classExists)
         {
@@ -49,7 +49,7 @@ namespace server.Repositories
 
         // Check if semesterId exists
         var academicYearExistis = await _context.AcademicYears
-            .AnyAsync(s => s.AcademicYearId == model.AcademicYearId);
+            .AnyAsync(s => s.Id == model.AcademicYearId);
 
         if (!academicYearExistis)
         {
@@ -102,9 +102,9 @@ namespace server.Repositories
         var chuNhiemQuery = from chuNhiem in _context.PhanCongChuNhiems
                             join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.TeacherId into teacherGroup
                             from teacher in teacherGroup.DefaultIfEmpty()
-                            join classes in _context.Classes on chuNhiem.ClassId equals classes.ClassId into classesGroup
+                            join classes in _context.Classes on chuNhiem.ClassId equals classes.Id into classesGroup
                             from classes in classesGroup.DefaultIfEmpty()
-                            join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.AcademicYearId into academicYearGroup
+                            join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.Id into academicYearGroup
                             from academicYear in academicYearGroup.DefaultIfEmpty()
                             join school in _context.Schools on classes.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
@@ -116,10 +116,10 @@ namespace server.Repositories
                               TeacherId = chuNhiem.TeacherId,
                               TeacherName = teacher.Fullname,
                               GradeId = classes.GradeId,
-                              ClassId = classes.ClassId,
-                              NameClass = classes.ClassName,
+                              ClassId = classes.Id,
+                              NameClass = classes.Name,
                               AcademicYearId = (int)(chuNhiem.AcademicYearId ?? null)!,
-                              AcademicYearName = academicYear.DisplayAcademicYearName,
+                              AcademicYearName = academicYear.Name,
                               Status = chuNhiem.Status,
                               DateCreated = chuNhiem.DateCreated,
                               DateUpdated = chuNhiem.DateUpdated
@@ -149,9 +149,9 @@ namespace server.Repositories
         var chuNhiemQuery = from chuNhiem in _context.PhanCongChuNhiems
                             join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.TeacherId into teacherGroup
                             from teacher in teacherGroup.DefaultIfEmpty()
-                            join classes in _context.Classes on chuNhiem.ClassId equals classes.ClassId into classesGroup
+                            join classes in _context.Classes on chuNhiem.ClassId equals classes.Id into classesGroup
                             from classes in classesGroup.DefaultIfEmpty()
-                            join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.AcademicYearId into academicYearGroup
+                            join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.Id into academicYearGroup
                             from academicYear in academicYearGroup.DefaultIfEmpty()
                             join school in _context.Schools on classes.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
@@ -164,9 +164,9 @@ namespace server.Repositories
                               TeacherId = chuNhiem.TeacherId,
                               TeacherName = teacher.Fullname,
                               ClassId = chuNhiem.ClassId,
-                              NameClass = classes.ClassName,
+                              NameClass = classes.Name,
                               AcademicYearId = (int)(chuNhiem.AcademicYearId ?? null)!,
-                              AcademicYearName = academicYear.DisplayAcademicYearName,
+                              AcademicYearName = academicYear.Name,
                               Status = chuNhiem.Status,
                               DateCreated = chuNhiem.DateCreated,
                               DateUpdated = chuNhiem.DateUpdated
@@ -201,15 +201,15 @@ namespace server.Repositories
         var chuNhiemQuery = from chuNhiem in _context.PhanCongChuNhiems
                             join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.TeacherId into teacherGroup
                             from teacher in teacherGroup.DefaultIfEmpty()
-                            join classes in _context.Classes on chuNhiem.ClassId equals classes.ClassId into classesGroup
+                            join classes in _context.Classes on chuNhiem.ClassId equals classes.Id into classesGroup
                             from classes in classesGroup.DefaultIfEmpty()
-                            join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.AcademicYearId into academicYearGroup
+                            join academicYear in _context.AcademicYears on chuNhiem.AcademicYearId equals academicYear.Id into academicYearGroup
                             from academicYear in academicYearGroup.DefaultIfEmpty()
                             join school in _context.Schools on classes.SchoolId equals school.Id into schoolGroup
                             from school in schoolGroup.DefaultIfEmpty()
                             where teacher.SchoolId == schoolId
                                     && (gradeId == null || classes.GradeId == gradeId)
-                                    && (classId == null || classes.ClassId == classId)
+                                    && (classId == null || classes.Id == classId)
                             select new PhanCongData
                             {
                               PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
@@ -218,10 +218,10 @@ namespace server.Repositories
                               TeacherId = chuNhiem.TeacherId,
                               TeacherName = teacher.Fullname,
                               GradeId = classes.GradeId,
-                              ClassId = classes.ClassId,
-                              NameClass = classes.ClassName,
+                              ClassId = classes.Id,
+                              NameClass = classes.Name,
                               AcademicYearId = (int)(chuNhiem.AcademicYearId ?? null)!,
-                              AcademicYearName = academicYear.DisplayAcademicYearName,
+                              AcademicYearName = academicYear.Name,
                               Status = chuNhiem.Status,
                               DateCreated = chuNhiem.DateCreated,
                               DateUpdated = chuNhiem.DateUpdated

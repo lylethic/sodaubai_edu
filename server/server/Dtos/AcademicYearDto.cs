@@ -2,9 +2,9 @@
 {
   public class AcademicYearDto
   {
-    public int AcademicYearId { get; set; }
+    public int Id { get; set; }
 
-    public string DisplayAcademicYearName { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
     public DateTime? YearStart { get; set; }
 

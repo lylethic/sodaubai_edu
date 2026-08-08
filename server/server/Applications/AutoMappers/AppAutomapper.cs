@@ -38,5 +38,7 @@ public class AppAutomapper : Profile
 
     // School
     CreateMap<School, SchoolDto>().ReverseMap();
+
+    CreateMap<AcademicYear, AcademicYearDto>().ReverseMap();
   }
 }
