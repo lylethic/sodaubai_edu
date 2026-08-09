@@ -19,7 +19,7 @@ namespace server.Repositories
       _dbSet = context.Set<TEntity>();
     }
 
-    public async Task<CursorPagedResult<TEntity>> GetPagedAsync(
+    public virtual async Task<CursorPagedResult<TEntity>> GetPagedAsync(
        QueryRequest request)
     {
       var query = _dbSet.AsNoTracking().AsQueryable();
@@ -56,7 +56,7 @@ namespace server.Repositories
       };
     }
 
-    public async Task<PaginatedResponse<TEntity>> GetOffsetPagedAsync(int limit, int offset, string? searchTerm = null)
+    public async virtual Task<PaginatedResponse<TEntity>> GetOffsetPagedAsync(int limit, int offset, string? searchTerm = null)
     {
       var query = _dbSet.AsNoTracking().AsQueryable();
 
@@ -88,7 +88,7 @@ namespace server.Repositories
       return query;
     }
 
-    public async Task<TEntity?> GetByIdAsync(int id)
+    public virtual async Task<TEntity?> GetByIdAsync(int id)
     {
       return await _dbSet.FirstOrDefaultAsync(x => x.Id == id && x.Deleted == false);
     }
@@ -100,14 +100,14 @@ namespace server.Repositories
       return entity;
     }
 
-    public async Task<TEntity> UpdateAsync(TEntity entity)
+    public virtual async Task<TEntity> UpdateAsync(TEntity entity)
     {
       _dbSet.Update(entity);
       await _context.SaveChangesAsync();
       return entity;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public virtual async Task<bool> DeleteAsync(int id)
     {
       var entity = await GetByIdAsync(id);
       if (entity == null)
@@ -124,13 +124,13 @@ namespace server.Repositories
       if (entity == null)
         return false;
       entity.Deleted = true;
-      entity.DateUpdated = DateTime.Now;
+      entity.DateUpdated = DateTime.UtcNow;
       _dbSet.Update(entity);
       await _context.SaveChangesAsync();
       return true;
     }
 
-    public async Task<bool> BulkDeleteAsync(List<int> ids)
+    public virtual async Task<bool> BulkDeleteAsync(List<int> ids)
     {
       if (ids is null || ids.Count == 0)
       {
@@ -141,6 +141,24 @@ namespace server.Repositories
         return false;
 
       _dbSet.RemoveRange(entities);
+      await _context.SaveChangesAsync();
+      return true;
+    }
+
+    public virtual async Task<bool> SoftBulkDeleteAsync(List<int> ids)
+    {
+      if (ids is null || ids.Count == 0)
+      {
+        return false;
+      }
+      var entities = await _dbSet.Where(x => ids.Contains(x.Id)).ToListAsync();
+      if (entities.Count == 0)
+        return false;
+      foreach (var entity in entities)
+      {
+        entity.Deleted = true;
+        entity.DateUpdated = DateTime.UtcNow;
+      }
       await _context.SaveChangesAsync();
       return true;
     }

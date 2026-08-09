@@ -2,11 +2,11 @@
 {
   public class GradeDto
   {
-    public int GradeId { get; set; }
+    public int Id { get; set; }
 
     public int AcademicYearId { get; set; }
 
-    public string GradeName { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
     public string? Description { get; set; }
 

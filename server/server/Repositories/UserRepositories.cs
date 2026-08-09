@@ -56,7 +56,7 @@ public class UserRepositories : BaseRepository<User>, IUser
     if (!string.IsNullOrEmpty(entity.Avatar)) existing.Avatar = entity.Avatar;
     if (!string.IsNullOrEmpty(entity.PasswordHash)) existing.PasswordHash = entity.PasswordHash;
 
-    existing.DateUpdated = DateTime.Now;
+    existing.DateUpdated = DateTime.UtcNow;
     return await UpdateAsync(existing);
   }
 

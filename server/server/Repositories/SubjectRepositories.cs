@@ -72,7 +72,7 @@ namespace server.Repositories
       try
       {
         var querySubject = from sub in _context.Subjects
-                           join grade in _context.Grades on sub.GradeId equals grade.GradeId into gradeGroup
+                           join grade in _context.Grades on sub.GradeId equals grade.Id into gradeGroup
                            from grade in gradeGroup.DefaultIfEmpty()
                            join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
                            from acad in acadGroup.DefaultIfEmpty()
@@ -82,8 +82,8 @@ namespace server.Repositories
                              SubjectId = id,
                              SubjectName = sub.SubjectName,
                              Status = sub.Status,
-                             GradeId = grade.GradeId,
-                             GradeName = grade.GradeName,
+                             GradeId = grade.Id,
+                             GradeName = grade.Name,
                              DisplayAcademicYear_Name = acad.Name,
                              YearStart = acad.YearStart.HasValue ? acad.YearStart.Value.ToString("dd/MM/yyyy") : "",
                              YearEnd = acad.YearEnd.HasValue ? acad.YearEnd.Value.ToString("dd/MM/yyyy") : ""
@@ -110,7 +110,7 @@ namespace server.Repositories
       try
       {
         var querySubject = from sub in _context.Subjects
-                           join grade in _context.Grades on sub.GradeId equals grade.GradeId into gradeGroup
+                           join grade in _context.Grades on sub.GradeId equals grade.Id into gradeGroup
                            from grade in gradeGroup.DefaultIfEmpty()
                            join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
                            from acad in acadGroup.DefaultIfEmpty()
@@ -119,8 +119,8 @@ namespace server.Repositories
                              SubjectId = sub.SubjectId,
                              SubjectName = sub.SubjectName,
                              Status = sub.Status,
-                             GradeId = grade.GradeId,
-                             GradeName = grade.GradeName,
+                             GradeId = grade.Id,
+                             GradeName = grade.Name,
                              DisplayAcademicYear_Name = acad.Name,
                              YearStart = acad.YearStart.HasValue ? acad.YearStart.Value.ToString("dd/MM/yyyy") : "",
                              YearEnd = acad.YearEnd.HasValue ? acad.YearEnd.Value.ToString("dd/MM/yyyy") : ""
@@ -323,7 +323,7 @@ namespace server.Repositories
                 }
 
                 var gradeId = Convert.ToInt16(reader.GetValue(1));
-                var gradeExists = await _context.Grades.AnyAsync(g => g.GradeId == gradeId);
+                var gradeExists = await _context.Grades.AnyAsync(g => g.Id == gradeId);
 
                 if (!gradeExists)
                   return new ResponseData<string>(404, $"Mã khối học {gradeId} không tồn tại");

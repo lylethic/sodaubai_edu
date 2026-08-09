@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.AspNetCore.Mvc;
 
 namespace server.Dtos
@@ -6,11 +7,17 @@ namespace server.Dtos
   {
     private int? _pageNumber;
     private int? _pageSize;
+
+    [FromQuery(Name = "pageNumber")]
+    [DefaultValue(1)]
     public int PageNumber
     {
       get => _pageNumber ?? 1;
       set => _pageNumber = value;
     }
+
+    [FromQuery(Name = "pageSize")]
+    [DefaultValue(20)]
     public int PageSize
     {
       get => _pageSize > 100 ? 100 : (_pageSize ?? 20);
@@ -19,17 +26,5 @@ namespace server.Dtos
 
     [FromQuery(Name = "keyword")]
     public string? Keyword { get; set; } = null;
-
-    [FromQuery(Name = "gradeId")]
-    public int? GradeId { get; set; }
-
-    [FromQuery(Name = "teacherId")]
-    public int? TeacherId { get; set; }
-
-    [FromQuery(Name = "academicYearId")]
-    public int? AcademicYearId { get; set; }
-
-    [FromQuery(Name = "schoolId")]
-    public int? SchoolId { get; set; }
   }
 }

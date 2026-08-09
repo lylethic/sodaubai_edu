@@ -40,11 +40,7 @@ namespace server.Controllers.v1
       }
       catch (Exception ex)
       {
-        if (ex is AutoMapperMappingException aex && aex.InnerException != null)
-        {
-          return Error(ex.Message + "\nInnerException: " + aex.InnerException.Message);
-        }
-        return Error(ex.Message);
+        return Error(ex);
       }
     }
 
@@ -57,9 +53,9 @@ namespace server.Controllers.v1
         var result = await _acaYearRepo.GetAcademicYear(id);
         return Success(_mapper.Map<AcademicYearDto>(result));
       }
-      catch (System.Exception ex)
+      catch (Exception ex)
       {
-        return Error(ex.Message);
+        return Error(ex);
       }
     }
 
@@ -67,31 +63,59 @@ namespace server.Controllers.v1
     [HttpPut("{id}")]
     public async Task<IActionResult> PutAcademicYear(int id, AcademicYearDto model)
     {
-      var result = await _acaYearRepo.UpdateAcademicYear(id, model);
-      return Success(_mapper.Map<AcademicYearDto>(result));
+      try
+      {
+        var result = await _acaYearRepo.UpdateAcademicYear(id, model);
+        return Success(_mapper.Map<AcademicYearDto>(result));
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
     // POST: api/AcademicYears
     [HttpPost]
     public async Task<IActionResult> PostAcademicYear(AcademicYearDto model)
     {
-      var result = await _acaYearRepo.CreateAcademicYear(model);
-      return Success(_mapper.Map<AcademicYearDto>(result));
+      try
+      {
+        var result = await _acaYearRepo.CreateAcademicYear(model);
+        return Success(_mapper.Map<AcademicYearDto>(result));
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
     // DELETE: api/AcademicYears/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAcademicYear(int id)
     {
-      var result = await _acaYearRepo.DeleteAcademicYear(id);
-      return Success(result);
+      try
+      {
+        var result = await _acaYearRepo.DeleteAcademicYear(id);
+        return Success(result);
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
     [HttpDelete("bulkdelete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var result = await _acaYearRepo.BulkDelete(ids);
-      return Success(result);
+      try
+      {
+        var result = await _acaYearRepo.BulkDelete(ids);
+        return Success(result);
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
     [HttpPost("upload")]

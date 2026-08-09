@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using server.Applications;
 using server.Applications.ResponseModel;
+using server.Common.Settings;
 using server.Dtos;
 using server.Interfaces;
 using server.IService;
@@ -41,7 +42,7 @@ namespace server.Controllers.v1
       }
       catch (Exception ex)
       {
-        return Error(ex.Message);
+        return Error(ex);
       }
     }
 
@@ -49,12 +50,18 @@ namespace server.Controllers.v1
     [HttpGet("{id}")]
     public async Task<IActionResult> GetRole(int id)
     {
-      var result = await _roleRepo.GetRole(id);
-      return Success(_mapper.Map<RoleDto>(result));
+      try
+      {
+        var result = await _roleRepo.GetRole(id);
+        return Success(_mapper.Map<RoleDto>(result));
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
     // PUT: api/Roles/5
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPut("{id}")]
     public async Task<IActionResult> PutRole(int id, RoleDto role)
     {
@@ -63,16 +70,22 @@ namespace server.Controllers.v1
     }
 
     // POST: api/Roles
-    [Authorize(Policy = "SuperAdminAndAdmin")]
+    [RequirePermission("CREATE")]
     [HttpPost]
     public async Task<IActionResult> Create(RoleDto role)
     {
-      var result = await _roleRepo.AddRole(role);
-      return Success(_mapper.Map<RoleDto>(result));
+      try
+      {
+        var result = await _roleRepo.AddRole(role);
+        return Success(_mapper.Map<RoleDto>(result));
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
     // DELETE: api/Roles/5
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteRole(int id)
     {
@@ -80,15 +93,20 @@ namespace server.Controllers.v1
       return Success(result);
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("bulkdelete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var result = await _roleRepo.BulkDelete(ids);
-      return Success(result);
+      try
+      {
+        var result = await _roleRepo.BulkDelete(ids);
+        return Success(result);
+      }
+      catch (Exception ex)
+      {
+        return Error(ex);
+      }
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPost("upload")]
     public async Task<IActionResult> ImportExcelFile(IFormFile file)
     {
@@ -109,7 +127,6 @@ namespace server.Controllers.v1
       }
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPost("export")]
     public async Task<IActionResult> ExportRoles([FromBody] List<int> ids)
     {

@@ -1,7 +1,7 @@
-using System;
 using System.Net;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using server.Common.Exceptions;
 using server.Interfaces;
 
 namespace server.Applications;
@@ -32,6 +32,15 @@ public abstract class BaseApiController : ControllerBase
   protected IActionResult Error(string message, HttpStatusCode? httpStatus = HttpStatusCode.InternalServerError)
   {
     return Ok(ApiResponseModel.Error(message, httpStatus));
+  }
+
+  protected IActionResult Error(Exception ex)
+  {
+    if (ex is ApiException apiEx)
+    {
+      return Ok(ApiResponseModel.Error(apiEx.Message, apiEx.StatusCode));
+    }
+    return Ok(ApiResponseModel.Error(ex.Message, HttpStatusCode.InternalServerError));
   }
 
   protected IActionResult CreatedSuccess(object result)

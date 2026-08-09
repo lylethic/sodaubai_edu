@@ -40,5 +40,8 @@ public class AppAutomapper : Profile
     CreateMap<School, SchoolDto>().ReverseMap();
 
     CreateMap<AcademicYear, AcademicYearDto>().ReverseMap();
+
+    CreateMap<Grade, GradeDto>().ReverseMap();
+    CreateMap<Grade, GradeDetail>().ReverseMap();
   }
 }

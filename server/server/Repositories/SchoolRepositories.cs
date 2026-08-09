@@ -76,7 +76,7 @@ namespace server.Repositories
     {
       var existing = await GetByIdAsync(id);
       if (existing == null) throw new Exception("School not found");
-      existing.DateUpdated = DateTime.Now;
+      existing.DateUpdated = DateTime.UtcNow;
       return await this.UpdateAsync(existing);
     }
 

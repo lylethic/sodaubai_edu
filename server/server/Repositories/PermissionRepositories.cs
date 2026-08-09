@@ -6,6 +6,7 @@ using server.Applications.ResponseModel;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using server.Common.Exceptions;
 
 namespace server.Repositories;
 
@@ -33,12 +34,12 @@ public class PermissionRepositories : BaseRepository<Permission>, IPermission
   public async Task<Permission> UpdatePermission(Permission entity)
   {
     var existing = await GetByIdAsync(entity.Id);
-    if (existing == null) throw new Exception("Permission not found");
+    if (existing == null) throw new NotFoundException("Quyền không tồn tại");
 
     if (!string.IsNullOrEmpty(entity.Name)) existing.Name = entity.Name;
     if (entity.Description != null) existing.Description = entity.Description;
 
-    existing.DateUpdated = DateTime.Now;
+    existing.DateUpdated = DateTime.UtcNow;
 
     return await UpdateAsync(existing);
   }
@@ -107,32 +108,32 @@ public class PermissionRepositories : BaseRepository<Permission>, IPermission
         .Where(ur => ur.UserId == userId)
         .Select(ur => new
         {
-            RoleId = ur.Role.Id,
-            RoleName = ur.Role.NameRole,
-            RoleDescription = ur.Role.Description,
-            Permissions = ur.Role.RolePermissions.Select(rp => new
-            {
-                PermissionId = rp.Permission.Id,
-                PermissionName = rp.Permission.Name,
-                PermissionDescription = rp.Permission.Description
-            })
+          RoleId = ur.Role.Id,
+          RoleName = ur.Role.NameRole,
+          RoleDescription = ur.Role.Description,
+          Permissions = ur.Role.RolePermissions.Select(rp => new
+          {
+            PermissionId = rp.Permission.Id,
+            PermissionName = rp.Permission.Name,
+            PermissionDescription = rp.Permission.Description
+          })
         })
         .ToListAsync();
 
     var roles = userRoles.Select(ur => new Role
     {
-        Id = ur.RoleId,
-        NameRole = ur.RoleName,
-        Description = ur.RoleDescription
+      Id = ur.RoleId,
+      NameRole = ur.RoleName,
+      Description = ur.RoleDescription
     }).DistinctBy(r => r.Id).ToList();
 
     var allPermissions = userRoles
         .SelectMany(ur => ur.Permissions)
         .Select(p => new Permission
         {
-            Id = p.PermissionId,
-            Name = p.PermissionName,
-            Description = p.PermissionDescription
+          Id = p.PermissionId,
+          Name = p.PermissionName,
+          Description = p.PermissionDescription
         })
         .DistinctBy(p => p.Id)
         .ToList();

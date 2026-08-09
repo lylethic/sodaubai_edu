@@ -25,42 +25,77 @@ public class UserPermissionController : BaseApiController
   [HttpGet]
   public async Task<IActionResult> Get([FromQuery] QueryObject request)
   {
-    var result = await _repository.GetUserPermissions(request);
-    var data = new PaginatedResponse<UserPermissionDto>
+    try
     {
-      Items = _mapper.Map<IEnumerable<UserPermissionDto>>(result.Items),
-      TotalCount = result.TotalCount,
-      PageNumber = result.PageNumber,
-      PageSize = result.PageSize
-    };
-    return Success(data);
+      var result = await _repository.GetUserPermissions(request);
+      var data = new PaginatedResponse<UserPermissionDto>
+      {
+        Items = _mapper.Map<IEnumerable<UserPermissionDto>>(result.Items),
+        TotalCount = result.TotalCount,
+        PageNumber = result.PageNumber,
+        PageSize = result.PageSize
+      };
+      return Success(data);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
   }
 
   [HttpGet("{id}")]
   public async Task<IActionResult> Get(int id)
   {
-    var result = await _repository.GetUserPermission(id);
-    return Success(_mapper.Map<UserPermissionDto>(result));
+    try
+    {
+      var result = await _repository.GetUserPermission(id);
+      return Success(_mapper.Map<UserPermissionDto>(result));
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
   }
 
   [HttpPost]
   public async Task<IActionResult> Post([FromBody] UserPermissionDto entity)
   {
-    var result = await _repository.AddUserPermission(_mapper.Map<UserPermission>(entity));
-    return Success(result);
+    try
+    {
+      var result = await _repository.AddUserPermission(_mapper.Map<UserPermission>(entity));
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
   }
 
   [HttpPut("{id}")]
   public async Task<IActionResult> Put(int id, [FromBody] UserPermissionDto entity)
   {
-    var result = await _repository.UpdateUserPermission(_mapper.Map<UserPermission>(entity));
-    return Success(result);
+    try
+    {
+      var result = await _repository.UpdateUserPermission(_mapper.Map<UserPermission>(entity));
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
   }
 
   [HttpDelete("{id}")]
   public async Task<IActionResult> Delete(int id)
   {
-    var result = await _repository.DeleteUserPermission(id);
-    return Success(result);
+    try
+    {
+      var result = await _repository.DeleteUserPermission(id);
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
   }
 }

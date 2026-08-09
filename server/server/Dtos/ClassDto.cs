@@ -2,7 +2,9 @@
 {
   public partial class ClassDto
   {
-    public int ClassId { get; set; }
+    public int Id { get; set; }
+
+    public string? ClassName { get; set; } = null;
 
     public int GradeId { get; set; }
 
@@ -11,8 +13,6 @@
     public int AcademicYearId { get; set; }
 
     public int SchoolId { get; set; }
-
-    public string ClassName { get; set; } = null!;
 
     public bool Status { get; set; }
 
@@ -29,7 +29,7 @@
 
     public int GradeId { get; set; }
 
-    public string GradeName { get; set; } = string.Empty;
+    public string? Name { get; set; } = null;
 
     public int TeacherId { get; set; }
 
@@ -42,6 +42,7 @@
     public int SchoolId { get; set; }
 
     public string SchoolName { get; set; } = string.Empty;
+    public int SchoolLevel { get; set; }
 
     public string ClassName { get; set; } = null!;
 
@@ -49,15 +50,8 @@
 
     public string? Description { get; set; }
 
-    public string DateCreated { get; set; } = string.Empty;
+    public DateTime? DateCreated { get; set; } = null;
 
-    public string DateUpdated { get; set; } = string.Empty;
-  }
-
-  public partial class ClassList : ClassDto
-  {
-    public new string? DateCreated { get; set; }
-
-    public new string? DateUpdated { get; set; }
+    public DateTime? DateUpdated { get; set; } = null;
   }
 }

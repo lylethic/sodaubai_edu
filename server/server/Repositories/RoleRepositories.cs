@@ -10,6 +10,7 @@ using server.Types.Role;
 using System.Text;
 using AutoMapper;
 using server.Applications.ResponseModel;
+using server.Common.Exceptions;
 
 namespace server.Repositories
 {
@@ -47,7 +48,7 @@ namespace server.Repositories
 
     public async Task<Role> GetRole(int id)
     {
-      var result = await GetByIdAsync(id) ?? throw new Exception("Role not found");
+      var result = await GetByIdAsync(id) ?? throw new NotFoundException("Role not found");
       return result;
     }
 
@@ -65,12 +66,12 @@ namespace server.Repositories
     public async Task<Role> UpdateRole(int id, RoleDto model)
     {
       var existing = await GetByIdAsync(id);
-      if (existing == null) throw new Exception("Role not found");
+      if (existing == null) throw new NotFoundException("Role not found");
 
       if (!string.IsNullOrEmpty(model.NameRole)) existing.NameRole = model.NameRole;
       if (model.Description != null) existing.Description = model.Description;
 
-      existing.DateUpdated = DateTime.Now;
+      existing.DateUpdated = DateTime.UtcNow;
 
       return await this.UpdateAsync(existing);
     }

@@ -276,29 +276,36 @@ public partial class SoDauBaiContext : DbContext
 
     modelBuilder.Entity<Grade>(entity =>
     {
-      entity.HasKey(e => e.GradeId).HasName("PK__Grade__FB4362F9F6031319");
+      entity.HasKey(e => e.Id).HasName("PK__Grade__FB4362F9F6031319");
 
       entity.ToTable("Grade");
 
-      entity.Property(e => e.GradeId).HasColumnName("gradeId");
-      entity.Property(e => e.AcademicYearId).HasColumnName("academicYearId");
-      entity.Property(e => e.DateCreated)
-              .HasColumnType("datetime")
-              .HasColumnName("dateCreated");
-      entity.Property(e => e.DateUpdated)
-              .HasColumnType("datetime")
-              .HasColumnName("dateUpdated");
-      entity.Property(e => e.Description)
-              .HasMaxLength(100)
-              .HasColumnName("description");
-      entity.Property(e => e.GradeName)
-              .HasMaxLength(50)
-              .HasColumnName("gradeName");
+      entity.Property(e => e.Id).HasColumnName("Id");
+      entity.Property(e => e.AcademicYearId);
+      entity.Property(e => e.Name).HasMaxLength(50);
+      entity.Property(e => e.DateCreated).HasColumnType("datetime2");
+      entity.Property(e => e.DateUpdated).HasColumnType("datetime2");
+      entity.Property(e => e.Description).HasMaxLength(500);
+      entity.Property(e => e.CreatedBy).HasColumnType("INT");
+      entity.Property(e => e.UpdatedBy).HasColumnType("INT");
+      entity.Property(e => e.Deleted).HasColumnType("bit").HasDefaultValue(false);
 
       entity.HasOne(d => d.AcademicYear).WithMany(p => p.Grades)
               .HasForeignKey(d => d.AcademicYearId)
               .OnDelete(DeleteBehavior.ClientSetNull)
               .HasConstraintName("FK__Grade__academicY__4F7CD00D");
+
+      entity.HasOne(d => d.CreatedByNavigation)
+          .WithMany()
+          .HasForeignKey(d => d.CreatedBy)
+          .OnDelete(DeleteBehavior.ClientSetNull)
+          .HasConstraintName("FK__Grade__CreatedBy");
+
+      entity.HasOne(d => d.UpdatedByNavigation)
+            .WithMany()
+            .HasForeignKey(d => d.UpdatedBy)
+            .OnDelete(DeleteBehavior.ClientSetNull)
+            .HasConstraintName("FK__Grade__UpdatedBy");
     });
 
     modelBuilder.Entity<MonthlyEvaluation>(entity =>

@@ -1,21 +1,26 @@
-﻿using server.Dtos;
+using server.Applications.Search;
+using server.Dtos;
+using server.Models;
+using server.Types.Grade;
 
-namespace server.IService
+namespace server.Interfaces
 {
   public interface IGrade
   {
-    Task<ResponseData<GradeDto>> CreateGrade(GradeDto model);
+    Task<Tuple<IEnumerable<GradeDetail>, int, int, int>> GetAllAsync(GradeSearch request);
 
-    Task<ResponseData<GradeDetail>> GetGrade(int id);
+    Task<Grade> GetAsync(int id);
 
-    Task<ResponseData<List<GradeDetail>>> GetGrades();
+    Task<Grade> AddAsync(GradeDto model);
 
-    Task<ResponseData<GradeDto>> DeleteGrade(int id);
+    Task<Grade> UpdateAsync(int id, GradeDto model);
 
-    Task<ResponseData<GradeDto>> UpdateGrade(int id, GradeDto model);
+    Task<bool> DeleteAsync(int id);
 
-    Task<ResponseData<string>> BulkDelete(List<int> ids);
+    Task<bool> BulkDeleteAsync(List<int> ids);
 
-    Task<ResponseData<string>> ImportExcelFile(IFormFile file);
+    Task<string> ImportExcel(IFormFile file);
+
+    Task<GradeResType> ExportGradesExcel(List<int> ids, string filePath);
   }
 }

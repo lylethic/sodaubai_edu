@@ -5,6 +5,7 @@ using server.Dtos;
 using server.IService;
 using server.Models;
 using server.Applications.ResponseModel;
+using server.Common.Exceptions;
 
 namespace server.Repositories
 {
@@ -40,14 +41,14 @@ namespace server.Repositories
 
     public async Task<AcademicYear> GetAcademicYear(int id)
     {
-      var result = await GetByIdAsync(id) ?? throw new Exception("Không tìm thấy năm học");
+      var result = await GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy năm học");
       return result;
     }
 
     public async Task<AcademicYear> CreateAcademicYear(AcademicYearDto model)
     {
       var existing = await _context.AcademicYears.FirstOrDefaultAsync(x => x.Name == model.Name);
-      if (existing != null) throw new Exception("Năm học đã tồn tại");
+      if (existing != null) throw new NotFoundException("Năm học đã tồn tại");
 
       var academicYear = new AcademicYear
       {
@@ -56,7 +57,7 @@ namespace server.Repositories
         YearEnd = model.YearEnd,
         Description = model.Description,
         Status = model.Status,
-        DateCreated = DateTime.Now
+        DateCreated = DateTime.UtcNow
       };
 
       return await this.AddAsync(academicYear);
@@ -64,7 +65,7 @@ namespace server.Repositories
 
     public async Task<AcademicYear> UpdateAcademicYear(int id, AcademicYearDto model)
     {
-      var existing = await GetByIdAsync(id) ?? throw new Exception("Không tìm thấy năm học");
+      var existing = await GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy năm học");
 
       if (!string.IsNullOrEmpty(model.Name))
         existing.Name = model.Name;
@@ -73,7 +74,7 @@ namespace server.Repositories
       if (model.Description != null) existing.Description = model.Description;
       existing.Status = model.Status;
 
-      existing.DateUpdated = DateTime.Now;
+      existing.DateUpdated = DateTime.UtcNow;
 
       return await this.UpdateAsync(existing);
     }

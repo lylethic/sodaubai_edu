@@ -96,7 +96,7 @@ namespace server.Repositories
               WeekId = x.WeekId,
               ClassId = x.ClassId,
               GradeId = x.Class.GradeId,
-              GradeName = x.Class.Grade.GradeName,
+              GradeName = x.Class.Grade.Name,
               TeacherId = x.TeacherId,
               ClassName = x.Class.Name,
               TotalScore = x.TotalScore,
