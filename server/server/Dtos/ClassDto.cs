@@ -54,4 +54,31 @@
 
     public DateTime? DateUpdated { get; set; } = null;
   }
+
+  public class ExtendClass
+  {
+    public int Id { get; set; }
+
+    public int GradeId { get; set; }
+
+    public int TeacherId { get; set; }
+
+    public int AcademicYearId { get; set; }
+
+    public int SchoolId { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public bool Status { get; set; }
+
+    public string? Description { get; set; }
+
+    public DateTime? DateCreated { get; set; }
+
+    public DateTime? DateUpdated { get; set; }
+
+    public int? Quantity { get; set; }
+
+    public bool? Deleted { get; set; }
+  }
 }

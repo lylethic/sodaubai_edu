@@ -1,81 +1,48 @@
+using AutoMapper;
 using ExcelDataReader;
-using Microsoft.Data.SqlClient;
+using Humanizer;
 using Microsoft.EntityFrameworkCore;
+using server.Applications.ResponseModel;
+using server.Applications.Search;
+using server.Common.Exceptions;
 using server.Data;
 using server.Dtos;
-using server.IService;
+using server.Interfaces;
+using server.Models;
 using server.Types.BiaSoDauBai;
-using System.Text;
 
 namespace server.Repositories
 {
-  public class BiaSoDauBaiRepositories : IBiaSoDauBai
+  public class BiaSoDauBaiRepositories : BaseRepository<BiaSoDauBai>, IBiaSoDauBai
   {
-    private readonly SoDauBaiContext _context;
+    private readonly IMapper _mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public BiaSoDauBaiRepositories(SoDauBaiContext context)
+    public BiaSoDauBaiRepositories(SoDauBaiContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor) : base(context)
     {
-      this._context = context;
+      _mapper = mapper;
+      _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<int> CountBiaSoDauBaiAsync()
+    public async Task<BiaSoDauBai> CreateBiaSoDauBai(BiaSoDauBaiDto model)
     {
       try
       {
-        var countBiaSoDauBai = await _context.BiaSoDauBais.CountAsync();
-        return countBiaSoDauBai;
-      }
-      catch (Exception ex)
-      {
-        throw new Exception($"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<int> CountBiaSoDauBaiActiveAsync()
-    {
-      try
-      {
-        var countBiaSoDauBai = await _context.BiaSoDauBais.Where(x => x.Status == true).CountAsync();
-        return countBiaSoDauBai;
-      }
-      catch (Exception ex)
-      {
-        throw new Exception($"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<BiaSoDauBaiResType> CreateBiaSoDauBai(BiaSoDauBaiDto model)
-    {
-      using var transaction = await _context.Database.BeginTransactionAsync();
-
-      try
-      {
-        var find = "SELECT * FROM BiaSoDauBai WHERE BiaSoDauBaiId = @id";
-        var sodaubai = await _context.BiaSoDauBais
-            .FromSqlRaw(find, new SqlParameter("@id", model.Id))
-            .FirstOrDefaultAsync();
-
-        if (sodaubai is not null)
-        {
-          return new BiaSoDauBaiResType(409, "Sổ đầu bài đã tồn tại");
-        }
-
         // Check if schoolId exists
         var schoolExists = await _context.Schools
             .AnyAsync(c => c.Id == model.SchoolId);
 
         if (!schoolExists)
         {
-          return new BiaSoDauBaiResType(404, "Trường học không tồn tại");
+          throw new BadRequestException("Trường học không tồn tại");
         }
 
         // Check if academicYearId exists
-        var academicYearExists = await _context.AcademicYears
-            .AnyAsync(c => c.Id == model.AcademicyearId);
+        var academicYearExists = await _context.AcademicYears.AnyAsync(c => c.Id == model.AcademicyearId);
 
         if (!academicYearExists)
         {
-          return new BiaSoDauBaiResType(404, "Năm học không tồn tại");
+          throw new BadRequestException("Năm học không tồn tại");
         }
 
         // Check if classId exists
@@ -84,582 +51,55 @@ namespace server.Repositories
 
         if (!classExists)
         {
-          return new BiaSoDauBaiResType(404, "Lớp học không tồn tại");
+          throw new BadRequestException("Lớp học không tồn tại");
         }
 
-        model.DateCreated = DateTime.UtcNow;
-        model.DateUpdated = null;
-
-        var queryInsert = @"INSERT INTO BiaSoDauBai (schoolId, academicYearId, classId, status, dateCreated, dateUpdated)
-                                VALUES (@schoolId, @academicYearId, @classId, @status, @dateCreated, @dateUpdated);
-                                SELECT CAST(SCOPE_IDENTITY() AS INT);";
-
-        var insert = await _context.Database.ExecuteSqlRawAsync(queryInsert,
-            new SqlParameter("@schoolId", model.SchoolId),
-            new SqlParameter("@academicYearId", model.AcademicyearId),
-            new SqlParameter("@classId", model.ClassId),
-            new SqlParameter("@status", model.Status),
-            new SqlParameter("@dateCreated", model.DateCreated),
-            new SqlParameter("@dateUpdated", DBNull.Value)
-        );
-
-        // Commit the transaction after the insert succeeds
-        await transaction.CommitAsync();
-
-        var result = new BiaSoDauBaiDto
-        {
-          Id = insert,
-          SchoolId = model.SchoolId,
-          AcademicyearId = model.AcademicyearId,
-          ClassId = model.ClassId,
-          Status = model.Status,
-          DateCreated = model.DateCreated,
-          DateUpdated = model.DateUpdated,
-        };
-
-        return new BiaSoDauBaiResType(200, "Tạo mới sổ đầu bài thành công", result);
+        var dto = _mapper.Map<BiaSoDauBai>(model);
+        dto.CreatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
+        return await this.AddAsync(dto);
       }
       catch (Exception ex)
       {
-        await transaction.RollbackAsync();
-        return new BiaSoDauBaiResType(500, $"Server Error: {ex.Message}");
+        throw new Exception(ex.Message);
       }
     }
 
-    // This method use for fetch and Update
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBai(int id)
+    public async Task<BiaSoDauBai> GetBiaSoDauBai(int id)
     {
-      try
-      {
-        var query = @"SELECT 
-                  b.Id,
-                  b.SchoolId,
-                  ISNULL(s.NameSchool, '') AS SchoolName,
-                  b.AcademicyearId,
-                  ISNULL(ay.displayAcademicYear_Name, '') AS NienKhoaName,
-                  b.ClassId,
-                  ISNULL(c.ClassName, '') AS ClassName,
-                  b.Status,
-                  ISNULL(t.Fullname, '') AS TenGiaoVienChuNhiem,
-                  b.DateCreated,
-                  b.DateUpdated
-              FROM 
-                  BiaSoDauBai b
-              LEFT JOIN 
-                  Class c ON b.ClassId = c.ClassId
-              LEFT JOIN 
-                  Teacher t ON c.TeacherId = t.TeacherId
-              LEFT JOIN 
-                  School s ON b.SchoolId = s.SchoolId
-              LEFT JOIN 
-                  AcademicYear ay ON b.AcademicyearId = ay.AcademicYearId
-              WHERE b.Id = @id";
-
-        // Fetch 
-        var sodaubai = await _context.BiaSoDauBais
-            .FromSqlRaw(query, new SqlParameter("@id", id))
-            .Select(static x => new BiaSoDauBaiRes
-            {
-              Id = x.Id,
-              SchoolId = x.SchoolId,
-              SchoolName = x.School.Name,
-              AcademicyearId = x.AcademicyearId,
-              NienKhoaName = x.Academicyear.Name,
-              ClassId = x.ClassId,
-              ClassName = x.Class.Name,
-              Status = x.Status,
-              TenGiaoVienChuNhiem = x.Class.Teacher.Fullname,
-              DateCreated = x.DateCreated.HasValue ? x.DateCreated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-              DateUpdated = x.DateUpdated.HasValue ? x.DateUpdated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-            })
-            .FirstOrDefaultAsync();
-
-        if (sodaubai is null)
-        {
-          return new BiaSoDauBaiResType(404, "Not found");
-        }
-
-        // Map the result
-        var result = new BiaSoDauBaiRes
-        {
-          Id = id,
-          SchoolId = sodaubai.SchoolId,
-          SchoolName = sodaubai.SchoolName ?? string.Empty,
-          AcademicyearId = sodaubai.AcademicyearId,
-          NienKhoaName = sodaubai.NienKhoaName ?? string.Empty,
-          ClassId = sodaubai.ClassId,
-          ClassName = sodaubai.ClassName ?? string.Empty,
-          Status = sodaubai.Status,
-          TenGiaoVienChuNhiem = sodaubai.TenGiaoVienChuNhiem ?? string.Empty,
-          DateCreated = sodaubai.DateCreated,
-          DateUpdated = sodaubai.DateUpdated,
-        };
-
-        return new BiaSoDauBaiResType(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
+      var result = await GetByIdAsync(id);
+      return result;
     }
 
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBaiToUpdate(int id)
+    public async Task<BiaSoDauBai> UpdateBiaSoDauBai(int id, BiaSoDauBaiDto model)
     {
-      try
-      {
-        var query = @"SELECT 
-                  b.Id,
-                  b.SchoolId,
-                  b.AcademicyearId,
-                  b.ClassId,
-                  b.Status,
-                  b.DateCreated,
-                  b.DateUpdated
-              FROM 
-                  BiaSoDauBai b
-              WHERE b.Id = @id";
+      var existing = await GetByIdAsync(id);
+      if (existing == null) throw new NotFoundException("Không tìm thấy dữ liệu");
 
-        // Fetch 
-        var sodaubai = await _context.BiaSoDauBais
-            .FromSqlRaw(query, new SqlParameter("@id", id))
-            .FirstOrDefaultAsync();
-
-        if (sodaubai is null)
-        {
-          return new BiaSoDauBaiResType(404, "Not found");
-        }
-
-        // Map the result
-        var result = new BiaSoDauBaiDto
-        {
-          Id = id,
-          SchoolId = sodaubai.SchoolId,
-          AcademicyearId = sodaubai.AcademicyearId,
-          ClassId = sodaubai.ClassId,
-          Status = sodaubai.Status,
-          DateCreated = sodaubai.DateCreated,
-          DateUpdated = sodaubai.DateUpdated,
-        };
-
-        return new BiaSoDauBaiResType(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
+      existing.DateUpdated = DateTime.UtcNow;
+      existing.UpdatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
+      var dto = _mapper.Map<BiaSoDauBai>(model);
+      return await this.UpdateAsync(dto);
     }
 
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBais_Active(QueryObject? queryObject)
+    public async Task<bool> DeleteBiaSoDauBai(int id)
     {
-      try
-      {
-        queryObject ??= new QueryObject();
-        var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-
-        var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
-                               join lop in _context.Classes on biaSo.ClassId equals lop.Id into lopHocGroup
-                               from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
-                               from truong in schoolGroup.DefaultIfEmpty()
-                               join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.Id into nienkhoaGroup
-                               from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
-                               select new BiaSoDauBaiRes()
-                               {
-                                 Id = biaSo.Id,
-                                 SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.Name,
-                                 AcademicyearId = biaSo.AcademicyearId,
-                                 NienKhoaName = nienKhoa.Name,
-                                 ClassId = biaSo.ClassId,
-                                 ClassName = lop.Name,
-                                 Status = biaSo.Status,
-                                 TenGiaoVienChuNhiem = lop.Teacher.Fullname,
-                                 DateCreated = biaSo.DateCreated.HasValue ? biaSo.DateCreated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                                 DateUpdated = biaSo.DateUpdated.HasValue ? biaSo.DateUpdated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                               };
-
-        var biaSoDauBai = await baiSoDauBaiQuery
-        .AsNoTracking()
-            .Where(x => x.Status == true)
-            .OrderBy(x => x.Id)
-            .Skip(skip)
-            .Take(queryObject.PageSize)
-            .ToListAsync();
-
-        if (biaSoDauBai is null || biaSoDauBai.Count == 0)
-        {
-          return new BiaSoDauBaiResType(404, "Không có kết quả");
-        }
-
-        return new BiaSoDauBaiResType(200, "Thành công", biaSoDauBai);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
+      return await this.SoftDeleteAsync(id);
     }
 
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBaisBySchool_Active(int schoolId)
-    {
-      try
-      {
-        if (schoolId is 0)
-          return new BiaSoDauBaiResType(400, "Vui lòng nhập mã trường học");
-
-        var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
-                               join lop in _context.Classes on biaSo.ClassId equals lop.Id into lopHocGroup
-                               from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
-                               from truong in schoolGroup.DefaultIfEmpty()
-                               join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.Id into nienkhoaGroup
-                               from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
-                               select new BiaSoDauBaiRes()
-                               {
-                                 Id = biaSo.Id,
-                                 SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.Name,
-                                 AcademicyearId = biaSo.AcademicyearId,
-                                 NienKhoaName = nienKhoa.Name,
-                                 ClassId = biaSo.ClassId,
-                                 ClassName = lop.Name,
-                                 Status = biaSo.Status,
-                                 TenGiaoVienChuNhiem = lop.Teacher.Fullname,
-                                 DateCreated = biaSo.DateCreated.HasValue ? biaSo.DateCreated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                                 DateUpdated = biaSo.DateUpdated.HasValue ? biaSo.DateUpdated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                               };
-
-
-        var biaSoDauBai = await baiSoDauBaiQuery
-            .Where(x => x.SchoolId.Equals(schoolId) && x.Status == true)
-            .AsNoTracking()
-            .ToListAsync();
-
-        if (biaSoDauBai is null || biaSoDauBai.Count == 0)
-        {
-          return new BiaSoDauBaiResType(404, "Không có kết quả");
-        }
-
-        return new BiaSoDauBaiResType(200, "Thành công", biaSoDauBai);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    // status true & false
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBais(QueryObject? queryObject)
-    {
-      try
-      {
-        queryObject ??= new QueryObject();
-        var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-
-        var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
-                               join lop in _context.Classes on biaSo.ClassId equals lop.Id into lopHocGroup
-                               from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
-                               from truong in schoolGroup.DefaultIfEmpty()
-                               join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.Id into nienkhoaGroup
-                               from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
-                               select new BiaSoDauBaiRes()
-                               {
-                                 Id = biaSo.Id,
-                                 SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.Name,
-                                 AcademicyearId = biaSo.AcademicyearId,
-                                 NienKhoaName = nienKhoa.Name,
-                                 ClassId = biaSo.ClassId,
-                                 ClassName = lop.Name,
-                                 Status = biaSo.Status,
-                                 TenGiaoVienChuNhiem = lop.Teacher.Fullname,
-                                 DateCreated = biaSo.DateCreated.HasValue ? biaSo.DateCreated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                                 DateUpdated = biaSo.DateUpdated.HasValue ? biaSo.DateUpdated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                               };
-
-        var biaSoDauBai = await baiSoDauBaiQuery
-            .OrderBy(x => x.Id)
-            .Skip(skip)
-            .Take(queryObject.PageSize)
-            .ToListAsync();
-
-        if (biaSoDauBai is null || biaSoDauBai.Count == 0)
-        {
-          return new BiaSoDauBaiResType(404, "Không có kết quả");
-        }
-
-        return new BiaSoDauBaiResType(200, "Thành công", biaSoDauBai);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    // status true & false => admin
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBaisBySchool(QueryObject? queryObject, int schoolId)
-    {
-      try
-      {
-        queryObject ??= new QueryObject();
-        var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
-
-        var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
-                               join lop in _context.Classes on biaSo.ClassId equals lop.Id into lopHocGroup
-                               from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
-                               from truong in schoolGroup.DefaultIfEmpty()
-                               join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.Id into nienkhoaGroup
-                               from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
-                               select new
-                               {
-                                 biaSo.Id,
-                                 biaSo.SchoolId,
-                                 SchoolName = truong.Name,
-                                 biaSo.AcademicyearId,
-                                 AcademicYearName = nienKhoa.Name,
-                                 biaSo.ClassId,
-                                 lop.Name,
-                                 biaSo.Status,
-                                 biaSo.DateCreated,
-                                 biaSo.DateUpdated,
-                                 TenGiaoVienChuNhiem = lop.Teacher.Fullname
-                               };
-
-        var rawResults = await baiSoDauBaiQuery
-            .Where(x => x.SchoolId.Equals(schoolId))
-            .AsNoTracking()
-            .Skip(skip)     // Skip the first (pageNumber - 1) * pageSize records
-            .Take(queryObject.PageSize) // Take pageSize records
-            .ToListAsync();
-
-        var result = rawResults.Select(x => new BiaSoDauBaiRes
-        {
-          Id = x.Id,
-          SchoolId = x.SchoolId,
-          SchoolName = x.SchoolName ?? string.Empty,
-          AcademicyearId = x.AcademicyearId,
-          NienKhoaName = x.AcademicYearName ?? string.Empty,
-          ClassId = x.ClassId,
-          ClassName = x.Name ?? string.Empty,
-          Status = x.Status,
-          DateCreated = x.DateCreated.HasValue ? x.DateCreated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-          DateUpdated = x.DateUpdated.HasValue ? x.DateUpdated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-          TenGiaoVienChuNhiem = x.TenGiaoVienChuNhiem
-        }).ToList();
-
-        if (result is null || result.Count == 0)
-        {
-          return new BiaSoDauBaiResType(404, "Không có kết quả");
-        }
-
-        return new BiaSoDauBaiResType(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<BiaSoDauBaiResType> GetBiaSoDauBaisBySchoolAndClass(int schoolId, int? classId)
-    {
-      try
-      {
-        if (schoolId == 0)
-          return new BiaSoDauBaiResType(400, "Vui lòng cung cấp ít nhất mã trường học");
-
-        var baiSoDauBaiQuery = from biaSo in _context.BiaSoDauBais
-                               join lop in _context.Classes on biaSo.ClassId equals lop.Id into lopHocGroup
-                               from lop in lopHocGroup.DefaultIfEmpty()
-                               join truong in _context.Schools on biaSo.SchoolId equals truong.Id into schoolGroup
-                               from truong in schoolGroup.DefaultIfEmpty()
-                               join nienKhoa in _context.AcademicYears on biaSo.AcademicyearId equals nienKhoa.Id into nienkhoaGroup
-                               from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
-                               where biaSo.SchoolId == schoolId &&
-                                    (classId == null || biaSo.ClassId == classId)
-                               select new BiaSoDauBaiRes()
-                               {
-                                 Id = biaSo.Id,
-                                 SchoolId = biaSo.SchoolId,
-                                 SchoolName = truong.Name,
-                                 AcademicyearId = biaSo.AcademicyearId,
-                                 NienKhoaName = nienKhoa.Name,
-                                 ClassId = biaSo.ClassId,
-                                 ClassName = lop.Name,
-                                 Status = biaSo.Status,
-                                 TenGiaoVienChuNhiem = lop.Teacher.Fullname,
-                                 DateCreated = biaSo.DateCreated.HasValue ? biaSo.DateCreated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                                 DateUpdated = biaSo.DateUpdated.HasValue ? biaSo.DateUpdated.Value.ToString("dd/MM/yyyy HH:mm:ss") : string.Empty,
-                               };
-
-        var biaSoDauBai = await baiSoDauBaiQuery
-            .OrderBy(x => x.ClassName)
-            .AsNoTracking()
-            .ToListAsync();
-
-        if (biaSoDauBai is null || biaSoDauBai.Count == 0)
-          return new BiaSoDauBaiResType(200, "Không có kết quả");
-
-        return new BiaSoDauBaiResType(200, "Thành công", biaSoDauBai);
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<BiaSoDauBaiResType> UpdateBiaSoDauBai(int id, BiaSoDauBaiDto model)
-    {
-      using var transaction = await _context.Database.BeginTransactionAsync();
-      try
-      {
-        var find = "SELECT * FROM BiaSoDauBai WHERE BiaSoDauBaiId = @id";
-        var existingBiaSoDaiBai = await _context.BiaSoDauBais
-            .FromSqlRaw(find, new SqlParameter("@id", id))
-            .FirstOrDefaultAsync();
-
-        if (existingBiaSoDaiBai == null)
-        {
-          return new BiaSoDauBaiResType(404, "Mã sổ không tồn tại");
-        }
-
-        bool hasChanges = false;
-
-        // Compare if difference
-        var parameters = new List<SqlParameter>();
-        var queryBuilder = new StringBuilder("UPDATE BiaSoDauBai SET ");
-
-        if (model.SchoolId != 0 && model.SchoolId != existingBiaSoDaiBai.SchoolId)
-        {
-          queryBuilder.Append("SchoolId = @SchoolId, ");
-          parameters.Add(new SqlParameter("@SchoolId", model.SchoolId));
-          hasChanges = true;
-        }
-
-        if (model.AcademicyearId != 0 && model.AcademicyearId != existingBiaSoDaiBai.AcademicyearId)
-        {
-          queryBuilder.Append("AcademicyearId = @AcademicyearId, ");
-          parameters.Add(new SqlParameter("@AcademicyearId", model.AcademicyearId));
-          hasChanges = true;
-        }
-
-        if (model.ClassId != 0 && model.ClassId != existingBiaSoDaiBai.ClassId)
-        {
-          queryBuilder.Append("ClassId = @ClassId, ");
-          parameters.Add(new SqlParameter("@ClassId", model.ClassId));
-          hasChanges = true;
-        }
-
-        if (model.Status != existingBiaSoDaiBai.Status)
-        {
-          queryBuilder.Append("Status = @Status, ");
-          parameters.Add(new SqlParameter("@Status", model.Status));
-          hasChanges = true;
-        }
-
-        if (model.DateCreated.HasValue)
-        {
-          queryBuilder.Append("DateCreated = @DateCreated, ");
-          parameters.Add(new SqlParameter("@DateCreated", model.DateCreated.Value));
-        }
-
-        var currentDate = DateTime.UtcNow;
-        if (currentDate != existingBiaSoDaiBai.DateUpdated)
-        {
-          queryBuilder.Append("DateUpdated = @DateUpdated, ");
-          parameters.Add(new SqlParameter("@DateUpdated", currentDate));
-          hasChanges = true;
-        }
-
-        // Remove the last comma and space
-        if (hasChanges)
-        {
-          queryBuilder.Length -= 2;
-          queryBuilder.Append(" WHERE BiaSoDauBaiId = @id");
-          parameters.Add(new SqlParameter("@id", id));
-
-          var updateQuery = queryBuilder.ToString();
-          await _context.Database.ExecuteSqlRawAsync(updateQuery, [.. parameters]);
-
-          // Commit the transaction
-          await transaction.CommitAsync();
-          return new BiaSoDauBaiResType(200, "Cập nhật thành công");
-        }
-        else
-        {
-          return new BiaSoDauBaiResType(200, "Không phát hiện sự thay đổi");
-        }
-      }
-      catch (Exception ex)
-      {
-        // Rollback the transaction in case of an error
-        await transaction.RollbackAsync();
-        return new BiaSoDauBaiResType(500, $"Server Error: {ex.Message}");
-      }
-    }
-
-    public async Task<BiaSoDauBaiResType> DeleteBiaSoDauBai(int id)
-    {
-      try
-      {
-        var find = "SELECT * FROM BiaSoDauBai WHERE BiaSoDauBaiId = @id";
-        var sodaubai = await _context.BiaSoDauBais
-          .FromSqlRaw(find, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
-
-        if (sodaubai is null)
-        {
-          return new BiaSoDauBaiResType(404, "Không tìm thấy id");
-        }
-
-        var deleteQuery = "DELETE FROM BiaSoDauBai WHERE BiaSoDauBaiId = @id";
-
-        var deleteRelatedQuery = "DELETE FROM PhanCongGiangDay WHERE biaSoDauBaiId = @id";
-
-        await _context.Database.ExecuteSqlRawAsync(deleteRelatedQuery, new SqlParameter("@id", id));
-
-        await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
-        return new BiaSoDauBaiResType(200, "Xóa thành công");
-      }
-      catch (Exception ex)
-      {
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
-      }
-    }
-
-    public async Task<BiaSoDauBaiResType> BulkDelete(List<int> ids)
+    public async Task<bool> BulkDelete(List<int> ids)
     {
       await using var transaction = await _context.Database.BeginTransactionAsync();
-
       try
       {
-        if (ids is null || ids.Count == 0)
-        {
-          return new BiaSoDauBaiResType(400, "Không có mã số nào được cung cấp.");
-        }
-
-        var idList = string.Join(",", ids);
-
-        var deleteRelatedQuery = $"DELETE FROM PhanCongGiangDay WHERE BiaSoDauBaiId IN ({idList})";
-        await _context.Database.ExecuteSqlRawAsync(deleteRelatedQuery);
-
-        var deleteQuery = $"DELETE FROM BiaSoDauBai WHERE BiaSoDauBaiId IN ({idList})";
-
-        var delete = await _context.Database.ExecuteSqlRawAsync(deleteQuery);
-
-        if (delete == 0)
-        {
-          return new BiaSoDauBaiResType(404, "Không tìm thấy id");
-        }
-
+        var result = await base.BulkDeleteAsync(ids);
         await transaction.CommitAsync();
 
-        return new BiaSoDauBaiResType(200, "Xóa thành công");
+        return true;
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         await transaction.RollbackAsync();
-        return new BiaSoDauBaiResType(500, $"Server error: {ex.Message}");
+        return false;
       }
     }
 
@@ -735,68 +175,59 @@ namespace server.Repositories
       }
     }
 
-    public async Task<BiaSoDauBaiResType> SearchBiaSoDauBais(BiaSoDauBaiSearchObject? searchObject)
+    public async Task<PaginatedResponse<ExtendBiaSoDauBai>> GetBiaSoDauBais(BiaSoDauBaiSearch request)
     {
-      searchObject ??= new BiaSoDauBaiSearchObject();
+      request ??= new BiaSoDauBaiSearch();
 
-      if (searchObject.ClassId == 0 || searchObject.SchoolId == 0)
+      if (request.ClassId == 0 || request.SchoolId == 0)
       {
-        return new BiaSoDauBaiResType(400, "Không tìm thấy kết quả. Vui lòng nhập thông tin tìm kiếm");
+        throw new NotFoundException("Không tìm thấy kết quả");
       }
 
       var query = _context.BiaSoDauBais
+          .Where(b => b.Deleted != true)
           .AsNoTracking()
           .Include(x => x.Class)
           .Include(b => b.School)
+          .Include(a => a.Academicyear)
           .AsQueryable();
 
-      if (searchObject.SchoolId.HasValue)
+      if (request.SchoolId.HasValue)
       {
-        query = query.Where(x => x.SchoolId == searchObject.SchoolId.Value);
+        query = query.Where(x => x.SchoolId == request.SchoolId.Value);
       }
 
-      if (searchObject.ClassId.HasValue)
+      if (request.ClassId.HasValue)
       {
-        query = query.Where(x => x.ClassId == searchObject.ClassId.Value);
+        query = query.Where(x => x.ClassId == request.ClassId.Value);
       }
 
-      var rawResults = await query.Select(x => new
+      if (request.AcademicyearId.HasValue)
       {
-        x.Id,
-        x.ClassId,
-        x.SchoolId,
-        x.AcademicyearId,
-        SchoolName = x.School.Name,
-        ClassName = x.Class.Name,
-        NienKhoaName = x.Academicyear.Name,
-        TenGiaoVienChuNhiem = x.Class.Teacher.Fullname,
-        x.Status,
-        x.DateCreated,
-        x.DateUpdated
-      }).ToListAsync();
-
-      var totalCount = query.Count();
-
-      var results = rawResults.Select(x => new BiaSoDauBaiRes
-      {
-        Id = x.Id,
-        SchoolId = x.SchoolId,
-        AcademicyearId = x.AcademicyearId,
-        ClassId = x.ClassId,
-        SchoolName = x.SchoolName,
-        ClassName = x.ClassName,
-        NienKhoaName = x.NienKhoaName,
-        TenGiaoVienChuNhiem = x.TenGiaoVienChuNhiem,
-        Status = x.Status,
-        DateCreated = x.DateCreated?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-        DateUpdated = x.DateUpdated?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty
-      }).ToList();
-
-      if (results.Count == 0)
-      {
-        return new BiaSoDauBaiResType(404, "Không tìm thấy kết quả");
+        query = query.Where(x => x.AcademicyearId == request.AcademicyearId.Value);
       }
-      return new BiaSoDauBaiResType(200, "Có kết quả", results, totalCount);
+
+      if (request.Status.HasValue)
+      {
+        query = query.Where(x => x.Status == request.Status.Value);
+      }
+
+      var totalCount = await query.CountAsync();
+
+      var items = await query
+          .Skip((request.PageNumber - 1) * request.PageSize)
+          .Take(request.PageSize)
+          .ToListAsync();
+
+      var mappedItems = _mapper.Map<List<ExtendBiaSoDauBai>>(items);
+
+      return new PaginatedResponse<ExtendBiaSoDauBai>
+      {
+        Items = mappedItems,
+        TotalCount = totalCount,
+        PageNumber = request.PageNumber,
+        PageSize = request.PageSize
+      };
     }
   }
 }

@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
 namespace server.Models;
 
-public partial class BiaSoDauBai
+public partial class BiaSoDauBai : IBaseEntity
 {
     public int Id { get; set; }
 

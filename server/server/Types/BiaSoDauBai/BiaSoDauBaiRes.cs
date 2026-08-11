@@ -26,10 +26,4 @@ namespace server.Types.BiaSoDauBai
 
     public string DateUpdated { get; set; } = string.Empty;
   }
-
-  public class BiaSoDauBaiSearchObject : QueryObject
-  {
-    public int? SchoolId { get; set; }
-    public int? ClassId { get; set; }
-  }
 }

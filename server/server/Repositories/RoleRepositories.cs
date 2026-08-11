@@ -17,10 +17,12 @@ namespace server.Repositories
   public class RoleRepositories : BaseRepository<Role>, IRole
   {
     private readonly IMapper _mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public RoleRepositories(SoDauBaiContext context, IMapper mapper) : base(context)
+    public RoleRepositories(SoDauBaiContext context, IMapper mapper, IHttpContextAccessor httpContextAccessor) : base(context)
     {
       this._mapper = mapper;
+      this._httpContextAccessor = httpContextAccessor;
     }
 
     protected override IQueryable<Role> ApplySearchFilter(IQueryable<Role> query, string searchTerm)
@@ -55,6 +57,7 @@ namespace server.Repositories
     public async Task<Role> AddRole(RoleDto model)
     {
       var dto = _mapper.Map<Role>(model);
+      dto.CreatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
       return await this.AddAsync(dto);
     }
 
@@ -66,12 +69,13 @@ namespace server.Repositories
     public async Task<Role> UpdateRole(int id, RoleDto model)
     {
       var existing = await GetByIdAsync(id);
-      if (existing == null) throw new NotFoundException("Role not found");
+      if (existing == null) throw new NotFoundException("Không tìm thấy dữ liệu");
 
       if (!string.IsNullOrEmpty(model.NameRole)) existing.NameRole = model.NameRole;
       if (model.Description != null) existing.Description = model.Description;
 
       existing.DateUpdated = DateTime.UtcNow;
+      existing.UpdatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
 
       return await this.UpdateAsync(existing);
     }

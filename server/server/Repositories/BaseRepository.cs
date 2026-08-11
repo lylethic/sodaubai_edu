@@ -95,6 +95,8 @@ namespace server.Repositories
 
     public async Task<TEntity> AddAsync(TEntity entity)
     {
+      entity.DateCreated = DateTime.UtcNow;
+      entity.Deleted = false;
       await _dbSet.AddAsync(entity);
       await _context.SaveChangesAsync();
       return entity;

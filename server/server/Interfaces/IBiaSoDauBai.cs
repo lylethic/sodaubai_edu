@@ -1,41 +1,26 @@
-﻿using server.Dtos;
+﻿using server.Applications.ResponseModel;
+using server.Applications.Search;
+using server.Dtos;
+using server.Models;
 using server.Types.BiaSoDauBai;
 
-namespace server.IService
+namespace server.Interfaces
 {
   public interface IBiaSoDauBai
   {
-    // Admin, includes status true and false
-    Task<int> CountBiaSoDauBaiAsync();
+    Task<BiaSoDauBai> CreateBiaSoDauBai(BiaSoDauBaiDto model);
 
-    // User, includes only status true
-    Task<int> CountBiaSoDauBaiActiveAsync();
-
-    Task<BiaSoDauBaiResType> CreateBiaSoDauBai(BiaSoDauBaiDto model);
-
-    Task<BiaSoDauBaiResType> GetBiaSoDauBai(int id);
-
-    Task<BiaSoDauBaiResType> GetBiaSoDauBaiToUpdate(int id);
-
-    Task<BiaSoDauBaiResType> GetBiaSoDauBais_Active(QueryObject? queryObject);
-
-    Task<BiaSoDauBaiResType> GetBiaSoDauBaisBySchool_Active(int schoolId);
+    Task<BiaSoDauBai> GetBiaSoDauBai(int id);
 
     // status true && false
-    Task<BiaSoDauBaiResType> GetBiaSoDauBais(QueryObject? queryObject);
+    Task<PaginatedResponse<ExtendBiaSoDauBai>> GetBiaSoDauBais(BiaSoDauBaiSearch queryObject);
 
-    Task<BiaSoDauBaiResType> GetBiaSoDauBaisBySchoolAndClass(int schoolId, int? classId);
+    Task<bool> DeleteBiaSoDauBai(int id);
 
-    Task<BiaSoDauBaiResType> GetBiaSoDauBaisBySchool(QueryObject? queryObject, int schoolId);
+    Task<BiaSoDauBai> UpdateBiaSoDauBai(int id, BiaSoDauBaiDto model);
 
-    Task<BiaSoDauBaiResType> DeleteBiaSoDauBai(int id);
-
-    Task<BiaSoDauBaiResType> UpdateBiaSoDauBai(int id, BiaSoDauBaiDto model);
+    Task<bool> BulkDelete(List<int> ids);
 
     Task<BiaSoDauBaiResType> ImportExcel(IFormFile file);
-
-    Task<BiaSoDauBaiResType> BulkDelete(List<int> ids);
-
-    Task<BiaSoDauBaiResType> SearchBiaSoDauBais(BiaSoDauBaiSearchObject? searchObject);
   }
 }
