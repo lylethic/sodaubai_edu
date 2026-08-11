@@ -50,7 +50,7 @@ namespace server.Repositories
         }
 
         var data = await _context.RollCallDetails
-         .FirstOrDefaultAsync(x => x.AbsenceId == id);
+         .FirstOrDefaultAsync(x => x.Id == id);
 
         if (data == null)
         {
@@ -77,7 +77,7 @@ namespace server.Repositories
           return new ResponseData<RollCallDetail>(400, "Dữ liệu không được cung cấp.");
         }
         var data = await _context.RollCallDetails
-         .Where(x => ids.Contains(x.AbsenceId))
+         .Where(x => ids.Contains(x.Id))
          .ToListAsync();
 
         if (data == null)
@@ -143,7 +143,7 @@ namespace server.Repositories
       try
       {
         var result = await _context.RollCallDetails
-          .Where(x => x.AbsenceId == id)
+          .Where(x => x.Id == id)
           .AsNoTracking()
           .FirstOrDefaultAsync();
 
@@ -166,7 +166,7 @@ namespace server.Repositories
       {
         // Find the WeeklyEvaluation to update
         var data = await _context.RollCallDetails
-            .FirstOrDefaultAsync(x => x.AbsenceId == id);
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         if (data == null)
         {

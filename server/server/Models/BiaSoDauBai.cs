@@ -5,7 +5,7 @@ namespace server.Models;
 
 public partial class BiaSoDauBai
 {
-    public int BiaSoDauBaiId { get; set; }
+    public int Id { get; set; }
 
     public int SchoolId { get; set; }
 
@@ -19,13 +19,23 @@ public partial class BiaSoDauBai
 
     public DateTime? DateUpdated { get; set; }
 
+    public bool? Deleted { get; set; }
+
+    public int? UpdatedBy { get; set; }
+
+    public int? CreatedBy { get; set; }
+
     public virtual AcademicYear Academicyear { get; set; } = null!;
 
     public virtual ICollection<ChiTietSoDauBai> ChiTietSoDauBais { get; set; } = new List<ChiTietSoDauBai>();
 
     public virtual Class Class { get; set; } = null!;
 
+    public virtual User? CreatedByNavigation { get; set; }
+
     public virtual ICollection<PhanCongGiangDay> PhanCongGiangDays { get; set; } = new List<PhanCongGiangDay>();
 
     public virtual School School { get; set; } = null!;
+
+    public virtual User? UpdatedByNavigation { get; set; }
 }

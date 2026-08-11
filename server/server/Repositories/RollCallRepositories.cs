@@ -49,7 +49,7 @@ namespace server.Repositories
           {
             var newAbsence = new RollCallDetail
             {
-              RollCallId = newRollCall.RollCallId,
+              RollCallId = newRollCall.Id,
               Description = absenceDto.Description,
               StudentId = absenceDto.StudentId,
               IsExcused = absenceDto.IsExecute,
@@ -82,7 +82,7 @@ namespace server.Repositories
 
         var rollCalls = await _context.RollCalls
          .Include(x => x.RollCallDetails)  // Include Absences to delete them as well
-         .Where(x => rollCallIds.Contains(x.RollCallId))
+         .Where(x => rollCallIds.Contains(x.Id))
          .ToListAsync();
 
         if (rollCalls == null)
@@ -117,7 +117,7 @@ namespace server.Repositories
 
         var rollCall = await _context.RollCalls
          .Include(x => x.RollCallDetails)  // Include Absences to delete them as well
-         .FirstOrDefaultAsync(x => x.RollCallId == rollCallId);
+         .FirstOrDefaultAsync(x => x.Id == rollCallId);
 
         if (rollCall == null)
         {
@@ -144,7 +144,7 @@ namespace server.Repositories
       {
         // Find the RollCall to update
         var rollCall = await _context.RollCalls
-            .FirstOrDefaultAsync(x => x.RollCallId == rollCallId);
+            .FirstOrDefaultAsync(x => x.Id == rollCallId);
 
         if (rollCall == null)
         {
@@ -175,7 +175,7 @@ namespace server.Repositories
       try
       {
         var rollCall = await _context.RollCalls
-          .Where(x => x.RollCallId == rollCallId)
+          .Where(x => x.Id == rollCallId)
           .AsNoTracking()
           .FirstOrDefaultAsync();
 
@@ -238,16 +238,16 @@ namespace server.Repositories
       try
       {
         var queryObject = from rollcall in _context.RollCalls
-                          join w in _context.Weeks on rollcall.WeekId equals w.WeekId into weekGroup
+                          join w in _context.Weeks on rollcall.WeekId equals w.Id into weekGroup
                           from w in weekGroup.DefaultIfEmpty()
                           join cl in _context.Classes on rollcall.ClassId equals cl.Id into classGroup
                           from cl in classGroup.DefaultIfEmpty()
                           where rollcall.WeekId == weekId && (classId == null || rollcall.ClassId == classId)
                           select new RollCallRes()
                           {
-                            RollCallId = rollcall.RollCallId,
+                            RollCallId = rollcall.Id,
                             WeekId = rollcall.WeekId,
-                            WeekName = w.WeekName,
+                            WeekName = w.Name,
                             ClassId = rollcall.ClassId,
                             ClassName = cl.Name,
                             DayOfTheWeek = rollcall.DayOfTheWeek,

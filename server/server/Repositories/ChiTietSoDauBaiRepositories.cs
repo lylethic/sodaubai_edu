@@ -86,20 +86,20 @@ namespace server.Repositories
           return new ChiTietSoDauBaiResType(404, "Không tìm thấy id xếp loại");
         }
 
-        var find = "SELECT * FROM ChiTietSodauBai WHERE ChiTietSodauBaiId = @id";
+        var find = "SELECT * FROM ChiTietSodauBai WHERE Id = @id";
 
         var existingChiTietSoDauBai = await _context.ChiTietSoDauBais
-         .FromSqlRaw(find, new SqlParameter("@id", model.ChiTietSoDauBaiId))
+         .FromSqlRaw(find, new SqlParameter("@id", model.Id))
          .FirstOrDefaultAsync();
 
         var insertdata = @"INSERT INTO ChiTietSoDauBai (biaSoDauBaiId, semesterId, weekId, subjectId, 
-                                    classificationId, daysOfTheWeek, thoiGian, buoiHoc, 
-                                    tietHoc, lessonContent, attend,
-                                    noteComment, createdBy, createdAt, updatedAt)
+                                    classificationId, daysOfTheWeek, Time, Session, 
+                                    Period, lessonContent, attend,
+                                    note, createdBy, createdDateCreated, updatedDateUpdated)
                            VALUES (@biaSoDauBaiId, @semesterId, @weekId, @subjectId, 
-                                    @classificationId, @daysOfTheWeek, @thoiGian, 
-                                    @buoiHoc, @tietHoc, @lessonContent, @attend,
-                                    @noteComment, @createdBy, @createdAt, @updatedAt);
+                                    @classificationId, @daysOfTheWeek, @Time, 
+                                    @Session, @Period, @lessonContent, @attend,
+                                    @note, @createdBy, @createdDateCreated, @updatedDateUpdated);
                            SELECT CAST(SCOPE_IDENTITY() AS int);";
 
         var currentDate = DateTime.UtcNow;
@@ -111,35 +111,35 @@ namespace server.Repositories
           new SqlParameter("@subjectId", model.SubjectId),
           new SqlParameter("@classificationId", model.ClassificationId),
           new SqlParameter("@daysOfTheWeek", model.DaysOfTheWeek),
-          new SqlParameter("@thoiGian", model.ThoiGian),
-          new SqlParameter("@buoiHoc", model.BuoiHoc),
-          new SqlParameter("@tietHoc", model.TietHoc),
+          new SqlParameter("@Time", model.Time),
+          new SqlParameter("@Session", model.Session),
+          new SqlParameter("@Period", model.Period),
           new SqlParameter("@lessonContent", model.LessonContent),
           new SqlParameter("@attend", model.Attend),
-          new SqlParameter("@noteComment", model.NoteComment),
+          new SqlParameter("@note", model.Note),
           new SqlParameter("@createdBy", model.CreatedBy),
-          new SqlParameter("@createdAt", currentDate),
-          new SqlParameter("@updatedAt", DBNull.Value)
+          new SqlParameter("@createdDateCreated", currentDate),
+          new SqlParameter("@updatedDateUpdated", DBNull.Value)
           );
 
         var result = new ChiTietSoDauBaiDto
         {
-          ChiTietSoDauBaiId = model.ChiTietSoDauBaiId,
+          Id = model.Id,
           BiaSoDauBaiId = model.BiaSoDauBaiId,
           SemesterId = model.SemesterId,
           WeekId = model.WeekId,
           SubjectId = model.SubjectId,
           ClassificationId = model.ClassificationId,
           DaysOfTheWeek = model.DaysOfTheWeek,
-          ThoiGian = model.ThoiGian,
-          BuoiHoc = model.BuoiHoc,
-          TietHoc = model.TietHoc,
+          Time = model.Time,
+          Session = model.Session,
+          Period = model.Period,
           LessonContent = model.LessonContent,
           Attend = model.Attend,
-          NoteComment = model.NoteComment,
+          Note = model.Note,
           CreatedBy = model.CreatedBy,
-          CreatedAt = model.CreatedAt,
-          UpdatedAt = model.UpdatedAt,
+          DateCreated = model.DateCreated,
+          DateUpdated = model.DateUpdated,
         };
 
         await transaction.CommitAsync();
@@ -157,7 +157,7 @@ namespace server.Repositories
     {
       try
       {
-        var find = @"SELECT * FROM CHITIETSODAUBAI WHERE CHITIETSODAUBAIID = @id";
+        var find = @"SELECT * FROM CHITIETSODAUBAI WHERE Id = @id";
 
         var chiTietSoDauBai = await _context.ChiTietSoDauBais
           .FromSqlRaw(find, new SqlParameter("@id", id)
@@ -170,22 +170,22 @@ namespace server.Repositories
 
         var result = new ChiTietSoDauBaiDto
         {
-          ChiTietSoDauBaiId = chiTietSoDauBai.ChiTietSoDauBaiId,
+          Id = chiTietSoDauBai.Id,
           BiaSoDauBaiId = chiTietSoDauBai.BiaSoDauBaiId,
           SemesterId = chiTietSoDauBai.SemesterId,
           WeekId = chiTietSoDauBai.WeekId,
           SubjectId = chiTietSoDauBai.SubjectId,
           ClassificationId = chiTietSoDauBai.ClassificationId,
           DaysOfTheWeek = chiTietSoDauBai.DaysOfTheWeek,
-          ThoiGian = chiTietSoDauBai.ThoiGian,
-          BuoiHoc = chiTietSoDauBai.BuoiHoc,
-          TietHoc = chiTietSoDauBai.TietHoc,
+          Time = chiTietSoDauBai.Time,
+          Session = chiTietSoDauBai.Session,
+          Period = chiTietSoDauBai.Period,
           LessonContent = chiTietSoDauBai.LessonContent,
           Attend = chiTietSoDauBai.Attend,
-          NoteComment = chiTietSoDauBai.NoteComment,
+          Note = chiTietSoDauBai.Note,
           CreatedBy = chiTietSoDauBai.CreatedBy,
-          CreatedAt = chiTietSoDauBai.CreatedAt,
-          UpdatedAt = chiTietSoDauBai.UpdatedAt,
+          DateCreated = chiTietSoDauBai.DateCreated,
+          DateUpdated = chiTietSoDauBai.DateUpdated,
         };
 
         return new ChiTietSoDauBaiResType(200, "Thành công", result);
@@ -202,42 +202,42 @@ namespace server.Repositories
       try
       {
         var result = from ct in _context.ChiTietSoDauBais
-                     join b in _context.BiaSoDauBais on ct.BiaSoDauBaiId equals b.BiaSoDauBaiId into bGroup
+                     join b in _context.BiaSoDauBais on ct.BiaSoDauBaiId equals b.Id into bGroup
                      from b in bGroup.DefaultIfEmpty()
                      join c in _context.Classes on b.ClassId equals c.Id into cGroup
                      from c in cGroup.DefaultIfEmpty()
-                     join t in _context.Teachers on c.TeacherId equals t.TeacherId into tGroup
+                     join t in _context.Teachers on c.TeacherId equals t.Id into tGroup
                      from t in tGroup.DefaultIfEmpty()
                      where b.AcademicyearId == queryChiTiet.AcademicYearId &&
                            ct.SemesterId == queryChiTiet.SemesterId &&
                            ct.WeekId == queryChiTiet.WeekId &&
-                           b.BiaSoDauBaiId == queryChiTiet.BiaSoDauBaiId
+                           b.Id == queryChiTiet.BiaSoDauBaiId
                      select new ChiTietSoDauBaiRes
                      {
-                       ChiTietSoDauBaiId = ct.ChiTietSoDauBaiId,
+                       Id = ct.Id,
                        BiaSoDauBaiId = ct.BiaSoDauBaiId,
                        ClassName = c.Name,
                        SemesterId = ct.SemesterId,
-                       SemesterName = ct.Semester.SemesterName,
+                       SemesterName = ct.Semester.Name,
                        WeekId = ct.WeekId,
-                       WeekName = ct.Week.WeekName,
+                       WeekName = ct.Week.Name,
                        SubjectId = ct.SubjectId,
-                       SubjectName = ct.Subject.SubjectName,
+                       SubjectName = ct.Subject.Name,
                        ClassificationId = ct.ClassificationId,
-                       ClassifyName = ct.Classification.ClassifyName,
+                       ClassifyName = ct.Classification.Name,
                        DaysOfTheWeek = ct.DaysOfTheWeek,
-                       ThoiGian = ct.ThoiGian.ToString("dd/MM/yyyy"),
-                       BuoiHoc = ct.BuoiHoc,
-                       TietHoc = ct.TietHoc,
+                       Time = ct.Time.ToString("dd/MM/yyyy"),
+                       Session = ct.Session,
+                       Period = ct.Period,
                        LessonContent = ct.LessonContent,
                        Attend = ct.Attend,
-                       NoteComment = ct.NoteComment,
+                       Note = ct.Note,
                        CreatedBy = _context.Teachers
-                                        .Where(teacher => teacher.TeacherId == ct.CreatedBy)
+                                        .Where(teacher => teacher.Id == ct.CreatedBy)
                                         .Select(teacher => teacher.Fullname)
                                         .FirstOrDefault(),
-                       CreatedAt = ct.CreatedAt,
-                       UpdatedAt = ct.UpdatedAt,
+                       DateCreated = ct.DateCreated,
+                       DateUpdated = ct.DateUpdated,
                      };
 
         var chitietSoDauBai = await result.AsNoTracking().ToListAsync();
@@ -269,7 +269,7 @@ namespace server.Repositories
         var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
 
         var query = @"SELECT * FROM ChiTietSoDauBai
-                      ORDER BY ChiTietSoDauBaiId
+                      ORDER BY Id
                       OFFSET @skip ROWS
                       FETCH NEXT @pageSize ROWS ONLY";
 
@@ -281,22 +281,22 @@ namespace server.Repositories
 
         var result = chiTietSoDauBai.Select(x => new ChiTietSoDauBaiDto
         {
-          ChiTietSoDauBaiId = x.ChiTietSoDauBaiId,
+          Id = x.Id,
           BiaSoDauBaiId = x.BiaSoDauBaiId,
           SemesterId = x.SemesterId,
           WeekId = x.WeekId,
           SubjectId = x.SubjectId,
           ClassificationId = x.ClassificationId,
           DaysOfTheWeek = x.DaysOfTheWeek,
-          ThoiGian = x.ThoiGian,
-          BuoiHoc = x.BuoiHoc,
-          TietHoc = x.TietHoc,
+          Time = x.Time,
+          Session = x.Session,
+          Period = x.Period,
           LessonContent = x.LessonContent,
           Attend = x.Attend,
-          NoteComment = x.NoteComment,
+          Note = x.Note,
           CreatedBy = x.CreatedBy,
-          CreatedAt = x.CreatedAt,
-          UpdatedAt = x.UpdatedAt,
+          DateCreated = x.DateCreated,
+          DateUpdated = x.DateUpdated,
         }).ToList();
 
         return new ChiTietSoDauBaiResType(200, "Thành công", result);
@@ -315,45 +315,45 @@ namespace server.Repositories
         var skip = (queryObject.PageNumber - 1) * queryObject.PageSize;
 
         var chiTietSoDauBaisByWeekQuery = from chitiet in _context.ChiTietSoDauBais
-                                          join week in _context.Weeks on chitiet.WeekId equals week.WeekId into weekGroup
+                                          join week in _context.Weeks on chitiet.WeekId equals week.Id into weekGroup
                                           from week in weekGroup.DefaultIfEmpty()
-                                          join bia in _context.BiaSoDauBais on chitiet.BiaSoDauBaiId equals bia.BiaSoDauBaiId into biaGroup
+                                          join bia in _context.BiaSoDauBais on chitiet.BiaSoDauBaiId equals bia.Id into biaGroup
                                           from bia in biaGroup.DefaultIfEmpty()
-                                          join semester in _context.Semesters on chitiet.SemesterId equals semester.SemesterId into semesterGroup
+                                          join semester in _context.Semesters on chitiet.SemesterId equals semester.Id into semesterGroup
                                           from semester in semesterGroup.DefaultIfEmpty()
-                                          join subject in _context.Subjects on chitiet.SubjectId equals subject.SubjectId into subjectGroup
+                                          join subject in _context.Subjects on chitiet.SubjectId equals subject.Id into subjectGroup
                                           from subject in subjectGroup.DefaultIfEmpty()
-                                          join xepLoai in _context.Classifications on chitiet.ClassificationId equals xepLoai.ClassificationId into xepLoaiGroup
+                                          join xepLoai in _context.Classifications on chitiet.ClassificationId equals xepLoai.Id into xepLoaiGroup
                                           from xepLoai in xepLoaiGroup.DefaultIfEmpty()
                                           select (new ChiTietBody
                                           {
-                                            ChiTietSoDauBaiId = chitiet.ChiTietSoDauBaiId,
+                                            Id = chitiet.Id,
                                             BiaSoDauBaiId = chitiet.BiaSoDauBaiId,
                                             SemesterId = chitiet.SemesterId,
                                             WeekId = chitiet.WeekId,
                                             SubjectId = chitiet.SubjectId,
                                             ClassificationId = chitiet.ClassificationId,
                                             DaysOfTheWeek = chitiet.DaysOfTheWeek,
-                                            ThoiGian = chitiet.ThoiGian,
-                                            BuoiHoc = chitiet.BuoiHoc,
-                                            TietHoc = chitiet.TietHoc,
+                                            Time = chitiet.Time,
+                                            Session = chitiet.Session,
+                                            Period = chitiet.Period,
                                             LessonContent = chitiet.LessonContent,
                                             Attend = chitiet.Attend,
-                                            NoteComment = chitiet.NoteComment,
+                                            Note = chitiet.Note,
                                             CreatedBy = chitiet.CreatedBy,
-                                            CreatedAt = chitiet.CreatedAt,
-                                            UpdatedAt = chitiet.UpdatedAt,
-                                            HocKy = semester.SemesterName,
-                                            TenTuanHoc = week.WeekName,
-                                            MonHoc = subject.SubjectName,
+                                            DateCreated = chitiet.DateCreated,
+                                            DateUpdated = chitiet.DateUpdated,
+                                            HocKy = semester.Name,
+                                            TenTuanHoc = week.Name,
+                                            MonHoc = subject.Name,
                                             TenLop = bia.Class.Name,
-                                            XepLoai = xepLoai.ClassifyName
+                                            XepLoai = xepLoai.Name
                                           });
 
 
         var chiTietSoDauBai = await chiTietSoDauBaisByWeekQuery
           .Where(x => x.WeekId == weekId)
-          .OrderBy(x => x.ChiTietSoDauBaiId)
+          .OrderBy(x => x.Id)
           .Skip(skip)
           .Take(queryObject.PageSize)
           .ToListAsync();
@@ -378,7 +378,7 @@ namespace server.Repositories
       try
       {
         // Check if the teacher exists in the database
-        var findQuery = "SELECT * FROM ChiTietSoDauBai WHERE ChiTietSoDauBaiId = @id";
+        var findQuery = "SELECT * FROM ChiTietSoDauBai WHERE Id = @id";
 
         var existingChiTietSoDauBai = await _context.ChiTietSoDauBais
             .FromSqlRaw(findQuery, new SqlParameter("@id", id))
@@ -437,24 +437,24 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        // if (model.ThoiGian != existingChiTietSoDauBai.ThoiGian)
+        // if (model.Time != existingChiTietSoDauBai.Time)
         // {
-        //   queryBuilder.Append("ThoiGian = @ThoiGian, ");
-        //   parameters.Add(new SqlParameter("@ThoiGian", model.ThoiGian));
+        //   queryBuilder.Append("Time = @Time, ");
+        //   parameters.Add(new SqlParameter("@Time", model.Time));
         //   hasChanges = true;
         // }
 
-        if (!String.IsNullOrEmpty(model.BuoiHoc) && model.BuoiHoc != existingChiTietSoDauBai.BuoiHoc)
+        if (!String.IsNullOrEmpty(model.Session) && model.Session != existingChiTietSoDauBai.Session)
         {
-          queryBuilder.Append("BuoiHoc = @BuoiHoc, ");
-          parameters.Add(new SqlParameter("@BuoiHoc", model.BuoiHoc));
+          queryBuilder.Append("Session = @Session, ");
+          parameters.Add(new SqlParameter("@Session", model.Session));
           hasChanges = true;
         }
 
-        if (model.TietHoc != 0 && model.TietHoc != existingChiTietSoDauBai.TietHoc)
+        if (model.Period != 0 && model.Period != existingChiTietSoDauBai.Period)
         {
-          queryBuilder.Append("TietHoc = @TietHoc, ");
-          parameters.Add(new SqlParameter("@TietHoc", model.TietHoc));
+          queryBuilder.Append("Period = @Period, ");
+          parameters.Add(new SqlParameter("@Period", model.Period));
           hasChanges = true;
         }
 
@@ -472,23 +472,23 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        if (model.NoteComment != existingChiTietSoDauBai.NoteComment)
+        if (model.Note != existingChiTietSoDauBai.Note)
         {
-          queryBuilder.Append("NoteComment = @NoteComment, ");
-          parameters.Add(new SqlParameter("@NoteComment", model.NoteComment));
+          queryBuilder.Append("Note = @Note, ");
+          parameters.Add(new SqlParameter("@Note", model.Note));
           hasChanges = true;
         }
 
-        if (model.CreatedAt.HasValue)
+        if (model.DateCreated.HasValue)
         {
-          queryBuilder.Append("CreatedAt = @CreatedAt, ");
-          parameters.Add(new SqlParameter("@CreatedAt", model.CreatedAt.Value));
+          queryBuilder.Append("DateCreated = @DateCreated, ");
+          parameters.Add(new SqlParameter("@DateCreated", model.DateCreated.Value));
         }
 
         var update = DateTime.UtcNow;
 
-        queryBuilder.Append("UpdatedAt = @UpdatedAt, ");
-        parameters.Add(new SqlParameter("@UpdatedAt", update));
+        queryBuilder.Append("DateUpdated = @DateUpdated, ");
+        parameters.Add(new SqlParameter("@DateUpdated", update));
 
         if (hasChanges)
         {
@@ -497,7 +497,7 @@ namespace server.Repositories
             queryBuilder.Length -= 2;
           }
 
-          queryBuilder.Append(" WHERE ChiTietSoDauBaiId = @id");
+          queryBuilder.Append(" WHERE Id = @id");
           parameters.Add(new SqlParameter("@id", id));
 
           // Execute the update query
@@ -525,7 +525,7 @@ namespace server.Repositories
     {
       try
       {
-        var find = @"SELECT ct.chiTietSoDauBaiId, 
+        var find = @"SELECT ct.Id, 
                             b.biaSoDauBaiId,
                             b.classId, 
                             b.schoolId, 
@@ -537,13 +537,13 @@ namespace server.Repositories
                     LEFT JOIN dbo.BiaSoDauBai as b ON ct.biaSoDauBaiId = b.biaSoDauBaiId 
                     LEFT JOIN dbo.Class as c ON b.classId = c.classId 
                     LEFT JOIN dbo.Teacher as t ON c.teacherId = t.teacherId
-                    WHERE ct.chiTietSoDauBaiId = @id";
+                    WHERE ct.Id = @id";
 
         var chitietSoDauBai = await _context.ChiTietSoDauBais.FromSqlRaw(find,
         new SqlParameter("@id", chiTietId))
         .Select(ct => new ChiTietAndBiaSoDauBaiRes
         {
-          ChiTietSoDauBaiId = ct.ChiTietSoDauBaiId,
+          Id = ct.Id,
           BiaSoDauBaiId = ct.BiaSoDauBaiId,
           SchoolId = ct.BiaSoDauBai.SchoolId,
           ClassId = ct.BiaSoDauBai.ClassId,
@@ -561,7 +561,7 @@ namespace server.Repositories
 
         var result = new ChiTietAndBiaSoDauBaiRes
         {
-          ChiTietSoDauBaiId = chitietSoDauBai.ChiTietSoDauBaiId,
+          Id = chitietSoDauBai.Id,
           BiaSoDauBaiId = chitietSoDauBai.BiaSoDauBaiId,
           SchoolId = chitietSoDauBai.SchoolId,
           ClassId = chitietSoDauBai.ClassId,
@@ -584,9 +584,9 @@ namespace server.Repositories
       try
       {
         var find = @"SELECT 
-                      ct.chiTietSoDauBaiId, 
+                      ct.Id, 
                       ct.weekId, 
-                      we.weekName, 
+                      we.Name, 
                       we.status, 
                       ct.classificationId, 
                       cla.classifyName, 
@@ -604,12 +604,12 @@ namespace server.Repositories
         new SqlParameter("@id", weekId))
         .Select(ct => new ChiTiet_WeekResData
         {
-          ChiTietSoDauBaiId = ct.ChiTietSoDauBaiId,
+          Id = ct.Id,
           WeekId = ct.WeekId,
-          WeekName = ct.Week.WeekName,
+          WeekName = ct.Week.Name,
           Status = ct.Week.Status,
           XepLoaiId = ct.ClassificationId,
-          TenXepLoai = ct.Classification.ClassifyName,
+          TenXepLoai = ct.Classification.Name,
           SoDiem = ct.Classification.Score
         })
         .ToListAsync();
@@ -632,43 +632,40 @@ namespace server.Repositories
       try
       {
         var result = from ct in _context.ChiTietSoDauBais
-                     join b in _context.BiaSoDauBais on ct.BiaSoDauBaiId equals b.BiaSoDauBaiId into bGroup
+                     join b in _context.BiaSoDauBais on ct.BiaSoDauBaiId equals b.Id into bGroup
                      from b in bGroup.DefaultIfEmpty()
                      join c in _context.Classes on b.ClassId equals c.Id into cGroup
                      from c in cGroup.DefaultIfEmpty()
-                     join t in _context.Teachers on c.TeacherId equals t.TeacherId into tGroup
+                     join t in _context.Teachers on c.TeacherId equals t.Id into tGroup
                      from t in tGroup.DefaultIfEmpty()
                      where b.AcademicyearId == queryChiTiet.AcademicYearId &&
                            ct.SemesterId == queryChiTiet.SemesterId &&
                            b.SchoolId == queryChiTiet.SchoolId &&
                            ct.WeekId == queryChiTiet.WeekId &&
-                           b.BiaSoDauBaiId == queryChiTiet.BiaSoDauBaiId
+                           b.Id == queryChiTiet.BiaSoDauBaiId
                      select new ChiTietSoDauBaiRes
                      {
-                       ChiTietSoDauBaiId = ct.ChiTietSoDauBaiId,
+                       Id = ct.Id,
                        BiaSoDauBaiId = ct.BiaSoDauBaiId,
                        ClassName = c.Name,
                        SemesterId = ct.SemesterId,
-                       SemesterName = ct.Semester.SemesterName,
+                       SemesterName = ct.Semester.Name,
                        WeekId = ct.WeekId,
-                       WeekName = ct.Week.WeekName,
+                       WeekName = ct.Week.Name,
                        SubjectId = ct.SubjectId,
-                       SubjectName = ct.Subject.SubjectName,
+                       SubjectName = ct.Subject.Name,
                        ClassificationId = ct.ClassificationId,
-                       ClassifyName = ct.Classification.ClassifyName,
+                       ClassifyName = ct.Classification.Name,
                        DaysOfTheWeek = ct.DaysOfTheWeek,
-                       ThoiGian = ct.ThoiGian.ToString("dd/MM/yyyy"),
-                       BuoiHoc = ct.BuoiHoc,
-                       TietHoc = ct.TietHoc,
+                       Time = ct.Time.ToString("dd/MM/yyyy"),
+                       Session = ct.Session,
+                       Period = ct.Period,
                        LessonContent = ct.LessonContent,
                        Attend = ct.Attend,
-                       NoteComment = ct.NoteComment,
-                       CreatedBy = _context.Teachers
-                                        .Where(teacher => teacher.TeacherId == ct.CreatedBy)
-                                        .Select(teacher => teacher.Fullname)
-                                        .FirstOrDefault(),
-                       CreatedAt = ct.CreatedAt,
-                       UpdatedAt = ct.UpdatedAt,
+                       Note = ct.Note,
+                       CreatedBy = _context.Teachers.Where(teacher => teacher.Id == ct.CreatedBy).Select(teacher => teacher.Fullname).FirstOrDefault(),
+                       DateCreated = ct.DateCreated,
+                       DateUpdated = ct.DateUpdated,
                      };
 
         var chitietSoDauBai = await result.ToListAsync();
@@ -696,7 +693,7 @@ namespace server.Repositories
     {
       try
       {
-        var findChiTietSoDauBai = "SELECT * FROM ChiTietSoDauBai WHERE ChiTietSoDauBaiId = @id";
+        var findChiTietSoDauBai = "SELECT * FROM ChiTietSoDauBai WHERE Id = @id";
 
         var chiTietSoDauBai = await _context.ChiTietSoDauBais
           .FromSqlRaw(findChiTietSoDauBai, new SqlParameter("@id", id))
@@ -707,7 +704,7 @@ namespace server.Repositories
           return new ChiTietSoDauBaiResType(404, "Không tìm thấy id Chi tiết sổ đầu bài");
         }
 
-        var deleteQuery = "DELETE FROM ChiTietSoDauBai WHERE ChiTietSoDauBaiId = @id";
+        var deleteQuery = "DELETE FROM ChiTietSoDauBai WHERE Id = @id";
 
         await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
 
@@ -732,7 +729,7 @@ namespace server.Repositories
 
         var idList = string.Join(",", ids);
 
-        var deleteQuery = $"DELETE FROM ChiTietSoDauBai WHERE ChiTietSoDauBaiId IN ({idList})";
+        var deleteQuery = $"DELETE FROM ChiTietSoDauBai WHERE Id IN ({idList})";
 
         var delete = await _context.Database.ExecuteSqlRawAsync(deleteQuery);
 
@@ -808,15 +805,15 @@ namespace server.Repositories
                   SubjectId = Convert.ToInt32(reader.GetValue(4) ?? 0),
                   ClassificationId = Convert.ToInt32(reader.GetValue(5) ?? 0),
                   DaysOfTheWeek = reader.GetValue(6)?.ToString() ?? "Thứ",
-                  ThoiGian = Convert.ToDateTime(reader.GetValue(7) ?? DateTime.MinValue),
-                  BuoiHoc = reader.GetValue(8)?.ToString() ?? "Buổi ",
-                  TietHoc = Convert.ToInt32(reader.GetValue(9) ?? 0),
+                  Time = Convert.ToDateTime(reader.GetValue(7) ?? DateTime.MinValue),
+                  Session = reader.GetValue(8)?.ToString() ?? "Buổi ",
+                  Period = Convert.ToInt32(reader.GetValue(9) ?? 0),
                   LessonContent = reader.GetValue(10)?.ToString() ?? "Nội dung bài học",
                   Attend = Convert.ToInt32(reader.GetValue(11) ?? 0),
-                  NoteComment = reader.GetValue(12)?.ToString() ?? "Ghi chú",
+                  Note = reader.GetValue(12)?.ToString() ?? "Ghi chú",
                   CreatedBy = Convert.ToInt32(reader.GetValue(13) ?? 0),
-                  CreatedAt = DateTime.UtcNow,
-                  UpdatedAt = null
+                  DateCreated = DateTime.UtcNow,
+                  DateUpdated = null
                 };
 
                 await _context.ChiTietSoDauBais.AddAsync(myDetails);
@@ -842,40 +839,40 @@ namespace server.Repositories
       {
         // Fetch records filtered by weekId
         var chiTietSoDauBais = await (from chitiet in _context.ChiTietSoDauBais
-                                      join week in _context.Weeks on chitiet.WeekId equals week.WeekId into weekGroup
+                                      join week in _context.Weeks on chitiet.WeekId equals week.Id into weekGroup
                                       from week in weekGroup.DefaultIfEmpty()
-                                      join bia in _context.BiaSoDauBais on chitiet.BiaSoDauBaiId equals bia.BiaSoDauBaiId into biaGroup
+                                      join bia in _context.BiaSoDauBais on chitiet.BiaSoDauBaiId equals bia.Id into biaGroup
                                       from bia in biaGroup.DefaultIfEmpty()
-                                      join semester in _context.Semesters on chitiet.SemesterId equals semester.SemesterId into semesterGroup
+                                      join semester in _context.Semesters on chitiet.SemesterId equals semester.Id into semesterGroup
                                       from semester in semesterGroup.DefaultIfEmpty()
-                                      join subject in _context.Subjects on chitiet.SubjectId equals subject.SubjectId into subjectGroup
+                                      join subject in _context.Subjects on chitiet.SubjectId equals subject.Id into subjectGroup
                                       from subject in subjectGroup.DefaultIfEmpty()
-                                      join xepLoai in _context.Classifications on chitiet.ClassificationId equals xepLoai.ClassificationId into xepLoaiGroup
+                                      join xepLoai in _context.Classifications on chitiet.ClassificationId equals xepLoai.Id into xepLoaiGroup
                                       from xepLoai in xepLoaiGroup.DefaultIfEmpty()
                                       where chitiet.WeekId == weekId && bia.ClassId == classId
                                       select new
                                       {
-                                        chitiet.ChiTietSoDauBaiId,
+                                        chitiet.Id,
                                         chitiet.BiaSoDauBaiId,
                                         chitiet.SemesterId,
                                         chitiet.WeekId,
                                         chitiet.SubjectId,
                                         chitiet.ClassificationId,
                                         chitiet.DaysOfTheWeek,
-                                        chitiet.ThoiGian,
-                                        chitiet.BuoiHoc,
-                                        chitiet.TietHoc,
+                                        chitiet.Time,
+                                        chitiet.Session,
+                                        chitiet.Period,
                                         chitiet.LessonContent,
                                         chitiet.Attend,
-                                        chitiet.NoteComment,
+                                        chitiet.Note,
                                         chitiet.CreatedBy,
-                                        chitiet.CreatedAt,
-                                        chitiet.UpdatedAt,
-                                        HocKy = semester.SemesterName,
-                                        TenTuanHoc = week.WeekName,
-                                        MonHoc = subject.SubjectName,
+                                        chitiet.DateCreated,
+                                        chitiet.DateUpdated,
+                                        HocKy = semester.Name,
+                                        TenTuanHoc = week.Name,
+                                        MonHoc = subject.Name,
                                         TenLop = bia.Class.Name,
-                                        XepLoai = xepLoai.ClassifyName
+                                        XepLoai = xepLoai.Name
                                       }).ToListAsync();
 
         if (chiTietSoDauBais == null || !chiTietSoDauBais.Any())
@@ -908,21 +905,21 @@ namespace server.Repositories
           for (int i = 0; i < chiTietSoDauBais.Count; i++)
           {
             var record = chiTietSoDauBais[i];
-            worksheet.Cell(i + 2, 1).Value = record.ChiTietSoDauBaiId;
+            worksheet.Cell(i + 2, 1).Value = record.Id;
             worksheet.Cell(i + 2, 2).Value = record.TenLop;
             worksheet.Cell(i + 2, 3).Value = record.HocKy;
             worksheet.Cell(i + 2, 4).Value = record.TenTuanHoc;
             worksheet.Cell(i + 2, 5).Value = record.MonHoc;
             worksheet.Cell(i + 2, 6).Value = record.XepLoai;
             worksheet.Cell(i + 2, 7).Value = record.DaysOfTheWeek;
-            worksheet.Cell(i + 2, 8).Value = record.ThoiGian;
-            worksheet.Cell(i + 2, 9).Value = record.BuoiHoc;
-            worksheet.Cell(i + 2, 10).Value = record.TietHoc;
+            worksheet.Cell(i + 2, 8).Value = record.Time;
+            worksheet.Cell(i + 2, 9).Value = record.Session;
+            worksheet.Cell(i + 2, 10).Value = record.Period;
             worksheet.Cell(i + 2, 11).Value = record.LessonContent;
             worksheet.Cell(i + 2, 12).Value = record.Attend;
-            worksheet.Cell(i + 2, 13).Value = record.NoteComment;
-            worksheet.Cell(i + 2, 14).Value = record.CreatedAt;
-            worksheet.Cell(i + 2, 15).Value = record.UpdatedAt;
+            worksheet.Cell(i + 2, 13).Value = record.Note;
+            worksheet.Cell(i + 2, 14).Value = record.DateCreated;
+            worksheet.Cell(i + 2, 15).Value = record.DateUpdated;
           }
 
           // Adjust column widths

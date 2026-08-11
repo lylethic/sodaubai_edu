@@ -2,7 +2,7 @@
 {
   public class RollCallDetailDto
   {
-    public int RollCallDetailId { get; set; }
+    public int Id { get; set; }
 
     public int? RollCallId { get; set; }
 

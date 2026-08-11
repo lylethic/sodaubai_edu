@@ -2,7 +2,7 @@
 {
   public class BiaSoDauBaiDto
   {
-    public int BiaSoDauBaiId { get; set; }
+    public int Id { get; set; }
 
     public int SchoolId { get; set; }
 

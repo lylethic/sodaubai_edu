@@ -2,9 +2,9 @@
 {
   public class SubjectDto
   {
-    public int SubjectId { get; set; }
+    public int Id { get; set; }
 
-    public string? SubjectName { get; set; } = null!;
+    public string? Name { get; set; } = null!;
 
     public bool Status { get; set; }
 
@@ -13,9 +13,9 @@
 
   public class SubjectRes
   {
-    public int SubjectId { get; set; }
+    public int Id { get; set; }
 
-    public string? SubjectName { get; set; } = null!;
+    public string? Name { get; set; } = null!;
 
     public bool Status { get; set; }
 

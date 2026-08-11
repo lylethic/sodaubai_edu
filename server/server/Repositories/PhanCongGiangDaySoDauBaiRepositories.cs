@@ -40,7 +40,7 @@ namespace server.Repositories
           .FromSqlRaw(query).Select(static x => new
           {
             x.BiaSoDauBaiId,
-            x.PhanCongGiangDayId,
+            x.Id,
             x.TeacherId,
             x.Status,
             x.DateCreated,
@@ -59,7 +59,7 @@ namespace server.Repositories
 
         var result = phancongSBD.Select(x => new MapData
         {
-          PhanCongGiangDayId = x.PhanCongGiangDayId,
+          PhanCongGiangDayId = x.Id,
           TeacherId = x.TeacherId,
           BiaSoDauBaiId = x.BiaSoDauBaiId,
           Status = x.Status,
@@ -172,7 +172,7 @@ namespace server.Repositories
           .Select(static x => new
           {
             x.BiaSoDauBaiId,
-            x.PhanCongGiangDayId,
+            x.Id,
             x.TeacherId,
             x.Status,
             x.DateCreated,
@@ -191,7 +191,7 @@ namespace server.Repositories
 
         var result = phancongSBD.Select(x => new MapData
         {
-          PhanCongGiangDayId = x.PhanCongGiangDayId,
+          PhanCongGiangDayId = x.Id,
           TeacherId = x.TeacherId,
           BiaSoDauBaiId = x.BiaSoDauBaiId,
           Status = x.Status,
@@ -233,7 +233,7 @@ namespace server.Repositories
             .Select(static x => new
             {
               x.BiaSoDauBaiId,
-              x.PhanCongGiangDayId,
+              x.Id,
               x.TeacherId,
               x.Status,
               x.DateCreated,
@@ -250,7 +250,7 @@ namespace server.Repositories
 
         var result = new MapData
         {
-          PhanCongGiangDayId = phancongSoDauBai.PhanCongGiangDayId,
+          PhanCongGiangDayId = phancongSoDauBai.Id,
           TeacherId = phancongSoDauBai.TeacherId,
           BiaSoDauBaiId = phancongSoDauBai.BiaSoDauBaiId,
           Status = phancongSoDauBai.Status,

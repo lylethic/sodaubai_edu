@@ -24,10 +24,4 @@ public partial class Account
     public virtual Role Role { get; set; } = null!;
 
     public virtual School? School { get; set; }
-
-    public virtual ICollection<Session> Sessions { get; set; } = new List<Session>();
-
-    public virtual ICollection<Student> Students { get; set; } = new List<Student>();
-
-    public virtual ICollection<Teacher> Teachers { get; set; } = new List<Teacher>();
 }

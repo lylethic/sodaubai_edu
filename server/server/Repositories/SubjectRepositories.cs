@@ -28,7 +28,7 @@ namespace server.Repositories
         var find = "SELECT * FROM Subject WHERE subjectId = @id";
 
         var subject = await _context.Subjects
-          .FromSqlRaw(find, new SqlParameter("@id", model.SubjectId))
+          .FromSqlRaw(find, new SqlParameter("@id", model.Id))
           .FirstOrDefaultAsync();
 
         if (subject is not null)
@@ -36,21 +36,21 @@ namespace server.Repositories
           return new ResponseData<SubjectDto>(409, "Môn học này đã tồn tại");
         }
 
-        var sqlInsert = @"INSERT INTO SUBJECT (gradeId, subjectName, status)
-                     VALUES (@gradeId, @subjectName, @status);
+        var sqlInsert = @"INSERT INTO SUBJECT (gradeId, Name, status)
+                     VALUES (@gradeId, @Name, @status);
                      SELECT CAST(SCOPE_IDENTITY() as int);";
 
         var insert = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
           new SqlParameter("@gradeId", model.GradeId),
-          new SqlParameter("@subjectName", model.SubjectName),
+          new SqlParameter("@Name", model.Name),
           new SqlParameter("@status", model.Status)
           );
 
         var result = new SubjectDto
         {
-          SubjectId = insert,
+          Id = insert,
           GradeId = model.GradeId,
-          SubjectName = model.SubjectName,
+          Name = model.Name,
           Status = model.Status,
         };
 
@@ -76,11 +76,11 @@ namespace server.Repositories
                            from grade in gradeGroup.DefaultIfEmpty()
                            join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
                            from acad in acadGroup.DefaultIfEmpty()
-                           where sub.SubjectId == id
+                           where sub.Id == id
                            select new SubjectRes
                            {
-                             SubjectId = id,
-                             SubjectName = sub.SubjectName,
+                             Id = id,
+                             Name = sub.Name,
                              Status = sub.Status,
                              GradeId = grade.Id,
                              GradeName = grade.Name,
@@ -116,8 +116,8 @@ namespace server.Repositories
                            from acad in acadGroup.DefaultIfEmpty()
                            select new SubjectRes
                            {
-                             SubjectId = sub.SubjectId,
-                             SubjectName = sub.SubjectName,
+                             Id = sub.Id,
+                             Name = sub.Name,
                              Status = sub.Status,
                              GradeId = grade.Id,
                              GradeName = grade.Name,
@@ -128,7 +128,7 @@ namespace server.Repositories
 
         var result = await querySubject
           .AsNoTracking()
-          .OrderBy(x => x.GradeId)
+          .OrderBy(x => x.Id)
           .ThenBy(x => x.GradeName)
           .ToListAsync();
 
@@ -172,10 +172,10 @@ namespace server.Repositories
           parameters.Add(new SqlParameter("@GradeId", model.GradeId));
           hasChanges = true;
         }
-        if (!string.IsNullOrEmpty(model.SubjectName) && model.SubjectName != subject.SubjectName)
+        if (!string.IsNullOrEmpty(model.Name) && model.Name != subject.Name)
         {
-          queryBuilder.Append("SubjectName = @SubjectName, ");
-          parameters.Add(new SqlParameter("@SubjectName", model.SubjectName));
+          queryBuilder.Append("Name = @Name, ");
+          parameters.Add(new SqlParameter("@Name", model.Name));
           hasChanges = true;
         }
 
@@ -331,7 +331,7 @@ namespace server.Repositories
                 var mySubjects = new Models.Subject
                 {
                   GradeId = gradeId,
-                  SubjectName = reader.GetValue(2).ToString() ?? "null",
+                  Name = reader.GetValue(2).ToString() ?? "null",
                   Status = Convert.ToBoolean(reader.GetValue(3))
                 };
                 await _context.Subjects.AddAsync(mySubjects);

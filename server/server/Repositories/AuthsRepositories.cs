@@ -185,7 +185,7 @@ public class AuthsRepositories : IAuths
         return new LogoutResType(404, false, "User not found in the current session");
       }
 
-      var user = await _context.Accounts.FirstOrDefaultAsync(u => u.Email == userStored);
+      var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userStored);
 
       if (user == null)
       {
@@ -194,7 +194,7 @@ public class AuthsRepositories : IAuths
 
       // Remove refresh token in DB
       var session = await _context.Sessions
-          .FirstOrDefaultAsync(s => s.AccountId == user.AccountId);
+          .FirstOrDefaultAsync(s => s.Id == user.Id);
 
       if (session != null)
       {

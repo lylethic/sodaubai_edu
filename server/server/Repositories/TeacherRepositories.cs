@@ -10,7 +10,7 @@ using System.Text;
 
 namespace server.Repositories
 {
-  public class TeacherRepositories : IService.ITeacher
+  public class TeacherRepositories : ITeacher
   {
     private readonly SoDauBaiContext _context;
     private readonly IPhotoService _photo;
@@ -25,7 +25,7 @@ namespace server.Repositories
     {
       try
       {
-        var findTeacher = @"SELECT t.teacherId, t.accountId, t.fullname, 
+        var findTeacher = @"SELECT t.teacherId, t.UserId, t.fullname, 
                                 t.dateOfBirth, t.gender, t.address, t.status,
 			                          s.schoolId, s.NameSchool, s.schoolType, t.dateCreate,
 			                          t.dateUpdate, t.photoPath
@@ -38,8 +38,8 @@ namespace server.Repositories
           .FromSqlRaw(findTeacher, new SqlParameter("@id", id))
           .Select(static x => new Teacher
           {
-            TeacherId = x.TeacherId,
-            AccountId = x.AccountId,
+            Id = x.Id,
+            UserId = x.UserId,
             Fullname = x.Fullname,
             DateOfBirth = x.DateOfBirth,
             Gender = x.Gender,
@@ -51,8 +51,8 @@ namespace server.Repositories
               Name = x.School.Name,
               SchoolType = x.School.SchoolType
             },
-            DateCreate = x.DateCreate,
-            DateUpdate = x.DateUpdate,
+            DateCreated = x.DateCreated,
+            DateUpdated = x.DateUpdated,
             PhotoPath = x.PhotoPath,
           })
           .AsNoTracking()
@@ -65,18 +65,18 @@ namespace server.Repositories
 
         var result = new TeacherDetail
         {
-          TeacherId = id,
-          AccountId = teacher.AccountId,
+          Id = id,
+          UserId = teacher.UserId.Value,
           Fullname = teacher.Fullname,
-          DateOfBirth = teacher.DateOfBirth.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
+          DateOfBirth = teacher.DateOfBirth,
           Gender = teacher.Gender ? "Nam" : "Nữ",
           Address = teacher.Address,
           Status = teacher.Status,
           SchoolId = teacher.SchoolId,
           NameSchool = teacher.School.Name,
           SchoolType = teacher.School.SchoolType,
-          DateCreate = teacher.DateCreate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-          DateUpdate = teacher.DateUpdate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
+          DateCreated = teacher.DateCreated.Value,
+          DateUpdated = teacher.DateUpdated.Value,
           PhotoPath = teacher.PhotoPath,
         };
 
@@ -93,7 +93,7 @@ namespace server.Repositories
     {
       try
       {
-        var findTeacher = @"SELECT t.teacherId, t.accountId, 
+        var findTeacher = @"SELECT t.teacherId, t.UserId, 
 			                            s.schoolId, t.fullname, 
                                   t.dateOfBirth, t.gender, 
                                   t.address, t.status,
@@ -107,16 +107,16 @@ namespace server.Repositories
           .FromSqlRaw(findTeacher, new SqlParameter("@id", id))
           .Select(static x => new Teacher
           {
-            TeacherId = x.TeacherId,
-            AccountId = x.AccountId,
+            Id = x.Id,
+            UserId = x.UserId,
             SchoolId = x.SchoolId,
             Fullname = x.Fullname,
             DateOfBirth = x.DateOfBirth,
             Gender = x.Gender,
             Address = x.Address,
             Status = x.Status,
-            DateCreate = x.DateCreate,
-            DateUpdate = x.DateUpdate,
+            DateCreated = x.DateCreated,
+            DateUpdated = x.DateUpdated,
             PhotoPath = x.PhotoPath,
           })
           .AsNoTracking()
@@ -130,15 +130,15 @@ namespace server.Repositories
         var result = new TeacherToUpdate
         {
           TeacherId = id,
-          AccountId = teacher.AccountId,
+          UserId = teacher.UserId.Value,
           Fullname = teacher.Fullname,
           DateOfBirth = teacher.DateOfBirth,
           Gender = teacher.Gender,
           Address = teacher.Address,
           Status = teacher.Status,
           SchoolId = teacher.SchoolId,
-          DateCreate = teacher.DateCreate,
-          DateUpdate = teacher.DateUpdate,
+          DateCreate = teacher.DateCreated.Value,
+          DateUpdate = teacher.DateUpdated.Value,
           PhotoPath = teacher.PhotoPath,
         };
 
@@ -151,11 +151,11 @@ namespace server.Repositories
       }
     }
 
-    public async Task<TeacherResType> GetTeacherIdByAccountId(int accountId)
+    public async Task<TeacherResType> GetTeacherIdByAccountId(int userId)
     {
       try
       {
-        var findTeacher = @"SELECT t.teacherId, t.accountId, 
+        var findTeacher = @"SELECT t.teacherId, t.UserId, 
 			                            s.schoolId, t.fullname, 
                                   t.dateOfBirth, t.gender, 
                                   t.address, t.status,
@@ -163,22 +163,22 @@ namespace server.Repositories
                             FROM TEACHER t
                             LEFT JOIN SCHOOL s
                             ON t.schoolId = s.schoolId
-                            WHERE t.accountId = @accountId";
+                            WHERE t.UserId = @userId";
 
         var teacher = await _context.Teachers
-          .FromSqlRaw(findTeacher, new SqlParameter("@accountId", accountId))
+          .FromSqlRaw(findTeacher, new SqlParameter("@userId", userId))
           .Select(static x => new Teacher
           {
-            TeacherId = x.TeacherId,
-            AccountId = x.AccountId,
+            Id = x.Id,
+            UserId = x.UserId,
             SchoolId = x.SchoolId,
             Fullname = x.Fullname,
             DateOfBirth = x.DateOfBirth,
             Gender = x.Gender,
             Address = x.Address,
             Status = x.Status,
-            DateCreate = x.DateCreate,
-            DateUpdate = x.DateUpdate,
+            DateCreated = x.DateCreated,
+            DateUpdated = x.DateUpdated,
             PhotoPath = x.PhotoPath,
           })
           .AsNoTracking()
@@ -191,16 +191,16 @@ namespace server.Repositories
 
         var result = new TeacherToUpdate
         {
-          TeacherId = teacher.TeacherId,
-          AccountId = teacher.AccountId,
+          TeacherId = teacher.Id,
+          UserId = teacher.UserId.Value,
           Fullname = teacher.Fullname,
           DateOfBirth = teacher.DateOfBirth,
           Gender = teacher.Gender,
           Address = teacher.Address,
           Status = teacher.Status,
           SchoolId = teacher.SchoolId,
-          DateCreate = teacher.DateCreate,
-          DateUpdate = teacher.DateUpdate,
+          DateCreate = teacher.DateCreated.Value,
+          DateUpdate = teacher.DateUpdated.Value,
           PhotoPath = teacher.PhotoPath,
         };
 
@@ -254,17 +254,17 @@ namespace server.Repositories
 
         var result = teachers.Select(x => new TeacherDetail
         {
-          TeacherId = x.TeacherId,
-          AccountId = x.AccountId,
+          Id = x.Id,
+          UserId = x.UserId.Value,
           SchoolId = x.SchoolId,
           NameSchool = x.School.Name,
           Fullname = x.Fullname,
-          DateOfBirth = x.DateOfBirth.ToString("dd/MM/yyyy"),
+          DateOfBirth = x.DateOfBirth,
           Gender = x.Gender ? "Nam" : "Nữ",
           Address = x.Address,
           Status = x.Status,
-          DateCreate = x.DateCreate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-          DateUpdate = x.DateUpdate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
+          DateCreated = x.DateCreated.Value,
+          DateUpdated = x.DateUpdated.Value,
           SchoolType = x.School.SchoolType,
           PhotoPath = x.PhotoPath
         }).ToList();
@@ -307,17 +307,17 @@ namespace server.Repositories
 
         var result = teachers.Select(x => new TeacherDetail
         {
-          TeacherId = x.TeacherId,
-          AccountId = x.AccountId,
+          Id = x.Id,
+          UserId = x.UserId.Value,
           SchoolId = x.SchoolId,
           NameSchool = x.School.Name,
           Fullname = x.Fullname,
-          DateOfBirth = x.DateOfBirth.ToString("dd/MM/yyyy") ?? string.Empty,
+          DateOfBirth = x.DateOfBirth,
           Gender = x.Gender ? "Nam" : "Nữ",
           Address = x.Address,
           Status = x.Status,
-          DateCreate = x.DateCreate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-          DateUpdate = x.DateUpdate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
+          DateCreated = x.DateCreated.Value,
+          DateUpdated = x.DateUpdated.Value,
           SchoolType = x.School.SchoolType,
           PhotoPath = x.PhotoPath
         }).ToList();
@@ -354,17 +354,17 @@ namespace server.Repositories
 
         var result = teachers.Select(x => new TeacherDetail
         {
-          TeacherId = x.TeacherId,
-          AccountId = x.AccountId,
+          Id = x.Id,
+          UserId = x.UserId.Value,
           SchoolId = x.SchoolId,
           NameSchool = x.School.Name,
           Fullname = x.Fullname,
-          DateOfBirth = x.DateOfBirth.ToString("dd/MM/yyyy") ?? string.Empty,
+          DateOfBirth = x.DateOfBirth,
           Gender = x.Gender ? "Nam" : "Nữ",
           Address = x.Address,
           Status = x.Status,
-          DateCreate = x.DateCreate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-          DateUpdate = x.DateUpdate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
+          DateCreated = x.DateCreated.Value,
+          DateUpdated = x.DateUpdated.Value,
           SchoolType = x.School.SchoolType,
           PhotoPath = x.PhotoPath,
         }).ToList();
@@ -389,7 +389,7 @@ namespace server.Repositories
         var findTeacher = "SELECT * FROM Teacher WHERE teacherId = @id";
 
         var teacher = await _context.Teachers
-          .FromSqlRaw(findTeacher, new SqlParameter("@id", model.TeacherId))
+          .FromSqlRaw(findTeacher, new SqlParameter("@id", model.Id))
           .FirstOrDefaultAsync();
 
         if (teacher is not null)
@@ -397,15 +397,15 @@ namespace server.Repositories
           return new TeacherResType(409, "Teacher already exists");
         }
 
-        var sqlInsert = @"INSERT INTO Teacher (AccountId, SchoolId, Fullname, DateOfBirth, Gender, Address, Status, DateCreate, DateUpdate, PhotoPath) 
-                          VALUES (@AccountId, @SchoolId, @Fullname, @DateOfBirth, @Gender, @Address, @Status, @DateCreate, @DateUpdate, @PhotoPath);
+        var sqlInsert = @"INSERT INTO Teacher (UserId, SchoolId, Fullname, DateOfBirth, Gender, Address, Status, DateCreate, DateUpdate, PhotoPath) 
+                          VALUES (@UserId, @SchoolId, @Fullname, @DateOfBirth, @Gender, @Address, @Status, @DateCreate, @DateUpdate, @PhotoPath);
                           SELECT CAST(SCOPE_IDENTITY() as int);";
 
         var currentdate = DateTime.UtcNow;
         var imgUrl = photoUploadResult?.SecureUrl.ToString();
 
         var insert = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
-          new SqlParameter("@AccountId", model.AccountId),
+          new SqlParameter("@UserId", model.UserId),
           new SqlParameter("@SchoolId", model.SchoolId),
           new SqlParameter("@Fullname", model.Fullname),
           new SqlParameter("@DateOfBirth", model.DateOfBirth),
@@ -460,10 +460,10 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        if (model.AccountId != 0 && model.AccountId != existingTeacher.AccountId)
+        if (model.UserId != 0 && model.UserId != existingTeacher.UserId)
         {
-          queryBuilder.Append("AccountId = @AccountId, ");
-          parameters.Add(new SqlParameter("@AccountId", model.AccountId));
+          queryBuilder.Append("UserId = @UserId, ");
+          parameters.Add(new SqlParameter("@UserId", model.UserId));
           hasChanges = true;
         }
 
@@ -593,15 +593,15 @@ namespace server.Repositories
 
                 var myTeachers = new Models.Teacher
                 {
-                  AccountId = Convert.ToInt16(reader.GetValue(1)),
+                  UserId = Convert.ToInt16(reader.GetValue(1)),
                   SchoolId = Convert.ToInt16(reader.GetValue(2)),
                   Fullname = reader.GetValue(3).ToString()?.Trim() ?? "Fullname",
                   DateOfBirth = Convert.ToDateTime(reader.GetValue(4)),
                   Gender = Convert.ToBoolean(reader.GetValue(5)),
                   Address = reader.GetValue(6).ToString()?.Trim() ?? "address",
                   Status = Convert.ToBoolean(reader.GetValue(7)),
-                  DateCreate = DateTime.UtcNow,
-                  DateUpdate = null,
+                  DateCreated = DateTime.UtcNow,
+                  DateUpdated = null,
                   PhotoPath = reader.GetValue(8).ToString(),
                 };
 
@@ -690,18 +690,13 @@ namespace server.Repositories
 
         var query = _context.Teachers
           .Include(x => x.School)
-          .Include(x => x.Account)
+          .Include(x => x.User)
           .AsNoTracking()
           .AsQueryable();
 
         if (queryObject.SchoolId.HasValue)
         {
           query = query.Where(x => x.SchoolId == queryObject.SchoolId.Value);
-        }
-
-        if (queryObject.RoleId.HasValue)
-        {
-          query = query.Where(x => x.Account.RoleId == queryObject.RoleId.Value);
         }
 
         if (!string.IsNullOrEmpty(queryObject.Name))
@@ -713,8 +708,8 @@ namespace server.Repositories
 
         var rawResults = await query.Select(x => new
         {
-          x.TeacherId,
-          x.AccountId,
+          x.Id,
+          x.UserId,
           x.SchoolId,
           x.School.Name,
           x.Fullname,
@@ -722,23 +717,23 @@ namespace server.Repositories
           x.Gender,
           x.Address,
           x.Status,
-          x.DateCreate,
-          x.DateUpdate
+          x.DateCreated,
+          x.DateUpdated
         }).ToListAsync();
 
         var results = rawResults.Select(x => new TeacherDetail
         {
-          TeacherId = x.TeacherId,
-          AccountId = x.AccountId,
+          Id = x.Id,
+          UserId = x.UserId.Value,
           SchoolId = x.SchoolId,
           NameSchool = x.Name,
           Fullname = x.Fullname,
-          DateOfBirth = x.DateOfBirth.ToString("dd/MM/yyyy") ?? string.Empty,
+          DateOfBirth = x.DateOfBirth,
           Gender = x.Gender ? "Nam" : "Nữ",
           Address = x.Address,
           Status = x.Status,
-          DateCreate = x.DateCreate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty,
-          DateUpdate = x.DateUpdate?.ToString("dd/MM/yyyy HH:mm:ss") ?? string.Empty
+          DateCreated = x.DateCreated.Value,
+          DateUpdated = x.DateUpdated.Value
         }).ToList();
 
         if (results.Count == 0)

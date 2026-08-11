@@ -6,6 +6,6 @@
 
     public string ClassifyName { get; set; } = null!;
 
-    public int? Score { get; set; }
+    public decimal? Score { get; set; }
   }
 }

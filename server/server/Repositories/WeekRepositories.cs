@@ -86,7 +86,7 @@ namespace server.Repositories
           return new ResponseData<WeekData>(400, "Vui lòng cung cấp mã tuần học");
         }
 
-        var find = @"SELECT w.*, a.semesterName, a.dateStart, a.dateEnd
+        var find = @"SELECT w.*, a.Name, a.dateStart, a.dateEnd
                     FROM WEEK as w 
                     INNER JOIN Semester as a ON w.semesterId = a.semesterId 
                     WHERE W.weekId = @id";
@@ -96,13 +96,13 @@ namespace server.Repositories
           .AsNoTracking()
           .Select(static x => new
           {
-            x.WeekId,
-            x.WeekName,
+            x.Id,
+            x.Name,
             x.WeekStart,
             x.WeekEnd,
             x.Status,
             x.SemesterId,
-            SemesterName = x.Semester.SemesterName,
+            SemesterName = x.Semester.Name,
             DateStart = x.Semester.DateStart,
             DateEnd = x.Semester.DateEnd,
           })
@@ -116,12 +116,12 @@ namespace server.Repositories
         var result = new WeekData
         {
           WeekId = id,
-          WeekName = week.WeekName,
+          WeekName = week.Name,
           WeekStart = week.WeekStart?.ToString("dd/MM/yyyy"),
           WeekEnd = week.WeekEnd?.ToString("dd/MM/yyyy"),
           Status = week.Status,
           SemesterId = week.SemesterId,
-          SemesterName = week.SemesterName,
+          SemesterName = week.Name,
           DateStart = week.DateStart?.ToString("dd/MM/yyyy"),
           DateEnd = week.DateEnd?.ToString("dd/MM/yyyy")
         };
@@ -143,7 +143,7 @@ namespace server.Repositories
           return new ResponseData<WeekDto>(400, "Vui lòng cung cấp mã tuần học");
         }
 
-        var find = @"SELECT w.*, a.semesterName, a.dateStart, a.dateEnd
+        var find = @"SELECT w.*, a.Name, a.dateStart, a.dateEnd
                     FROM WEEK as w 
                     INNER JOIN Semester as a ON w.semesterId = a.semesterId 
                     WHERE W.weekId = @id";
@@ -153,9 +153,9 @@ namespace server.Repositories
           .AsNoTracking()
           .Select(static x => new
           {
-            x.WeekId,
+            x.Id,
             x.SemesterId,
-            x.WeekName,
+            x.Name,
             x.WeekStart,
             x.WeekEnd,
             x.Status,
@@ -171,7 +171,7 @@ namespace server.Repositories
         {
           WeekId = id,
           SemesterId = week.SemesterId,
-          WeekName = week.WeekName,
+          WeekName = week.Name,
           WeekStart = week.WeekStart,
           WeekEnd = week.WeekEnd,
           Status = week.Status,
@@ -190,17 +190,17 @@ namespace server.Repositories
       try
       {
         var weekQuery = from week in _context.Weeks
-                        join hocKy in _context.Semesters on week.SemesterId equals hocKy.SemesterId into hocKyGroup
+                        join hocKy in _context.Semesters on week.SemesterId equals hocKy.Id into hocKyGroup
                         from hocKy in hocKyGroup.DefaultIfEmpty()
                         select new
                         {
-                          week.WeekId,
+                          week.Id,
                           week.SemesterId,
-                          week.WeekName,
+                          week.Name,
                           week.WeekStart,
                           week.WeekEnd,
                           week.Status,
-                          hocKy.SemesterName,
+                          semesterName = hocKy.Name,
                           hocKy.DateStart,
                           hocKy.DateEnd,
                         };
@@ -212,13 +212,13 @@ namespace server.Repositories
 
         var result = weeks.Select(week => new WeekData
         {
-          WeekId = week.WeekId,
-          WeekName = week.WeekName,
+          WeekId = week.Id,
+          WeekName = week.Name,
           WeekStart = week.WeekStart?.ToString("dd/MM/yyyy"),
           WeekEnd = week.WeekEnd?.ToString("dd/MM/yyyy"),
           Status = week.Status,
           SemesterId = week.SemesterId,
-          SemesterName = week.SemesterName,
+          SemesterName = week.Name,
           DateStart = week.DateStart?.ToString("dd/MM/yyyy"),
           DateEnd = week.DateEnd?.ToString("dd/MM/yyyy")
         }).ToList();
@@ -246,9 +246,9 @@ namespace server.Repositories
 
         var result = weeks.Select(x => new WeekDto
         {
-          WeekId = x.WeekId,
+          WeekId = x.Id,
           SemesterId = x.SemesterId,
-          WeekName = x.WeekName,
+          WeekName = x.Name,
           WeekStart = x.WeekStart,
           WeekEnd = x.WeekEnd,
         }).ToList();
@@ -316,7 +316,7 @@ namespace server.Repositories
                 var myWeek = new Models.Week
                 {
                   SemesterId = reader.GetValue(1) != null ? Convert.ToInt16(reader.GetValue(1)) : 0,
-                  WeekName = reader.GetValue(2)?.ToString() ?? "null",
+                  Name = reader.GetValue(2)?.ToString() ?? "null",
                   WeekStart = Convert.ToDateTime(reader.GetValue(3)),
                   WeekEnd = Convert.ToDateTime(reader.GetValue(4)),
                   Status = reader.GetValue(5) != null && Convert.ToBoolean(reader.GetValue(5))
@@ -366,7 +366,7 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        if (!string.IsNullOrEmpty(model.WeekName) && model.WeekName != existingWeek.WeekName)
+        if (!string.IsNullOrEmpty(model.WeekName) && model.WeekName != existingWeek.Name)
         {
           queryBuilder.Append("WeekName = @WeekName, ");
           parameters.Add(new SqlParameter("@WeekName", model.WeekName));
@@ -478,7 +478,7 @@ namespace server.Repositories
       {
         var selectedWeek = await _context.Weeks
         .AsNoTracking()
-        .FirstOrDefaultAsync(x => x.WeekId == selectedWeekId);
+        .FirstOrDefaultAsync(x => x.Id == selectedWeekId);
 
         if (selectedWeek == null)
         {

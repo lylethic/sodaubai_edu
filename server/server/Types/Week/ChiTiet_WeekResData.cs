@@ -2,7 +2,7 @@ namespace server.Types.Week;
 
 public class ChiTiet_WeekResData
 {
-  public int ChiTietSoDauBaiId { get; set; }
+  public int Id { get; set; }
 
   public int WeekId { get; set; }
 
@@ -14,5 +14,5 @@ public class ChiTiet_WeekResData
 
   public string? TenXepLoai { get; set; }
 
-  public int? SoDiem { get; set; }
+  public decimal? SoDiem { get; set; }
 }

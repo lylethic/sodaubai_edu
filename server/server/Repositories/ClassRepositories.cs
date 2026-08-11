@@ -29,13 +29,13 @@ namespace server.Repositories
       var gradeExists = await _context.Grades.AnyAsync(x => x.Id == model.GradeId);
       if (!gradeExists) throw new Exception("Khối lớp học không tồn tại");
 
-      var teacherExists = await _context.Teachers.AnyAsync(x => x.TeacherId == model.TeacherId);
+      var teacherExists = await _context.Teachers.AnyAsync(x => x.Id == model.TeacherId);
       if (!teacherExists) throw new Exception("Giáo viên không tồn tại");
 
       var acaExists = await _context.AcademicYears.AnyAsync(x => x.Id == model.AcademicYearId && x.Deleted == false);
       if (!acaExists) throw new Exception("Năm học không tồn tại");
 
-      var schoolExists = await _context.Schools.AnyAsync(x => x.SchoolId == model.SchoolId);
+      var schoolExists = await _context.Schools.AnyAsync(x => x.Id == model.SchoolId);
       if (!schoolExists) throw new Exception("Trường học không tồn tại");
 
       var classExists = await _context.Classes.AnyAsync(x => x.Id == model.Id && x.Deleted == false);
@@ -70,13 +70,13 @@ namespace server.Repositories
         var gradeExists = await _context.Grades.AnyAsync(x => x.Id == model.GradeId);
         if (!gradeExists) throw new NotFoundException("Khối lớp học không tồn tại");
 
-        var teacherExists = await _context.Teachers.AnyAsync(x => x.TeacherId == model.TeacherId);
+        var teacherExists = await _context.Teachers.AnyAsync(x => x.Id == model.TeacherId);
         if (!teacherExists) throw new NotFoundException("Giáo viên không tồn tại");
 
         var acaExists = await _context.AcademicYears.AnyAsync(x => x.Id == model.AcademicYearId && x.Deleted == false);
         if (!acaExists) throw new NotFoundException("Năm học không tồn tại");
 
-        var schoolExists = await _context.Schools.AnyAsync(x => x.SchoolId == model.SchoolId);
+        var schoolExists = await _context.Schools.AnyAsync(x => x.Id == model.SchoolId);
         if (!schoolExists) throw new NotFoundException("Trường học không tồn tại");
 
         var classExists = await _context.Classes.AnyAsync(x => x.Id == model.Id && x.Deleted == false);
@@ -135,7 +135,7 @@ namespace server.Repositories
           GradeId = x.GradeId,
           Name = x.Grade.Name,
           AcademicYearId = x.AcademicYearId,
-          NienKhoa = x.AcademicYear.DisplayAcademicYearName,
+          NienKhoa = x.AcademicYear.Name,
           Description = x.Description,
           Status = x.Status,
           DateCreated = x.DateCreated,
@@ -209,7 +209,7 @@ namespace server.Repositories
             TeacherId = c.TeacherId,
             TeacherName = c.Teacher.Fullname,
             AcademicYearId = c.AcademicYearId,
-            NienKhoa = c.AcademicYear.DisplayAcademicYearName,
+            NienKhoa = c.AcademicYear.Name,
             SchoolId = c.SchoolId,
             ClassName = c.Name,
             SchoolName = c.School.Name,

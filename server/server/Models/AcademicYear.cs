@@ -1,4 +1,5 @@
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
 namespace server.Models;
 
@@ -16,19 +17,15 @@ public partial class AcademicYear : IBaseEntity
 
   public bool Status { get; set; }
 
-  public bool Deleted { get; set; } = false;
+  public bool? Deleted { get; set; }
 
   public DateTime? DateCreated { get; set; }
 
   public DateTime? DateUpdated { get; set; }
 
-  public string DisplayAcademicYearName => $"{YearStart?.Year} - {YearEnd?.Year}";
-
   public virtual ICollection<BiaSoDauBai> BiaSoDauBais { get; set; } = new List<BiaSoDauBai>();
 
   public virtual ICollection<Class> Classes { get; set; } = new List<Class>();
-
-  public virtual ICollection<Grade> Grades { get; set; } = new List<Grade>();
 
   public virtual ICollection<PhanCongChuNhiem> PhanCongChuNhiems { get; set; } = new List<PhanCongChuNhiem>();
 

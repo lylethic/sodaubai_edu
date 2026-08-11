@@ -146,7 +146,7 @@ namespace server.Repositories
 
         // REtrieve
         var tokenStored = _context.Sessions
-                         .Where(id => id.AccountId == Convert.ToInt16(userId))
+                         .Where(id => id.UserId == Convert.ToInt16(userId))
                          .OrderByDescending(s => s.ExpiresAt)
                          .FirstOrDefault();
 

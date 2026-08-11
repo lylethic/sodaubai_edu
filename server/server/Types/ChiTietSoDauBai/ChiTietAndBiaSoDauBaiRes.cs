@@ -2,7 +2,7 @@
 {
   public class ChiTietAndBiaSoDauBaiRes
   {
-    public int ChiTietSoDauBaiId { get; set; }
+    public int Id { get; set; }
 
     public int BiaSoDauBaiId { get; set; }
 

@@ -5,17 +5,23 @@ namespace server.Models;
 
 public partial class Week
 {
-    public int WeekId { get; set; }
+    public int Id { get; set; }
 
     public int SemesterId { get; set; }
 
-    public string WeekName { get; set; } = null!;
+    public string Name { get; set; } = null!;
 
     public DateTime? WeekStart { get; set; }
 
     public DateTime? WeekEnd { get; set; }
 
     public bool Status { get; set; }
+
+    public bool? Deleted { get; set; }
+
+    public DateTime? DateCreated { get; set; }
+
+    public DateTime? DateUpdated { get; set; }
 
     public virtual ICollection<ChiTietSoDauBai> ChiTietSoDauBais { get; set; } = new List<ChiTietSoDauBai>();
 

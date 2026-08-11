@@ -5,15 +5,13 @@ namespace server.Models;
 
 public partial class Session
 {
-    public int TokenId { get; set; }
+    public int Id { get; set; }
 
     public string Token { get; set; } = null!;
 
-    public int AccountId { get; set; }
+    public int UserId { get; set; }
 
     public DateTime? ExpiresAt { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
-
-    public virtual Account Account { get; set; } = null!;
+    public DateTime? DateCreated { get; set; }
 }

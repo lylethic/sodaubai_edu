@@ -80,7 +80,7 @@ namespace server.Repositories
         var result = new ClassifyDto
         {
           ClassificationId = id,
-          ClassifyName = student.ClassifyName,
+          ClassifyName = student.Name,
           Score = student.Score,
         };
 
@@ -103,8 +103,8 @@ namespace server.Repositories
 
         var result = roles.Select(x => new ClassifyDto
         {
-          ClassificationId = x.ClassificationId,
-          ClassifyName = x.ClassifyName,
+          ClassificationId = x.Id,
+          ClassifyName = x.Name,
           Score = x.Score,
         }).ToList();
 
@@ -143,7 +143,7 @@ namespace server.Repositories
           var parameters = new List<SqlParameter>();
           var queryBuilder = new StringBuilder("UPDATE Classification SET ");
 
-          if (!string.IsNullOrEmpty(model.ClassifyName) && model.ClassifyName != exists.ClassifyName)
+          if (!string.IsNullOrEmpty(model.ClassifyName) && model.ClassifyName != exists.Name)
           {
             queryBuilder.Append("ClassifyName = @ClassifyName, ");
             parameters.Add(new SqlParameter("@ClassifyName", model.ClassifyName));
@@ -293,7 +293,7 @@ namespace server.Repositories
 
                 var myClassify = new Models.Classification
                 {
-                  ClassifyName = reader.GetValue(1).ToString() ?? "Xep loai",
+                  Name = reader.GetValue(1).ToString() ?? "Xep loai",
                   Score = Convert.ToInt32(reader.GetValue(2)),
                 };
 

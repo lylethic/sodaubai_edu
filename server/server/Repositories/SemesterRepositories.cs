@@ -89,8 +89,8 @@ namespace server.Repositories
           .FromSqlRaw(find, new SqlParameter("@id", id))
           .Select(static x => new Semester
           {
-            SemesterId = x.SemesterId,
-            SemesterName = x.SemesterName,
+            Id = x.Id,
+            Name = x.Name,
             DateStart = x.DateStart,
             DateEnd = x.DateEnd,
             Status = x.Status,
@@ -113,7 +113,7 @@ namespace server.Repositories
         var result = new SemesterResData
         {
           SemesterId = id,
-          SemesterName = semester.SemesterName,
+          SemesterName = semester.Name,
           DateStart = semester.DateStart,
           DateEnd = semester.DateEnd,
           Status = semester.Status,
@@ -156,8 +156,8 @@ namespace server.Repositories
 
         var result = semester.Select(x => new SemesterResData
         {
-          SemesterId = x.SemesterId,
-          SemesterName = x.SemesterName,
+          SemesterId = x.Id,
+          SemesterName = x.Name,
           DateStart = x.DateStart,
           DateEnd = x.DateEnd,
           Status = x.Status,
@@ -204,7 +204,7 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        if (!string.IsNullOrEmpty(model.SemesterName) && model.SemesterName != existingSemester.SemesterName)
+        if (!string.IsNullOrEmpty(model.SemesterName) && model.SemesterName != existingSemester.Name)
         {
           queryBuilder.Append("SemesterName = @SemesterName, ");
           parameters.Add(new SqlParameter("@SemesterName", model.SemesterName));
@@ -308,7 +308,7 @@ namespace server.Repositories
                 var mySemester = new Models.Semester
                 {
                   AcademicYearId = Convert.ToInt16(reader.GetValue(1)),
-                  SemesterName = reader.GetValue(2).ToString() ?? "_",
+                  Name = reader.GetValue(2).ToString() ?? "_",
                   DateStart = Convert.ToDateTime(reader.GetValue(3)),
                   DateEnd = Convert.ToDateTime(reader.GetValue(4)),
                   Description = reader.GetValue(5).ToString(),

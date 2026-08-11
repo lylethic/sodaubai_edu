@@ -52,7 +52,7 @@ namespace server.Repositories
       {
         var find = "SELECT * FROM BiaSoDauBai WHERE BiaSoDauBaiId = @id";
         var sodaubai = await _context.BiaSoDauBais
-            .FromSqlRaw(find, new SqlParameter("@id", model.BiaSoDauBaiId))
+            .FromSqlRaw(find, new SqlParameter("@id", model.Id))
             .FirstOrDefaultAsync();
 
         if (sodaubai is not null)
@@ -108,7 +108,7 @@ namespace server.Repositories
 
         var result = new BiaSoDauBaiDto
         {
-          BiaSoDauBaiId = insert,
+          Id = insert,
           SchoolId = model.SchoolId,
           AcademicyearId = model.AcademicyearId,
           ClassId = model.ClassId,
@@ -132,7 +132,7 @@ namespace server.Repositories
       try
       {
         var query = @"SELECT 
-                  b.BiaSoDauBaiId,
+                  b.Id,
                   b.SchoolId,
                   ISNULL(s.NameSchool, '') AS SchoolName,
                   b.AcademicyearId,
@@ -153,14 +153,14 @@ namespace server.Repositories
                   School s ON b.SchoolId = s.SchoolId
               LEFT JOIN 
                   AcademicYear ay ON b.AcademicyearId = ay.AcademicYearId
-              WHERE b.BiaSoDauBaiId = @id";
+              WHERE b.Id = @id";
 
         // Fetch 
         var sodaubai = await _context.BiaSoDauBais
             .FromSqlRaw(query, new SqlParameter("@id", id))
             .Select(static x => new BiaSoDauBaiRes
             {
-              BiaSoDauBaiId = x.BiaSoDauBaiId,
+              Id = x.Id,
               SchoolId = x.SchoolId,
               SchoolName = x.School.Name,
               AcademicyearId = x.AcademicyearId,
@@ -182,7 +182,7 @@ namespace server.Repositories
         // Map the result
         var result = new BiaSoDauBaiRes
         {
-          BiaSoDauBaiId = id,
+          Id = id,
           SchoolId = sodaubai.SchoolId,
           SchoolName = sodaubai.SchoolName ?? string.Empty,
           AcademicyearId = sodaubai.AcademicyearId,
@@ -208,7 +208,7 @@ namespace server.Repositories
       try
       {
         var query = @"SELECT 
-                  b.BiaSoDauBaiId,
+                  b.Id,
                   b.SchoolId,
                   b.AcademicyearId,
                   b.ClassId,
@@ -217,7 +217,7 @@ namespace server.Repositories
                   b.DateUpdated
               FROM 
                   BiaSoDauBai b
-              WHERE b.BiaSoDauBaiId = @id";
+              WHERE b.Id = @id";
 
         // Fetch 
         var sodaubai = await _context.BiaSoDauBais
@@ -232,7 +232,7 @@ namespace server.Repositories
         // Map the result
         var result = new BiaSoDauBaiDto
         {
-          BiaSoDauBaiId = id,
+          Id = id,
           SchoolId = sodaubai.SchoolId,
           AcademicyearId = sodaubai.AcademicyearId,
           ClassId = sodaubai.ClassId,
@@ -265,7 +265,7 @@ namespace server.Repositories
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
                                select new BiaSoDauBaiRes()
                                {
-                                 BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
+                                 Id = biaSo.Id,
                                  SchoolId = biaSo.SchoolId,
                                  SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
@@ -281,7 +281,7 @@ namespace server.Repositories
         var biaSoDauBai = await baiSoDauBaiQuery
         .AsNoTracking()
             .Where(x => x.Status == true)
-            .OrderBy(x => x.BiaSoDauBaiId)
+            .OrderBy(x => x.Id)
             .Skip(skip)
             .Take(queryObject.PageSize)
             .ToListAsync();
@@ -315,7 +315,7 @@ namespace server.Repositories
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
                                select new BiaSoDauBaiRes()
                                {
-                                 BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
+                                 Id = biaSo.Id,
                                  SchoolId = biaSo.SchoolId,
                                  SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
@@ -364,7 +364,7 @@ namespace server.Repositories
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
                                select new BiaSoDauBaiRes()
                                {
-                                 BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
+                                 Id = biaSo.Id,
                                  SchoolId = biaSo.SchoolId,
                                  SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
@@ -378,7 +378,7 @@ namespace server.Repositories
                                };
 
         var biaSoDauBai = await baiSoDauBaiQuery
-            .OrderBy(x => x.BiaSoDauBaiId)
+            .OrderBy(x => x.Id)
             .Skip(skip)
             .Take(queryObject.PageSize)
             .ToListAsync();
@@ -413,7 +413,7 @@ namespace server.Repositories
                                from nienKhoa in nienkhoaGroup.DefaultIfEmpty()
                                select new
                                {
-                                 biaSo.BiaSoDauBaiId,
+                                 biaSo.Id,
                                  biaSo.SchoolId,
                                  SchoolName = truong.Name,
                                  biaSo.AcademicyearId,
@@ -435,7 +435,7 @@ namespace server.Repositories
 
         var result = rawResults.Select(x => new BiaSoDauBaiRes
         {
-          BiaSoDauBaiId = x.BiaSoDauBaiId,
+          Id = x.Id,
           SchoolId = x.SchoolId,
           SchoolName = x.SchoolName ?? string.Empty,
           AcademicyearId = x.AcademicyearId,
@@ -479,7 +479,7 @@ namespace server.Repositories
                                     (classId == null || biaSo.ClassId == classId)
                                select new BiaSoDauBaiRes()
                                {
-                                 BiaSoDauBaiId = biaSo.BiaSoDauBaiId,
+                                 Id = biaSo.Id,
                                  SchoolId = biaSo.SchoolId,
                                  SchoolName = truong.Name,
                                  AcademicyearId = biaSo.AcademicyearId,
@@ -762,7 +762,7 @@ namespace server.Repositories
 
       var rawResults = await query.Select(x => new
       {
-        x.BiaSoDauBaiId,
+        x.Id,
         x.ClassId,
         x.SchoolId,
         x.AcademicyearId,
@@ -779,7 +779,7 @@ namespace server.Repositories
 
       var results = rawResults.Select(x => new BiaSoDauBaiRes
       {
-        BiaSoDauBaiId = x.BiaSoDauBaiId,
+        Id = x.Id,
         SchoolId = x.SchoolId,
         AcademicyearId = x.AcademicyearId,
         ClassId = x.ClassId,

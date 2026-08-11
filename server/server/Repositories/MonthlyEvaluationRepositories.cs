@@ -61,7 +61,7 @@ namespace server.Repositories
           return new ResponseData<MonthlyEvaluation>(400, "Vui lòng cung cấp thông tin");
 
         var monthlyEvaluation = await _context.MonthlyEvaluations
-        .Where(x => x.MonthlyEvaluationId == id)
+        .Where(x => x.Id == id)
         .AsNoTracking()
         .SingleOrDefaultAsync();
 

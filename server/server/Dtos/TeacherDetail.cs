@@ -2,15 +2,15 @@ namespace server.Dtos;
 
 public partial class TeacherDetail
 {
-  public int TeacherId { get; set; }
+  public int Id { get; set; }
 
-  public int AccountId { get; set; }
+  public int UserId { get; set; }
 
   public int SchoolId { get; set; }
 
   public string Fullname { get; set; } = null!;
 
-  public string DateOfBirth { get; set; } = string.Empty;
+  public DateTime DateOfBirth { get; set; }
 
   public string Gender { get; set; } = "Nam";
 
@@ -18,12 +18,12 @@ public partial class TeacherDetail
 
   public bool Status { get; set; }
 
-  public string DateCreate { get; set; } = string.Empty;
+  public DateTime DateCreated { get; set; }
 
-  public string DateUpdate { get; set; } = string.Empty;
+  public DateTime DateUpdated { get; set; }
 
   public string? NameSchool { get; set; }
 
-  public string SchoolType { get; set; }
+  public string SchoolType { get; set; } = string.Empty;
   public string? PhotoPath { get; set; }
 }

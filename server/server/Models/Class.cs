@@ -1,3 +1,6 @@
+﻿using System;
+using System.Collections.Generic;
+
 namespace server.Models;
 
 public partial class Class : IBaseEntity
@@ -12,7 +15,7 @@ public partial class Class : IBaseEntity
 
   public int SchoolId { get; set; }
 
-  public string Name { get; set; } = string.Empty;
+  public string Name { get; set; } = null!;
 
   public bool Status { get; set; }
 
@@ -22,9 +25,9 @@ public partial class Class : IBaseEntity
 
   public DateTime? DateUpdated { get; set; }
 
-  public bool Deleted { get; set; } = false;
-
   public int? Quantity { get; set; }
+
+  public bool? Deleted { get; set; }
 
   public virtual AcademicYear AcademicYear { get; set; } = null!;
 

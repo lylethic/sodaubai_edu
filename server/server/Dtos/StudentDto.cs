@@ -2,13 +2,13 @@
 {
   public class StudentDto
   {
-    public int StudentId { get; set; }
+    public int Id { get; set; }
 
     public int ClassId { get; set; }
 
     public int GradeId { get; set; }
 
-    public int AccountId { get; set; }
+    public int UserId { get; set; }
 
     public string Fullname { get; set; } = null!;
 

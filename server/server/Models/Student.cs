@@ -5,13 +5,11 @@ namespace server.Models;
 
 public partial class Student
 {
-    public int StudentId { get; set; }
+    public int Id { get; set; }
 
     public int ClassId { get; set; }
 
     public int GradeId { get; set; }
-
-    public int AccountId { get; set; }
 
     public string Fullname { get; set; } = null!;
 
@@ -27,11 +25,23 @@ public partial class Student
 
     public string? Address { get; set; }
 
-    public virtual Account Account { get; set; } = null!;
+    public int? UserId { get; set; }
+
+    public bool? Deleted { get; set; }
+
+    public int? CreatedBy { get; set; }
+
+    public int? UpdatedBy { get; set; }
 
     public virtual Class Class { get; set; } = null!;
+
+    public virtual User? CreatedByNavigation { get; set; }
 
     public virtual Grade Grade { get; set; } = null!;
 
     public virtual ICollection<RollCallDetail> RollCallDetails { get; set; } = new List<RollCallDetail>();
+
+    public virtual User? UpdatedByNavigation { get; set; }
+
+    public virtual User? User { get; set; }
 }

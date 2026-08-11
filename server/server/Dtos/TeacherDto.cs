@@ -2,9 +2,9 @@
 {
   public class TeacherDto
   {
-    public int TeacherId { get; set; } = 0;
+    public int Id { get; set; } = 0;
 
-    public int AccountId { get; set; }
+    public int UserId { get; set; }
 
     public int SchoolId { get; set; }
 
@@ -29,7 +29,7 @@
   {
     public int TeacherId { get; set; }
 
-    public int AccountId { get; set; }
+    public int UserId { get; set; }
 
     public int SchoolId { get; set; }
 

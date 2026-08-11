@@ -25,7 +25,7 @@ namespace server.Repositories
         var find = "SELECT * FROM STUDENT WHERE StudentId = @id";
 
         var student = await _context.Students
-          .FromSqlRaw(find, new SqlParameter("@id", model.StudentId))
+          .FromSqlRaw(find, new SqlParameter("@id", model.Id))
           .FirstOrDefaultAsync();
 
         if (student is not null)
@@ -42,7 +42,7 @@ namespace server.Repositories
         var insert = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
           new SqlParameter("@ClassId", model.ClassId),
           new SqlParameter("@GradeId", model.GradeId),
-          new SqlParameter("@AccountId", model.AccountId),
+          new SqlParameter("@AccountId", model.UserId),
           new SqlParameter("@Fullname", model.Fullname),
           new SqlParameter("@DateOfBirth", model.DateOfBirth),
           new SqlParameter("@Address", model.Address),
@@ -54,10 +54,10 @@ namespace server.Repositories
 
         var result = new StudentDto
         {
-          StudentId = insert,
+          Id = insert,
           ClassId = model.ClassId,
           GradeId = model.GradeId,
-          AccountId = model.AccountId,
+          UserId = model.UserId,
           Fullname = model.Fullname,
           DateOfBirth = model.DateOfBirth,
           Address = model.Address,
@@ -91,18 +91,18 @@ namespace server.Repositories
             .Include(x => x.Class)
             .Select(static s => new
             {
-              s.StudentId,
+              s.Id,
               s.ClassId,
               s.GradeId,
-              s.Account.AccountId,
+              UserId = s.User.Id,
               s.Fullname,
               s.Description,
               s.Status,
               s.DateCreated,
               s.DateUpdated,
-              s.Account.SchoolId,
-              SchoolName = s.Account.School.Name,
-              s.Account.Email,
+              s.User.SchoolId,
+              SchoolName = s.User.School.Name,
+              s.User.Email,
               ClassName = s.Class.Name,
               s.Address,
               s.DateOfBirth
@@ -118,10 +118,10 @@ namespace server.Repositories
         // Map the result to the StudentDto
         var result = new StudentDetail
         {
-          StudentId = id,
+          Id = id,
           ClassId = student.ClassId,
           GradeId = student.GradeId,
-          AccountId = student.AccountId,
+          UserId = student.UserId,
           Fullname = student.Fullname,
           Description = student.Description,
           Status = student.Status,
@@ -150,23 +150,23 @@ namespace server.Repositories
         if (schoolId == 0) return new ResponseData<List<StudentDetail>>(400, "Vui lòng nhập mã trường học");
 
         var queryStudentBySchool = from student in _context.Students
-                                   join account in _context.Accounts on student.AccountId equals account.AccountId into accountGroup
-                                   from account in accountGroup.DefaultIfEmpty()
-                                   where account.SchoolId == schoolId || schoolId == null
+                                   join user in _context.Users on student.UserId equals user.Id into userGroup
+                                   from user in userGroup.DefaultIfEmpty()
+                                   where user.SchoolId == schoolId || schoolId == null
                                    select new StudentDetail
                                    {
-                                     StudentId = student.StudentId,
+                                     Id = student.Id,
                                      ClassId = student.ClassId,
                                      GradeId = student.GradeId,
-                                     AccountId = student.AccountId,
+                                     UserId = student.User.Id,
                                      Fullname = student.Fullname,
                                      Status = student.Status,
                                      Description = student.Description,
                                      DateCreated = student.DateCreated,
                                      DateUpdated = student.DateUpdated,
-                                     Email = account.Email,
-                                     SchoolId = account.SchoolId,
-                                     SchoolName = account.School.Name,
+                                     Email = user.Email,
+                                     SchoolId = user.SchoolId,
+                                     SchoolName = user.School.Name,
                                      ClassName = student.Class.Name,
                                      Address = student.Address,
                                      DateOfBirth = student.DateOfBirth,
@@ -195,23 +195,23 @@ namespace server.Repositories
         if (schoolId == 0) return new ResponseData<List<StudentDetail>>(400, "Vui lòng nhập mã trường học");
 
         var queryStudentBySchool = from student in _context.Students
-                                   join account in _context.Accounts on student.AccountId equals account.AccountId into accountGroup
-                                   from account in accountGroup.DefaultIfEmpty()
-                                   where account.SchoolId == schoolId && student.ClassId == classId
+                                   join user in _context.Users on student.UserId equals user.Id into userGroup
+                                   from user in userGroup.DefaultIfEmpty()
+                                   where user.SchoolId == schoolId && student.ClassId == classId
                                    select new StudentDetail
                                    {
-                                     StudentId = student.StudentId,
+                                     Id = student.Id,
                                      ClassId = student.ClassId,
                                      GradeId = student.GradeId,
-                                     AccountId = student.AccountId,
+                                     UserId = student.User.Id,
                                      Fullname = student.Fullname,
                                      Status = student.Status,
                                      Description = student.Description,
                                      DateCreated = student.DateCreated,
                                      DateUpdated = student.DateUpdated,
-                                     Email = account.Email,
-                                     SchoolId = account.SchoolId,
-                                     SchoolName = account.School.Name,
+                                     Email = user.Email,
+                                     SchoolId = user.SchoolId,
+                                     SchoolName = user.School.Name,
                                      ClassName = student.Class.Name,
                                      Address = student.Address,
                                      DateOfBirth = student.DateOfBirth,
@@ -267,10 +267,10 @@ namespace server.Repositories
           hasChanges = true;
         }
 
-        if (model.AccountId != 0 && model.AccountId != exists.AccountId)
+        if (model.UserId != 0 && model.UserId != exists.UserId)
         {
-          queryBuilder.Append("accountId = @accountId, ");
-          parameters.Add(new SqlParameter("@accountId", model.AccountId));
+          queryBuilder.Append("userId = @userId, ");
+          parameters.Add(new SqlParameter("@userId", model.UserId));
           hasChanges = true;
         }
 
@@ -399,7 +399,7 @@ namespace server.Repositories
                 {
                   ClassId = Convert.ToInt32(reader.GetValue(1)),
                   GradeId = Convert.ToInt32(reader.GetValue(2)),
-                  AccountId = Convert.ToInt32(reader.GetValue(3)),
+                  UserId = Convert.ToInt32(reader.GetValue(3)),
                   Fullname = reader.GetValue(4).ToString() ?? "Undefined",
                   Status = Convert.ToBoolean(reader.GetValue(5)),
                   DateCreated = DateTime.UtcNow,

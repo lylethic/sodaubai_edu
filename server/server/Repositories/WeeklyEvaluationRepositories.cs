@@ -30,11 +30,11 @@ namespace server.Repositories
           ClassId = model.ClassId,
           TeacherId = model.TeacherId,
           WeekId = model.WeekId,
-          WeekNameEvaluation = model.WeekNameEvaluation,
+          Name = model.WeekNameEvaluation,
           TotalScore = await GetTotalScoreByWeekId(model.WeekId),
           Description = model.Description,
-          CreatedAt = DateTime.UtcNow,
-          UpdatedAt = null
+          DateCreated = DateTime.UtcNow,
+          DateUpdated = null
         };
 
         _context.WeeklyEvaluations.Add(weeklyEvaluation);
@@ -92,7 +92,7 @@ namespace server.Repositories
             .Include(x => x.Class)
             .Select(static x => new WeeklyEvaluationRes
             {
-              WeeklyEvaluationId = x.WeeklyEvaluationId,
+              WeeklyEvaluationId = x.Id,
               WeekId = x.WeekId,
               ClassId = x.ClassId,
               GradeId = x.Class.GradeId,
@@ -121,7 +121,7 @@ namespace server.Repositories
       try
       {
         var result = await _context.WeeklyEvaluations
-          .Where(x => x.WeeklyEvaluationId == id)
+          .Where(x => x.Id == id)
           .Include(x => x.Teacher)
           .Include(x => x.Class)
           .AsNoTracking()
@@ -145,7 +145,7 @@ namespace server.Repositories
       {
         // Find the WeeklyEvaluation to update
         var data = await _context.WeeklyEvaluations
-            .FirstOrDefaultAsync(x => x.WeeklyEvaluationId == id);
+            .FirstOrDefaultAsync(x => x.Id == id);
 
         if (data == null)
         {
@@ -157,9 +157,9 @@ namespace server.Repositories
         data.WeekId = model.WeekId;
         data.TeacherId = model.TeacherId;
         data.Description = model.Description;
-        data.WeekNameEvaluation = model.WeekNameEvaluation;
+        data.Name = model.WeekNameEvaluation;
         data.TotalScore = model.TotalScore;
-        data.UpdatedAt = DateTime.UtcNow;
+        data.DateCreated = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
 
@@ -182,7 +182,7 @@ namespace server.Repositories
         }
 
         var data = await _context.WeeklyEvaluations
-         .FirstOrDefaultAsync(x => x.WeeklyEvaluationId == id);
+         .FirstOrDefaultAsync(x => x.Id == id);
 
         if (data == null)
         {
@@ -209,7 +209,7 @@ namespace server.Repositories
           return new ResponseData<WeeklyEvaluation>(400, "Dữ liệu không được cung cấp.");
         }
         var data = await _context.WeeklyEvaluations
-         .Where(x => ids.Contains(x.WeeklyEvaluationId))
+         .Where(x => ids.Contains(x.Id))
          .ToListAsync();
 
         if (data == null)
@@ -235,7 +235,7 @@ namespace server.Repositories
                 from c in _context.ChiTietSoDauBais
                 where c.WeekId == id
                 join f in _context.Classifications
-                     on c.ClassificationId equals f.ClassificationId
+                     on c.ClassificationId equals f.Id
                 select (double)(f.Score ?? 0)
             ).SumAsync();
 

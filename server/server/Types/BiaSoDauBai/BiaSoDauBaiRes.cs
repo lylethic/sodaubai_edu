@@ -4,7 +4,7 @@ namespace server.Types.BiaSoDauBai
 {
   public class BiaSoDauBaiRes
   {
-    public int BiaSoDauBaiId { get; set; }
+    public int Id { get; set; }
 
     public int SchoolId { get; set; }
 

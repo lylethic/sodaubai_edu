@@ -5,7 +5,7 @@ namespace server.Types.ChiTietSoDauBai
   public class ChiTietSoDauBaiRes
   {
 
-    public int ChiTietSoDauBaiId { get; set; }
+    public int Id { get; set; }
 
     public int BiaSoDauBaiId { get; set; }
     public string? ClassName { get; set; } = string.Empty; // sodaubai cua lop nao?
@@ -28,22 +28,22 @@ namespace server.Types.ChiTietSoDauBai
 
     public string DaysOfTheWeek { get; set; } = null!;
 
-    public string? ThoiGian { get; set; } = string.Empty;
+    public string? Time { get; set; } = string.Empty;
 
-    public string BuoiHoc { get; set; } = null!;
+    public string Session { get; set; } = null!;
 
-    public int TietHoc { get; set; }
+    public int Period { get; set; }
 
     public string LessonContent { get; set; } = null!;
 
     public int Attend { get; set; }
 
-    public string? NoteComment { get; set; }
+    public string? Note { get; set; }
 
     public string? CreatedBy { get; set; } = string.Empty;
 
-    public DateTime? CreatedAt { get; set; }
+    public DateTime? DateCreated { get; set; }
 
-    public DateTime? UpdatedAt { get; set; }
+    public DateTime? DateUpdated { get; set; }
   }
 }

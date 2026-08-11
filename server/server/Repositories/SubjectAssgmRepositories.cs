@@ -99,11 +99,11 @@ namespace server.Repositories
           .AsNoTracking()
           .Select(static x => new SubjectAssgmDetail
           {
-            SubjectAssignmentId = x.SubjectAssignmentId,
+            SubjectAssignmentId = x.Id,
             SubjectId = x.SubjectId,
             TeacherId = x.TeacherId,
             Fullname = x.Teacher.Fullname,
-            SubjectName = x.Subject.SubjectName,
+            SubjectName = x.Subject.Name,
             DateCreated = x.DateCreated,
             DateUpdated = x.DateUpdated
           })
@@ -148,11 +148,11 @@ namespace server.Repositories
           .AsNoTracking()
           .Select(static x => new SubjectAssgmDetail
           {
-            SubjectAssignmentId = x.SubjectAssignmentId,
+            SubjectAssignmentId = x.Id,
             SubjectId = x.SubjectId,
             TeacherId = x.TeacherId,
             Fullname = x.Teacher.Fullname,
-            SubjectName = x.Subject.SubjectName,
+            SubjectName = x.Subject.Name,
             DateCreated = x.DateCreated,
             DateUpdated = x.DateUpdated
           })
@@ -195,7 +195,7 @@ namespace server.Repositories
           .AsNoTracking()
           .Select(static x => new SubjectAssgmDetail
           {
-            SubjectAssignmentId = x.SubjectAssignmentId,
+            SubjectAssignmentId = x.Id,
             SubjectId = x.SubjectId,
             TeacherId = x.TeacherId,
             DateCreated = x.DateCreated,
@@ -240,11 +240,11 @@ namespace server.Repositories
           .AsNoTracking()
           .Select(static x => new
           {
-            x.SubjectAssignmentId,
+            x.Id,
             x.TeacherId,
             x.Teacher.Fullname,
             x.SubjectId,
-            x.Subject.SubjectName,
+            x.Subject.Name,
             x.Description,
             x.DateCreated,
             x.DateUpdated,
@@ -253,11 +253,11 @@ namespace server.Repositories
 
         var result = subjectAssgmt.Select(x => new SubjectAssgmDetail
         {
-          SubjectAssignmentId = x.SubjectAssignmentId,
+          SubjectAssignmentId = x.Id,
           TeacherId = x.TeacherId,
           Fullname = x.Fullname,
           SubjectId = x.SubjectId,
-          SubjectName = x.SubjectName,
+          SubjectName = x.Name,
           Description = x.Description,
           DateCreated = x.DateCreated,
           DateUpdated = x.DateUpdated,
@@ -386,8 +386,8 @@ namespace server.Repositories
 
                 int teacherId = Convert.ToInt32(reader.GetValue(1));
                 int subjectId = Convert.ToInt32(reader.GetValue(2));
-                var teacherExisting = await _context.Teachers.AnyAsync(x => x.TeacherId == teacherId);
-                var subjectExisting = await _context.Subjects.AnyAsync(x => x.SubjectId == subjectId);
+                var teacherExisting = await _context.Teachers.AnyAsync(x => x.Id == teacherId);
+                var subjectExisting = await _context.Subjects.AnyAsync(x => x.Id == subjectId);
                 if (!teacherExisting || !subjectExisting)
                 {
                   continue;

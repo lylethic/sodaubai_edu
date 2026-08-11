@@ -128,10 +128,8 @@ builder.Services.AddCors(options =>
 
 #region: * Inject app Dependencies (Dependecy Injecteion)
 builder.Services.AddTransient<ILogManager, LoggerManager>();
-builder.Services.AddScoped<IAuth, AuthRepositories>();
 builder.Services.AddScoped<IAuths, AuthsRepositories>();
 builder.Services.AddScoped<ITokenService, TokenRepositories>();
-builder.Services.AddScoped<IAccount, AccountRespositories>();
 builder.Services.AddScoped<IRole, RoleRepositories>();
 builder.Services.AddScoped<ISchool, SchoolRepositories>();
 builder.Services.AddScoped<ITeacher, TeacherRepositories>();

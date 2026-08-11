@@ -31,7 +31,7 @@ namespace server.Repositories
 
         // Check if teacherId exists
         var teacherExists = await _context.Teachers
-            .AnyAsync(c => c.TeacherId == model.TeacherId);
+            .AnyAsync(c => c.Id == model.TeacherId);
 
         if (!teacherExists)
         {
@@ -100,7 +100,7 @@ namespace server.Repositories
       try
       {
         var chuNhiemQuery = from chuNhiem in _context.PhanCongChuNhiems
-                            join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.TeacherId into teacherGroup
+                            join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.Id into teacherGroup
                             from teacher in teacherGroup.DefaultIfEmpty()
                             join classes in _context.Classes on chuNhiem.ClassId equals classes.Id into classesGroup
                             from classes in classesGroup.DefaultIfEmpty()
@@ -110,7 +110,7 @@ namespace server.Repositories
                             from school in schoolGroup.DefaultIfEmpty()
                             select new PhanCongData
                             {
-                              PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
+                              PhanCongChuNhiemId = chuNhiem.Id,
                               SchoolId = school.Id,
                               SchoolName = school.Name,
                               TeacherId = chuNhiem.TeacherId,
@@ -147,7 +147,7 @@ namespace server.Repositories
       try
       {
         var chuNhiemQuery = from chuNhiem in _context.PhanCongChuNhiems
-                            join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.TeacherId into teacherGroup
+                            join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.Id into teacherGroup
                             from teacher in teacherGroup.DefaultIfEmpty()
                             join classes in _context.Classes on chuNhiem.ClassId equals classes.Id into classesGroup
                             from classes in classesGroup.DefaultIfEmpty()
@@ -157,7 +157,7 @@ namespace server.Repositories
                             from school in schoolGroup.DefaultIfEmpty()
                             select new PhanCongData
                             {
-                              PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
+                              PhanCongChuNhiemId = chuNhiem.Id,
                               SchoolId = classes.SchoolId,
                               SchoolName = school.Name,
                               GradeId = classes.GradeId,
@@ -199,7 +199,7 @@ namespace server.Repositories
         }
 
         var chuNhiemQuery = from chuNhiem in _context.PhanCongChuNhiems
-                            join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.TeacherId into teacherGroup
+                            join teacher in _context.Teachers on chuNhiem.TeacherId equals teacher.Id into teacherGroup
                             from teacher in teacherGroup.DefaultIfEmpty()
                             join classes in _context.Classes on chuNhiem.ClassId equals classes.Id into classesGroup
                             from classes in classesGroup.DefaultIfEmpty()
@@ -212,7 +212,7 @@ namespace server.Repositories
                                     && (classId == null || classes.Id == classId)
                             select new PhanCongData
                             {
-                              PhanCongChuNhiemId = chuNhiem.PhanCongChuNhiemId,
+                              PhanCongChuNhiemId = chuNhiem.Id,
                               SchoolId = classes.SchoolId,
                               SchoolName = school.Name,
                               TeacherId = chuNhiem.TeacherId,
