@@ -28,4 +28,15 @@
     public string? YearStart { get; set; }
     public string? YearEnd { get; set; }
   }
+
+  public class ExtendSubject
+  {
+    public int Id { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public bool Status { get; set; }
+
+    public int? GradeId { get; set; }
+  }
 }

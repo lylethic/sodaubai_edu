@@ -10,7 +10,7 @@ using server.Dtos;
 using server.Interfaces;
 using server.Models;
 
-namespace server.Controllers
+namespace server.Controllers.v1
 {
   [ApiVersion("1.0")]
   [Route("api/v{version:apiVersion}/[controller]")]

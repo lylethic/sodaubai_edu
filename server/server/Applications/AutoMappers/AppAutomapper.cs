@@ -49,11 +49,24 @@ public class AppAutomapper : Profile
         .ForMember(dest => dest.ExtendAcademicYear, opt => opt.MapFrom(src => src.Academicyear))
         .ForMember(dest => dest.ExtendSchool, opt => opt.MapFrom(src => src.School))
         .ForMember(dest => dest.ExtendClass, opt => opt.MapFrom(src => src.Class));
-        
+
     CreateMap<AcademicYear, ExtendAcademicYear>().ReverseMap();
     CreateMap<School, ExtendSchool>().ReverseMap();
     CreateMap<Class, ExtendClass>().ReverseMap();
 
     CreateMap<Class, ClassDto>().ReverseMap();
+    CreateMap<Week, WeekDto>().ReverseMap();
+    CreateMap<Semester, SemesterDto>().ReverseMap();
+    CreateMap<Subject, SubjectDto>().ReverseMap();
+    CreateMap<Classification, ClassifyDto>().ReverseMap();
+    CreateMap<ChiTietSoDauBai, ChiTietSoDauBaiDto>().ReverseMap();
+
+    CreateMap<ChiTietSoDauBai, ExtendChiTietSoDauBai>()
+        .ForMember(dest => dest.ExtendBiaSoDauBai, opt => opt.MapFrom(src => src.BiaSoDauBai))
+        .ForMember(dest => dest.ExtendClassification, opt => opt.MapFrom(src => src.Classification))
+        .ForMember(dest => dest.ExtendSemester, opt => opt.MapFrom(src => src.Semester))
+        .ForMember(dest => dest.ExtendSubject, opt => opt.MapFrom(src => src.Subject))
+        .ForMember(dest => dest.ExtendWeek, opt => opt.MapFrom(src => src.Week))
+        .ForMember(dest => dest.ExtendUser, opt => opt.MapFrom(src => src.CreatedByNavigation));
   }
 }
