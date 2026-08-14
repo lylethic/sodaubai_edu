@@ -53,8 +53,7 @@ builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
   try
   {
     options.UseSqlServer(primaryConnectionString)
-        .EnableDetailedErrors()
-        .LogTo(Console.WriteLine);
+        .EnableDetailedErrors();
 
     // This line is causing the error - we need to use a different approach
     //using var context = new server.Data.SoDauBaiContext(options.Options);
@@ -67,8 +66,7 @@ builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
 
     // Use the failover connection string
     options.UseSqlServer(failoverConnectionString)
-        .EnableDetailedErrors()
-        .LogTo(Console.WriteLine);
+        .EnableDetailedErrors();
   }
 });
 #endregion
@@ -141,7 +139,7 @@ builder.Services.AddScoped<ISubject_Assgm, SubjectAssgmRepositories>();
 builder.Services.AddScoped<IGrade, GradeRepositories>();
 builder.Services.AddScoped<IClass, ClassRepositories>();
 builder.Services.AddScoped<IPhanCongGiangDaySoDauBai, PhanCongGiangDaySoDauBaiRepositories>();
-builder.Services.AddScoped<IClassify, ClassifyRepositories>();
+builder.Services.AddScoped<IClassification, ClassificationRepositories>();
 builder.Services.AddScoped<IBiaSoDauBai, BiaSoDauBaiRepositories>();
 builder.Services.AddScoped<IWeek, WeekRepositories>();
 builder.Services.AddScoped<IChiTietSoDauBai, ChiTietSoDauBaiRepositories>();
@@ -246,6 +244,7 @@ app.UseHttpsRedirection();
 app.UseCors("MyCors");
 
 app.UseRouting();
+app.UseMiddleware<ApiLoggingMiddleware>();
 app.UseMiddleware<JWTHeaderMiddleware>();
 
 app.UseAuthentication();

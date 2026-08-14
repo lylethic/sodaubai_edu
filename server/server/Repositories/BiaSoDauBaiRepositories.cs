@@ -72,13 +72,11 @@ namespace server.Repositories
 
     public async Task<BiaSoDauBai> UpdateBiaSoDauBai(int id, BiaSoDauBaiDto model)
     {
-      var existing = await GetByIdAsync(id);
-      if (existing == null) throw new NotFoundException("Không tìm thấy dữ liệu");
-
+      var existing = await GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy dữ liệu");
+      _mapper.Map(model, existing);
       existing.DateUpdated = DateTime.UtcNow;
       existing.UpdatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
-      var dto = _mapper.Map<BiaSoDauBai>(model);
-      return await this.UpdateAsync(dto);
+      return await this.UpdateAsync(existing);
     }
 
     public async Task<bool> DeleteBiaSoDauBai(int id)

@@ -1,246 +1,120 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using server.Applications;
+using server.Applications.ResponseModel;
+using server.Common.Settings;
 using server.Dtos;
-using server.IService;
+using server.Interfaces;
 
 namespace server.Controllers
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  [Authorize]
-  public class ClassificationsController : ControllerBase
+  [ApiVersion("1.0")]
+  [Route("api/v{version:apiVersion}/[controller]")]
+  public class ClassificationsController : BaseApiController
   {
-    private readonly IClassify _classify;
+    private readonly IClassification _repo;
 
-    public ClassificationsController(IClassify classify)
+    public ClassificationsController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IClassification classify) : base(mapper, httpContextAccessor, logger)
     {
-      this._classify = classify;
+      this._repo = classify;
     }
 
     // GET: api/<ClassificationsController>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] QueryObject? queryObject)
+    public async Task<IActionResult> GetAll([FromQuery] QueryObject? request)
     {
-      queryObject ??= new QueryObject();
-      var result = await _classify.GetClassifys();
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.Data ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
-        var paginatedData = data.Skip((queryObject.PageNumber - 1) * queryObject.PageSize).Take(queryObject.PageSize);
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.Data,
-          pagination = new
-          {
-            queryObject.PageNumber,
-            queryObject.PageSize,
-            totalPages,
-            totalResults
-          }
-        });
+        var result = await _repo.GetAllAsync(request);
+        return Success(result);
       }
-
-      if (result.StatusCode == 409)
+      catch (Exception ex)
       {
-        return StatusCode(409, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex);
       }
-
-      if (result.StatusCode == 400)
-      {
-        return BadRequest(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
     // GET api/<ClassificationsController>/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-      var result = await _classify.GetClassify(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.GetByIDAsync(id);
+        return Success(result);
       }
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex);
       }
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
     // POST api/<ClassificationsController>
-    [Authorize(Policy = "SuperAdminAndAdmin")]
+    [RequirePermission("CREATE")]
     [HttpPost]
-    public async Task<IActionResult> Create(ClassifyDto model)
+    public async Task<IActionResult> Create(ClassificationDto model)
     {
-      var result = await _classify.CreateClassify(model);
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.CreateAsync(model);
+        return Success(result);
       }
-
-      if (result.StatusCode == 409)
+      catch (Exception ex)
       {
-        return StatusCode(409, new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex);
       }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
     // PUT api/<ClassificationsController>/5
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, ClassifyDto model)
+    public async Task<IActionResult> Update(int id, ClassificationDto model)
     {
-      var result = await _classify.UpdateClassify(id, model);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.PutAsync(id, model);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex);
       }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
     // DELETE api/<ClassificationsController>/5
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-      var result = await _classify.DeleteClassify(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.DeleteAsync(id);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex);
       }
-
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("bulkdelete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var result = await _classify.BulkDelete(ids);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.BulkDeleteAsync(ids);
+        return Success(result);
       }
-
-      if (result.StatusCode == 400)
+      catch (Exception ex)
       {
-        return BadRequest(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
+        return Error(ex);
       }
-      if (result.StatusCode == 404)
-      {
-        return NotFound(new
-        {
-          statusCode = result.StatusCode,
-          message = result.Message
-        });
-      }
-      return StatusCode(500, new
-      {
-        statusCode = result.StatusCode,
-        message = result.Message
-      });
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPost("upload")]
     public async Task<IActionResult> UploadExcelFile(IFormFile file)
     {
-      var result = await _classify.ImportExcel(file);
+      var result = await _repo.ImportExcel(file);
 
       if (result.StatusCode == 200)
       {

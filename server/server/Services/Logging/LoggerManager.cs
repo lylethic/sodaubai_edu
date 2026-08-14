@@ -14,6 +14,11 @@ public sealed class LoggerManager : ILogManager
   private static readonly ILog _logger = LogManager.GetLogger(MethodBase.GetCurrentMethod()?.DeclaringType!);
   private static readonly Lazy<LoggerManager> _loggerInstance = new(() => new LoggerManager());
 
+  static LoggerManager()
+  {
+      log4net.Config.XmlConfigurator.Configure(new FileInfo("log4net.config"));
+  }
+
   private const string ExceptionName = "Exception";
   private const string InnerExceptionName = "Inner Exception";
   private const string ExceptionMessageWithoutInnerException = "{0}{1}: {2}Message: {3}{4}StackTrace: {5}.";

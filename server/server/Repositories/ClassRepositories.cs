@@ -1,3 +1,4 @@
+using AutoMapper;
 using ExcelDataReader;
 using Microsoft.EntityFrameworkCore;
 using server.Applications.Search;
@@ -12,8 +13,10 @@ namespace server.Repositories
 {
   public class ClassRepositories : BaseRepository<Class>, IClass
   {
-    public ClassRepositories(SoDauBaiContext context) : base(context)
+    private readonly IMapper _mapper;
+    public ClassRepositories(SoDauBaiContext context, IMapper mapper) : base(context)
     {
+      this._mapper = mapper;
     }
 
     protected override IQueryable<Class> ApplySearchFilter(IQueryable<Class> query, string searchTerm)
@@ -227,7 +230,7 @@ namespace server.Repositories
     public async Task<ClassDto> UpdateAsync(int id, ClassDto model)
     {
       var existing = await GetByIdAsync(id) ?? throw new Exception("Không tìm thấy lớp học");
-
+      _mapper.Map(model, existing);
       if (model.GradeId != 0) existing.GradeId = model.GradeId;
       if (model.TeacherId != 0) existing.TeacherId = model.TeacherId;
       if (model.AcademicYearId != 0) existing.AcademicYearId = model.AcademicYearId;

@@ -73,7 +73,7 @@
 
     public int? UpdatedBy { get; set; }
 
-    public ExtendClassify? ExtendClassification { get; set; } = null;
+    public ExtendClassification? ExtendClassification { get; set; } = null;
     public ExtendBiaSoDauBai? ExtendBiaSoDauBai { get; set; } = null;
     public ExtendUser? ExtendUser { get; set; } = null;
     public ExtendSemester? ExtendSemester { get; set; } = null;

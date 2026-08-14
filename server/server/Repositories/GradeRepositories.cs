@@ -105,8 +105,7 @@ namespace server.Repositories
 
     public async Task<Grade> UpdateAsync(int id, GradeDto model)
     {
-      var existing = await GetByIdAsync(id);
-      if (existing == null) throw new NotFoundException("Không tìm thấy khối lớp học");
+      var existing = await GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy khối lớp học");
 
       if (model.AcademicYearId != 0 && model.AcademicYearId != existing.AcademicYearId)
       {

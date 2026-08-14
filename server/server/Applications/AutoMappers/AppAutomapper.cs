@@ -55,10 +55,16 @@ public class AppAutomapper : Profile
     CreateMap<Class, ExtendClass>().ReverseMap();
 
     CreateMap<Class, ClassDto>().ReverseMap();
+
     CreateMap<Week, WeekDto>().ReverseMap();
+
     CreateMap<Semester, SemesterDto>().ReverseMap();
+
     CreateMap<Subject, SubjectDto>().ReverseMap();
-    CreateMap<Classification, ClassifyDto>().ReverseMap();
+
+    CreateMap<Classification, ClassificationDto>().ReverseMap();
+    CreateMap<Classification, ExtendClassification>().ReverseMap();
+
     CreateMap<ChiTietSoDauBai, ChiTietSoDauBaiDto>().ReverseMap();
 
     CreateMap<ChiTietSoDauBai, ExtendChiTietSoDauBai>()

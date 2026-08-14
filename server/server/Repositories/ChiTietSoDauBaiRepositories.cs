@@ -114,13 +114,11 @@ namespace server.Repositories
 
     public async Task<ChiTietSoDauBai> UpdateChiTietSoDauBai(int id, ChiTietSoDauBaiDto model)
     {
-      var existing = await GetByIdAsync(id)
-      ?? throw new NotFoundException("Không tìm thấy dữ liệu");
-
+      var existing = await GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy dữ liệu");
+      _mapper.Map(model, existing);
       existing.DateUpdated = DateTime.UtcNow;
       existing.UpdatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
-      var dto = _mapper.Map<ChiTietSoDauBai>(model);
-      return await this.UpdateAsync(dto);
+      return await this.UpdateAsync(existing);
     }
 
 
