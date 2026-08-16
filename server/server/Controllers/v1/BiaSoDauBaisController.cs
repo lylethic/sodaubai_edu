@@ -1,6 +1,5 @@
 using Asp.Versioning;
 using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using server.Applications;
 using server.Applications.ResponseModel;
@@ -8,7 +7,6 @@ using server.Applications.Search;
 using server.Common.Settings;
 using server.Dtos;
 using server.Interfaces;
-using server.Models;
 
 namespace server.Controllers.v1
 {

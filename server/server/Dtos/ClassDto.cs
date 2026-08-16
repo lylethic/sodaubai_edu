@@ -65,6 +65,8 @@
 
     public int AcademicYearId { get; set; }
 
+    public int? Quantity { get; set; }
+
     public int SchoolId { get; set; }
 
     public string Name { get; set; } = null!;
@@ -77,8 +79,5 @@
 
     public DateTime? DateUpdated { get; set; }
 
-    public int? Quantity { get; set; }
-
-    public bool? Deleted { get; set; }
   }
 }

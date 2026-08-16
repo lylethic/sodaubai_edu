@@ -74,5 +74,15 @@ public class AppAutomapper : Profile
         .ForMember(dest => dest.ExtendSubject, opt => opt.MapFrom(src => src.Subject))
         .ForMember(dest => dest.ExtendWeek, opt => opt.MapFrom(src => src.Week))
         .ForMember(dest => dest.ExtendUser, opt => opt.MapFrom(src => src.CreatedByNavigation));
+
+    CreateMap<Teacher, TeacherDto>().ReverseMap();
+    CreateMap<Teacher, ExtendTeacher>().ReverseMap();
+
+    CreateMap<PhanCongChuNhiem, PhanCongChuNhiemDto>().ReverseMap();
+    CreateMap<PhanCongChuNhiem, ExtendPhanCongChuNhiem>()
+      .ForMember(dest => dest.ExtendAcademicYear, opt => opt.MapFrom(src => src.AcademicYear))
+      .ForMember(dest => dest.ExtendClass, opt => opt.MapFrom(src => src.Class))
+      .ForMember(dest => dest.ExtendTeacher, opt => opt.MapFrom(src => src.Teacher))
+      .ForMember(dest => dest.ExtendSchool, opt => opt.MapFrom(src => src.Class.School));
   }
 }

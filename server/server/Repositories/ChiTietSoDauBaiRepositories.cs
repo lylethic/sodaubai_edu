@@ -17,7 +17,7 @@ using System.Text;
 
 namespace server.Repositories
 {
-  public class ChiTietSoDauBaiRepositories : BaseRepository<Models.ChiTietSoDauBai>, IChiTietSoDauBai
+  public class ChiTietSoDauBaiRepositories : BaseRepository<ChiTietSoDauBai>, IChiTietSoDauBai
   {
     private IMapper _mapper;
     private readonly IHttpContextAccessor _httpContextAccessor;

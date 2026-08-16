@@ -8,7 +8,7 @@ using server.Common.Settings;
 using server.Dtos;
 using server.Interfaces;
 
-namespace server.Controllers
+namespace server.Controllers.v1
 {
   [ApiVersion("1.0")]
   [Route("api/v{version:apiVersion}/[controller]")]
@@ -23,7 +23,7 @@ namespace server.Controllers
 
     // GET: api/<ClassificationsController>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] QueryObject? request)
+    public async Task<IActionResult> GetAll([FromQuery] QueryObject request)
     {
       try
       {

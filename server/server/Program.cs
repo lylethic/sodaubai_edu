@@ -74,6 +74,11 @@ builder.Services.AddDbContext<server.Data.SoDauBaiContext>(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+  options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+  {
+    Title = "SoDauBai",
+    Version = "v1"
+  });
   options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
   {
     Name = "Authorization",
@@ -143,7 +148,7 @@ builder.Services.AddScoped<IClassification, ClassificationRepositories>();
 builder.Services.AddScoped<IBiaSoDauBai, BiaSoDauBaiRepositories>();
 builder.Services.AddScoped<IWeek, WeekRepositories>();
 builder.Services.AddScoped<IChiTietSoDauBai, ChiTietSoDauBaiRepositories>();
-builder.Services.AddScoped<IPC_ChuNhiem, PCChuNhiemRepositories>();
+builder.Services.AddScoped<IPhanCongChuNhiem, PhanCongChuNhiemRepositories>();
 builder.Services.AddScoped<IRollCall, RollCallRepositories>();
 builder.Services.AddScoped<IRollCallDetail, RollCallDetailRepositories>();
 builder.Services.AddScoped<IWeeklyEvaluation, WeeklyEvaluationRepositories>();
@@ -238,6 +243,11 @@ if (app.Environment.IsDevelopment())
   app.UseSwagger();
   app.UseSwaggerUI();
 }
+
+app.UseSwaggerUI(c =>
+{
+  c.SwaggerEndpoint("/swagger/v1/swagger.json", "SoDauBai v1");
+});
 
 app.UseHttpsRedirection();
 
