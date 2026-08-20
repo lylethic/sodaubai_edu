@@ -15,7 +15,7 @@ namespace server.Interfaces
 
     Task<PhanCongChuNhiem> UpdateAsync(int id, PhanCongChuNhiemDto model);
 
-    Task<bool> Async(int id);
+    Task<bool> DeleteAsync(int id);
 
     Task<bool> BulkDelete(List<int> ids);
 

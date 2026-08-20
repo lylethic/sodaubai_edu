@@ -1,260 +1,117 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Asp.Versioning;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using server.Applications;
+using server.Applications.Search;
+using server.Common.Settings;
 using server.Dtos;
-using server.IService;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+using server.Interfaces;
 
 namespace server.Controllers
 {
-  [Route("api/[controller]")]
-  [ApiController]
-  [Authorize]
-  public class SubjectsController : ControllerBase
+  [ApiVersion("1.0")]
+  [Route("api/v{version:apiVersion}/[controller]")]
+  public class SubjectsController : BaseApiController
   {
-    private readonly ISubject _subjectRepo;
+    private readonly ISubject _repo;
 
-    public SubjectsController(ISubject subjectRepo)
+    public SubjectsController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, ISubject repo) : base(mapper, httpContextAccessor, logger)
     {
-      this._subjectRepo = subjectRepo;
+      this._repo = repo;
     }
 
-    // GET: api/<SubjectsController>
     [HttpGet]
-    public async Task<IActionResult> GetAllSubject([FromQuery] QueryObject? query)
+    public async Task<IActionResult> GetAllSubject([FromQuery] SubjectSearch request)
     {
-      query ??= new QueryObject();
-      var result = await _subjectRepo.GetSubjects();
-      if (result.StatusCode == 200)
+      try
       {
-        var data = result.Data ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / query.PageSize);
-        var paginatedData = data.Skip((query.PageNumber - 1) * query.PageSize).Take(query.PageSize);
-
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = paginatedData,
-          pagination = new
-          {
-            query.PageNumber,
-            query.PageSize,
-            totalResults,
-            totalPages
-          }
-        });
+        var result = await _repo.GetSubjects(request);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex);
       }
-
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message,
-      });
     }
 
-    // GET api/<SubjectsController>/5
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
-      var result = await _subjectRepo.GetSubject(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.GetByIDAsync(id);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex);
       }
-      if (result.StatusCode == 400)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message,
-      });
     }
 
-    // POST api/<SubjectsController>
-    [Authorize(Policy = "SuperAdminAndAdmin")]
+    [RequirePermission("CREATE")]
     [HttpPost]
     public async Task<IActionResult> CreateSubject(SubjectDto model)
     {
-      var result = await _subjectRepo.CreateSubject(model);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.AddAsync(model);
+        return Success(result);
       }
-
-      if (result.StatusCode == 409)
+      catch (Exception ex)
       {
-        return StatusCode(409, new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex);
       }
-
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message,
-      });
     }
 
-    // PUT api/<SubjectsController>/5
-    [Authorize(Policy = "SuperAdminAndAdmin")]
+    [RequirePermission("UPDATE")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateSubject(int id, SubjectDto model)
     {
-      var result = await _subjectRepo.UpdateSubject(id, model);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.UpdateAsync(id, model);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex);
       }
-
-      if (result.StatusCode == 400)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message,
-      });
     }
 
-    // DELETE api/<SubjectsController>/5
-    [Authorize(Policy = "SuperAdminAndAdmin")]
+    [RequirePermission("DELETE")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-      var result = await _subjectRepo.DeleteSubject(id);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.DeleteAsync(id);
+        return Success(result);
       }
-
-      if (result.StatusCode == 404)
+      catch (Exception ex)
       {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex);
       }
-
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message,
-      });
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpDelete("bulk-delete")]
     public async Task<IActionResult> BulkDelete(List<int> ids)
     {
-      var result = await _subjectRepo.BulkDelete(ids);
-
-      if (result.StatusCode == 200)
+      try
       {
-        return Ok(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-          data = result.Data
-        });
+        var result = await _repo.BulkDelete(ids);
+        return Success(result);
       }
-
-      if (result.StatusCode == 400)
+      catch (Exception ex)
       {
-        return BadRequest(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
+        return Error(ex);
       }
-
-      if (result.StatusCode == 404)
-      {
-        return NotFound(new
-        {
-          status = result.StatusCode,
-          message = result.Message,
-        });
-      }
-      return StatusCode(500, new
-      {
-        status = result.StatusCode,
-        message = result.Message,
-      });
     }
 
-    [Authorize(Policy = "SuperAdminAndAdmin")]
     [HttpPost("upload")]
     public async Task<IActionResult> ImportExcelFile(IFormFile file)
     {
-      var result = await _subjectRepo.ImportExcelFile(file);
+      var result = await _repo.ImportExcelFile(file);
 
       if (result.StatusCode == 200)
       {

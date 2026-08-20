@@ -3,33 +3,35 @@ using System.Collections.Generic;
 
 namespace server.Models;
 
-public partial class Subject
+public partial class Subject : IBaseEntity
 {
-    public int Id { get; set; }
+  public int Id { get; set; }
 
-    public string Name { get; set; } = null!;
+  public string Name { get; set; } = null!;
 
-    public bool Status { get; set; }
+  public bool Status { get; set; }
 
-    public int? GradeId { get; set; }
+  public int? GradeId { get; set; }
 
-    public bool? Deleted { get; set; }
+  public string? Description { get; set; } = null;
 
-    public DateTime? DateCreated { get; set; }
+  public bool? Deleted { get; set; } = false;
 
-    public DateTime? DateUpdated { get; set; }
+  public DateTime? DateCreated { get; set; }
 
-    public int? CreatedBy { get; set; }
+  public DateTime? DateUpdated { get; set; }
 
-    public int? UpdatedBy { get; set; }
+  public int? CreatedBy { get; set; }
 
-    public virtual ICollection<ChiTietSoDauBai> ChiTietSoDauBais { get; set; } = new List<ChiTietSoDauBai>();
+  public int? UpdatedBy { get; set; }
 
-    public virtual User? CreatedByNavigation { get; set; }
+  public virtual ICollection<ChiTietSoDauBai> ChiTietSoDauBais { get; set; } = new List<ChiTietSoDauBai>();
 
-    public virtual Grade? Grade { get; set; }
+  public virtual User? CreatedByNavigation { get; set; }
 
-    public virtual ICollection<SubjectAssignment> SubjectAssignments { get; set; } = new List<SubjectAssignment>();
+  public virtual Grade? Grade { get; set; }
 
-    public virtual User? UpdatedByNavigation { get; set; }
+  public virtual ICollection<SubjectAssignment> SubjectAssignments { get; set; } = new List<SubjectAssignment>();
+
+  public virtual User? UpdatedByNavigation { get; set; }
 }

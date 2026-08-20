@@ -3,10 +3,11 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using server.Applications;
 using server.Applications.Search;
+using server.Common.Settings;
 using server.Dtos;
 using server.Interfaces;
 
-namespace server.Controllers
+namespace server.Controllers.v1
 {
   [ApiVersion("1.0")]
   [Route("api/v{version:apiVersion}/[controller]")]
@@ -47,6 +48,7 @@ namespace server.Controllers
       }
     }
 
+    [RequirePermission("CREATE")]
     [HttpPost]
     public async Task<IActionResult> CreateAsync(PhanCongChuNhiemDto model)
     {
@@ -80,7 +82,7 @@ namespace server.Controllers
     {
       try
       {
-        var result = await _repo.Async(id);
+        var result = await _repo.DeleteAsync(id);
         return Success(result);
       }
       catch (Exception ex)

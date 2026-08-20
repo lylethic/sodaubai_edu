@@ -1,280 +1,95 @@
-﻿using ExcelDataReader;
+﻿using AutoMapper;
+using ExcelDataReader;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using server.Applications.ResponseModel;
+using server.Applications.Search;
+using server.Common.Exceptions;
 using server.Data;
 using server.Dtos;
-using server.IService;
+using server.Interfaces;
+using server.Models;
 using System.Text;
 
 
 namespace server.Repositories
 {
-  public class SubjectRepositories : ISubject
+  public class SubjectRepositories : BaseRepository<Subject>, ISubject
   {
-    readonly SoDauBaiContext _context;
+    private readonly IMapper _mapper;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public SubjectRepositories(SoDauBaiContext context)
+    public SubjectRepositories(IHttpContextAccessor httpContextAccessor, SoDauBaiContext context, IMapper mapper) : base(context)
     {
-      this._context = context;
+      this._mapper = mapper;
+      this._httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<ResponseData<SubjectDto>> CreateSubject(SubjectDto model)
+    public async Task<Subject> AddAsync(SubjectDto model)
     {
       if (model is null)
-        return new ResponseData<SubjectDto>(400, "Vui lòng cung cấp thông tin môn học hợp lệ");
+        throw new BadRequestException("Vui lòng cung cấp thông tin môn học hợp lệ");
 
-      try
-      {
-        var find = "SELECT * FROM Subject WHERE subjectId = @id";
-
-        var subject = await _context.Subjects
-          .FromSqlRaw(find, new SqlParameter("@id", model.Id))
-          .FirstOrDefaultAsync();
-
-        if (subject is not null)
-        {
-          return new ResponseData<SubjectDto>(409, "Môn học này đã tồn tại");
-        }
-
-        var sqlInsert = @"INSERT INTO SUBJECT (gradeId, Name, status)
-                     VALUES (@gradeId, @Name, @status);
-                     SELECT CAST(SCOPE_IDENTITY() as int);";
-
-        var insert = await _context.Database.ExecuteSqlRawAsync(sqlInsert,
-          new SqlParameter("@gradeId", model.GradeId),
-          new SqlParameter("@Name", model.Name),
-          new SqlParameter("@status", model.Status)
-          );
-
-        var result = new SubjectDto
-        {
-          Id = insert,
-          GradeId = model.GradeId,
-          Name = model.Name,
-          Status = model.Status,
-        };
-
-        return new ResponseData<SubjectDto>(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new ResponseData<SubjectDto>(500, "Có lỗi xảy ra. Vui lòng liên hệ quản trị viên để sớm khắc phục");
-        throw new Exception($"Server error: {ex.Message}");
-      }
+      var result = _context.Subjects.FirstOrDefaultAsync(x => x.Id == model.GradeId && x.Deleted == false) ?? throw new NotFoundException("Không tìm thấy khối học");
+      var dto = _mapper.Map<SubjectDto, Subject>(model);
+      return await base.AddAsync(dto);
     }
 
-    public async Task<ResponseData<SubjectRes>> GetSubject(int id)
+    public async Task<Subject> GetByIDAsync(int id)
     {
-      if (id == 0)
-      {
-        return new ResponseData<SubjectRes>(400, "Vui lòng cung cấp mã môn học hợp lệ");
-      }
-      try
-      {
-        var querySubject = from sub in _context.Subjects
-                           join grade in _context.Grades on sub.GradeId equals grade.Id into gradeGroup
-                           from grade in gradeGroup.DefaultIfEmpty()
-                           join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
-                           from acad in acadGroup.DefaultIfEmpty()
-                           where sub.Id == id
-                           select new SubjectRes
-                           {
-                             Id = id,
-                             Name = sub.Name,
-                             Status = sub.Status,
-                             GradeId = grade.Id,
-                             GradeName = grade.Name,
-                             DisplayAcademicYear_Name = acad.Name,
-                             YearStart = acad.YearStart.HasValue ? acad.YearStart.Value.ToString("dd/MM/yyyy") : "",
-                             YearEnd = acad.YearEnd.HasValue ? acad.YearEnd.Value.ToString("dd/MM/yyyy") : ""
-                           };
-
-        var result = await querySubject.AsNoTracking().FirstOrDefaultAsync();
-
-        if (result is null)
-        {
-          return new ResponseData<SubjectRes>(404, "Môn học không tồn tại");
-        }
-
-        return new ResponseData<SubjectRes>(200, "Thành công", result);
-      }
-      catch (Exception ex)
-      {
-        return new ResponseData<SubjectRes>(500, "Có lỗi xảy ra. Vui lòng liên hệ quản trị viên để sớm khắc phục");
-        throw new Exception($"Server error: {ex.Message}");
-      }
+      var result = await _dbSet.Where(x => x.Id == id && x.Deleted == false).Include(x => x.Grade).FirstOrDefaultAsync();
+      return result;
     }
 
-    public async Task<ResponseData<List<SubjectRes>>> GetSubjects()
+    protected override IQueryable<Subject> ApplySearchFilter(IQueryable<Subject> query, string searchTerm)
     {
-      try
+      query = query.Where(x => x.Deleted == false);
+      if (string.IsNullOrWhiteSpace(searchTerm))
       {
-        var querySubject = from sub in _context.Subjects
-                           join grade in _context.Grades on sub.GradeId equals grade.Id into gradeGroup
-                           from grade in gradeGroup.DefaultIfEmpty()
-                           join acad in _context.AcademicYears on grade.AcademicYearId equals acad.Id into acadGroup
-                           from acad in acadGroup.DefaultIfEmpty()
-                           select new SubjectRes
-                           {
-                             Id = sub.Id,
-                             Name = sub.Name,
-                             Status = sub.Status,
-                             GradeId = grade.Id,
-                             GradeName = grade.Name,
-                             DisplayAcademicYear_Name = acad.Name,
-                             YearStart = acad.YearStart.HasValue ? acad.YearStart.Value.ToString("dd/MM/yyyy") : "",
-                             YearEnd = acad.YearEnd.HasValue ? acad.YearEnd.Value.ToString("dd/MM/yyyy") : ""
-                           };
-
-        var result = await querySubject
-          .AsNoTracking()
-          .OrderBy(x => x.Id)
-          .ThenBy(x => x.GradeName)
-          .ToListAsync();
-
-        if (result is null || result.Count == 0)
-        {
-          return new ResponseData<List<SubjectRes>>(400, "Không có dữ liệu");
-        }
-
-        return new ResponseData<List<SubjectRes>>(200, "Thành công", result);
+        return query;
       }
-      catch (Exception ex)
-      {
-        return new ResponseData<List<SubjectRes>>(500, "Có lỗi xảy ra. Vui lòng liên hệ quản trị viên để sớm khắc phục");
-        throw new Exception($"Server error: {ex.Message}");
-      }
+      return query.Where(x => x.Grade.Name.Contains(searchTerm) || (x.Description != null && x.Description.Contains(searchTerm)));
     }
 
-    public async Task<ResponseData<SubjectDto>> UpdateSubject(int id, SubjectDto model)
+    public async Task<PaginatedResponse<ExtendSubject>> GetSubjects(SubjectSearch request)
     {
-      using var transaction = await _context.Database.BeginTransactionAsync();
-      try
+      var query = _dbSet.Where(x => x.Deleted == false).Include(x => x.Grade).AsNoTracking().AsQueryable();
+      if (request.GradeId.HasValue)
       {
-        var find = "SELECT * FROM Subject WHERE subjectId = @id";
-
-        var subject = await _context.Subjects
-          .FromSqlRaw(find, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
-
-        if (subject is null)
-          return new ResponseData<SubjectDto>(404, "Không tìm thấy môn học");
-
-
-        bool hasChanges = false;
-
-        var queryBuilder = new StringBuilder("UPDATE Subject SET ");
-        var parameters = new List<SqlParameter>();
-
-        if (model.GradeId != 0 && model.GradeId != subject.GradeId)
-        {
-          queryBuilder.Append("GradeId = @GradeId, ");
-          parameters.Add(new SqlParameter("@GradeId", model.GradeId));
-          hasChanges = true;
-        }
-        if (!string.IsNullOrEmpty(model.Name) && model.Name != subject.Name)
-        {
-          queryBuilder.Append("Name = @Name, ");
-          parameters.Add(new SqlParameter("@Name", model.Name));
-          hasChanges = true;
-        }
-
-        if (model.Status != subject.Status)
-        {
-          queryBuilder.Append("Status = @Status, ");
-          parameters.Add(new SqlParameter("@Status", model.Status));
-          hasChanges = true;
-        }
-
-        if (hasChanges)
-        {
-          if (queryBuilder[queryBuilder.Length - 2] == ',')
-          {
-            queryBuilder.Length -= 2;
-          }
-
-          queryBuilder.Append(" WHERE subjectId = @id");
-          parameters.Add(new SqlParameter("@id", id));
-
-          var updateQuery = queryBuilder.ToString();
-          await _context.Database.ExecuteSqlRawAsync(updateQuery, parameters.ToArray());
-          await transaction.CommitAsync();
-          return new ResponseData<SubjectDto>(200, "Đã cập nhật");
-        }
-        else
-        {
-          return new ResponseData<SubjectDto>(200, "Không phát hiện sự thay đổi");
-        }
+        query = query.Where(x => x.GradeId == request.GradeId);
       }
-      catch (Exception ex)
+      var totalCount = await query.CountAsync();
+      var skip = (request.PageNumber - 1) * request.PageSize;
+
+      var items = await query.OrderBy(x => x.Id).Skip(skip).Take(request.PageSize).ToListAsync();
+      return new PaginatedResponse<ExtendSubject>
       {
-        return new ResponseData<SubjectDto>(500, "Có lỗi xảy ra. Vui lòng liên hệ quản trị viên để sớm khắc phục");
-        throw new Exception($"Server error: {ex.Message}");
-      }
+        Items = _mapper.Map<List<Subject>, List<ExtendSubject>>(items),
+        TotalCount = totalCount,
+        PageNumber = request.PageNumber,
+        PageSize = request.PageSize
+      };
     }
 
-    public async Task<ResponseData<SubjectDto>> DeleteSubject(int id)
+    public async Task<Subject> UpdateAsync(int id, SubjectDto model)
     {
-      if (id == 0)
-        return new ResponseData<SubjectDto>(400, "Vui lòng cung cấp mã môn học");
-
-      try
-      {
-        var find = "SELECT * FROM Subject WHERE subjectId = @id";
-
-        var subject = await _context.Subjects
-          .FromSqlRaw(find, new SqlParameter("@id", id))
-          .FirstOrDefaultAsync();
-
-        if (subject is null)
-        {
-          return new ResponseData<SubjectDto>(404, "Môn học không tồn tại");
-        }
-
-        var deleteQuery = "DELETE FROM SUBJECT WHERE subjectId = @id";
-        await _context.Database.ExecuteSqlRawAsync(deleteQuery, new SqlParameter("@id", id));
-
-        return new ResponseData<SubjectDto>(200, "Xóa thành công");
-      }
-      catch (Exception ex)
-      {
-        return new ResponseData<SubjectDto>(500, "Có lỗi xảy ra. Vui lòng liên hệ quản trị viên để sớm khắc phục");
-        throw new Exception($"Server error: {ex.Message}");
-      }
+      model.Id = id;
+      var existing = await base.GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy dữ liệu");
+      _mapper.Map(model, existing);
+      existing.UpdatedBy = int.Parse(_httpContextAccessor.HttpContext?.User.FindFirst("UserId")?.Value!);
+      existing.DateUpdated = DateTime.UtcNow;
+      return await base.UpdateAsync(existing);
     }
 
-    public async Task<ResponseData<string>> BulkDelete(List<int> ids)
+    public override async Task<bool> DeleteAsync(int id)
     {
-      await using var transaction = await _context.Database.BeginTransactionAsync();
+      return await base.SoftDeleteAsync(id);
+    }
 
-      try
-      {
-        if (ids is null || ids.Count == 0)
-        {
-          return new ResponseData<string>(400, "Không có mã môn học nào được cung cấp");
-        }
-
-        var idList = string.Join(",", ids);
-
-        var deleteQuery = $"DELETE FROM Subject WHERE SubjectId IN ({idList})";
-
-        var delete = await _context.Database.ExecuteSqlRawAsync(deleteQuery);
-
-        if (delete == 0)
-        {
-          return new ResponseData<string>(404, "Môn học không tồn tại");
-        }
-
-        await transaction.CommitAsync();
-
-        return new ResponseData<string>(200, "Xóa thành công");
-      }
-      catch (Exception ex)
-      {
-        await transaction.RollbackAsync();
-        return new ResponseData<string>(500, "Có lỗi xảy ra. Vui lòng liên hệ quản trị viên để sớm khắc phục");
-        throw new Exception($"Server error: {ex.Message}");
-      }
+    public async Task<bool> BulkDelete(List<int> ids)
+    {
+      return await base.SoftBulkDeleteAsync(ids);
     }
 
     public async Task<ResponseData<string>> ImportExcelFile(IFormFile file)

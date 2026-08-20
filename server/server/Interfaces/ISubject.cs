@@ -1,15 +1,18 @@
-﻿using server.Dtos;
+﻿using server.Applications.ResponseModel;
+using server.Applications.Search;
+using server.Dtos;
+using server.Models;
 
-namespace server.IService
+namespace server.Interfaces
 {
   public interface ISubject
   {
-    Task<ResponseData<SubjectDto>> CreateSubject(SubjectDto model);
-    Task<ResponseData<SubjectRes>> GetSubject(int id);
-    Task<ResponseData<List<SubjectRes>>> GetSubjects();
-    Task<ResponseData<SubjectDto>> DeleteSubject(int id);
-    Task<ResponseData<SubjectDto>> UpdateSubject(int id, SubjectDto model);
-    Task<ResponseData<string>> BulkDelete(List<int> ids);
+    Task<Subject> AddAsync(SubjectDto model);
+    Task<Subject> GetByIDAsync(int id);
+    Task<PaginatedResponse<ExtendSubject>> GetSubjects(SubjectSearch request);
+    Task<Subject> UpdateAsync(int id, SubjectDto model);
+    Task<bool> DeleteAsync(int id);
+    Task<bool> BulkDelete(List<int> ids);
     Task<ResponseData<string>> ImportExcelFile(IFormFile file);
   }
 }

@@ -134,7 +134,7 @@ namespace server.Repositories
       return await base.UpdateAsync(existing);
     }
 
-    public async Task<bool> Async(int id)
+    public override async Task<bool> DeleteAsync(int id)
     {
       return await base.SoftDeleteAsync(id);
     }

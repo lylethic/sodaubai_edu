@@ -9,6 +9,7 @@
     public bool Status { get; set; }
 
     public int? GradeId { get; set; }
+    public string? Description { get; set; } = null;
   }
 
   public class SubjectRes
@@ -24,9 +25,7 @@
     public string? GradeName { get; set; } = null!;
 
     public string? DisplayAcademicYear_Name { get; set; } = null!;
-
-    public string? YearStart { get; set; }
-    public string? YearEnd { get; set; }
+    public string? Description { get; set; } = null;
   }
 
   public class ExtendSubject
@@ -38,5 +37,9 @@
     public bool Status { get; set; }
 
     public int? GradeId { get; set; }
+
+    public string? Description { get; set; } = null;
+
+    public ExtendGrade? ExtendGrade { get; set; } = null;
   }
 }

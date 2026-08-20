@@ -545,6 +545,7 @@ public partial class SoDauBaiContext : DbContext
       entity.Property(e => e.Deleted).HasDefaultValue(false);
       entity.Property(e => e.Name).HasMaxLength(100);
       entity.Property(e => e.Status).HasDefaultValue(true);
+      entity.Property(e => e.Description).HasMaxLength(500);
 
       entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.SubjectCreatedByNavigations)
               .HasForeignKey(d => d.CreatedBy)

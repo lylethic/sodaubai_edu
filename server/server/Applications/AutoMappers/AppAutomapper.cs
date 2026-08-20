@@ -43,6 +43,7 @@ public class AppAutomapper : Profile
 
     CreateMap<Grade, GradeDto>().ReverseMap();
     CreateMap<Grade, GradeDetail>().ReverseMap();
+    CreateMap<Grade, ExtendGrade>().ReverseMap();
 
     CreateMap<BiaSoDauBai, BiaSoDauBaiDto>().ReverseMap();
     CreateMap<BiaSoDauBai, ExtendBiaSoDauBai>()
@@ -61,6 +62,8 @@ public class AppAutomapper : Profile
     CreateMap<Semester, SemesterDto>().ReverseMap();
 
     CreateMap<Subject, SubjectDto>().ReverseMap();
+    CreateMap<Subject, ExtendSubject>()
+      .ForMember(dest => dest.ExtendGrade, opt => opt.MapFrom(src => src.Grade));
 
     CreateMap<Classification, ClassificationDto>().ReverseMap();
     CreateMap<Classification, ExtendClassification>().ReverseMap();
