@@ -1,15 +1,16 @@
 using server.Models;
 using server.Applications.ResponseModel;
 using server.Dtos;
-using System.Threading.Tasks;
+using server.Applications.Search;
 
 namespace server.Interfaces;
 
 public interface IUser
 {
-    Task<PaginatedResponse<User>> GetUsers(QueryObject request);
-    Task<User?> GetUser(int id);
-    Task<User> AddUser(User entity);
-    Task<User> UpdateUser(User entity);
-    Task<bool> DeleteUser(int id);
+  Task<PaginatedResponse<ExtendUserBody>> GetUsers(UserSearch request);
+  Task<User?> GetUser(int id);
+  Task<User> AddUser(UserCreateBody model);
+  Task<User> UpdateUser(int id, User entity);
+  Task<bool> DeleteUser(int id);
+  Task<User> UploadImageAsync(int id, IFormFile file);
 }

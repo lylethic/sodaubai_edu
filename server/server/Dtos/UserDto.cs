@@ -9,9 +9,9 @@ public class UserDto
   public string? Avatar { get; set; }
 }
 
-public class CreateUserDto
+public class UserCreateBody
 {
-  public int? SchoolId { get; set; }
+  public int SchoolId { get; set; }
   public string Email { get; set; } = null!;
   public string? Username { get; set; }
   public string? Avatar { get; set; }
@@ -38,4 +38,19 @@ public class ExtendUser
   public string? Username { get; set; }
 
   public string? Avatar { get; set; }
+}
+
+public class ExtendUserBody
+{
+  public int Id { get; set; }
+
+  public int? SchoolId { get; set; }
+
+  public string Email { get; set; } = null!;
+
+  public string? Username { get; set; }
+
+  public string? Avatar { get; set; }
+
+  public ExtendSchool? ExtendSchool { get; set; } = null;
 }

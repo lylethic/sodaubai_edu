@@ -1,34 +1,26 @@
-﻿using server.Dtos;
+﻿using server.Applications.ResponseModel;
+using server.Applications.Search;
+using server.Dtos;
+using server.Models;
 using server.Types.Teacher;
 
-namespace server.IService
+namespace server.Interfaces;
+
+public interface ITeacher
 {
-  public interface ITeacher
-  {
-    Task<TeacherResType> CreateTeacher(TeacherDto model);
+  Task<ExtendTeacher> GetByIDAsync(int id);
 
-    Task<TeacherResType> GetTeacher(int id);
+  Task<PaginatedResponse<ExtendTeacher>> GetAllAsync(TeacherSearch queryObject);
 
-    Task<TeacherResType> GetTeacherToUpdate(int id);
+  Task<Teacher> AddAsync(TeacherCreateBody model);
 
-    Task<int> GetCountTeachersBySchool(int? id = null);
+  Task<Teacher> UpdateAsync(int id, TeacherCreateBody model);
 
-    Task<TeacherResType> GetTeachers(QueryObject? queryObject);
+  Task<Teacher> UpdateImageAsync(int id, IFormFile file);
 
-    Task<TeacherResType> GetTeacherIdByAccountId(int accountId);
+  Task<bool> DeleteAsync(int id);
 
-    Task<TeacherResType> GetTeachersBySchool(QueryObject? queryObject, int schoolId);
+  Task<bool> BulkDelete(List<int> ids);
 
-    Task<TeacherResType> GetTeachersBySchool(int? schoolId);
-
-    Task<TeacherResType> DeleteTeacher(int id);
-
-    Task<TeacherResType> UpdateTeacher(int id, TeacherDto model);
-
-    Task<TeacherResType> ImportExcelFile(IFormFile file);
-
-    Task<ResponseData<string>> BulkDelete(List<int> ids);
-
-    Task<TeacherResType> SearchTeacher(QueryObjects? queryObject);
-  }
+  Task<TeacherResType> ImportExcelFile(IFormFile file);
 }

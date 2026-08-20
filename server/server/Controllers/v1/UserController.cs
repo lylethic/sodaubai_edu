@@ -4,15 +4,14 @@ using server.Models;
 using server.Dtos;
 using server.Applications;
 using Asp.Versioning;
-using Microsoft.AspNetCore.Authorization;
 using AutoMapper;
 using server.Applications.ResponseModel;
+using server.Applications.Search;
 
 namespace server.Controllers.v1;
 
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize]
 public class UserController : BaseApiController
 {
   private readonly IUser _repository;
@@ -23,19 +22,12 @@ public class UserController : BaseApiController
   }
 
   [HttpGet]
-  public async Task<IActionResult> Get([FromQuery] QueryObject request)
+  public async Task<IActionResult> GetAllAsync([FromQuery] UserSearch request)
   {
     try
     {
       var result = await _repository.GetUsers(request);
-      var data = new PaginatedResponse<UserDto>
-      {
-        Items = _mapper.Map<IEnumerable<UserDto>>(result.Items),
-        TotalCount = result.TotalCount,
-        PageNumber = result.PageNumber,
-        PageSize = result.PageSize
-      };
-      return Success(data);
+      return Success(result);
     }
     catch (Exception ex)
     {
@@ -44,7 +36,7 @@ public class UserController : BaseApiController
   }
 
   [HttpGet("{id}")]
-  public async Task<IActionResult> Get(int id)
+  public async Task<IActionResult> GetAsync(int id)
   {
     try
     {
@@ -58,12 +50,26 @@ public class UserController : BaseApiController
   }
 
   [HttpPost]
-  public async Task<IActionResult> Post([FromBody] UserDto entity)
+  public async Task<IActionResult> PostAsync([FromBody] UserCreateBody entity)
   {
     try
     {
-      var result = await _repository.AddUser(_mapper.Map<User>(entity));
-      return Success(result);
+      var result = await _repository.AddUser(entity);
+      return Success(_mapper.Map<User, UserDto>(result));
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
+  }
+
+  [HttpPost("upload")]
+  public async Task<IActionResult> CreatePhotoPath(int id, IFormFile file)
+  {
+    try
+    {
+      var result = await _repository.UploadImageAsync(id, file);
+      return Success(_mapper.Map<User, UserDto>(result));
     }
     catch (Exception ex)
     {
@@ -72,12 +78,12 @@ public class UserController : BaseApiController
   }
 
   [HttpPut("{id}")]
-  public async Task<IActionResult> Put(int id, [FromBody] UserDto entity)
+  public async Task<IActionResult> PutAsync(int id, [FromBody] UserDto entity)
   {
     try
     {
-      var result = await _repository.UpdateUser(_mapper.Map<User>(entity));
-      return Success(result);
+      var result = await _repository.UpdateUser(id, _mapper.Map<User>(entity));
+      return Success(_mapper.Map<User, UserDto>(result));
     }
     catch (Exception ex)
     {
@@ -86,7 +92,7 @@ public class UserController : BaseApiController
   }
 
   [HttpDelete("{id}")]
-  public async Task<IActionResult> Delete(int id)
+  public async Task<IActionResult> DeleteAsycn(int id)
   {
     try
     {

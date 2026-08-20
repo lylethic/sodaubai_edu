@@ -11,6 +11,7 @@ using server.Dtos;
 using server.Interfaces;
 using server.IService;
 using server.Repositories;
+using server.Services;
 using server.Services.Logging;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -130,6 +131,8 @@ builder.Services.AddCors(options =>
 });
 
 #region: * Inject app Dependencies (Dependecy Injecteion)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ISessionUser, SessionUser>();
 builder.Services.AddTransient<ILogManager, LoggerManager>();
 builder.Services.AddScoped<IAuths, AuthsRepositories>();
 builder.Services.AddScoped<ITokenService, TokenRepositories>();
@@ -194,6 +197,7 @@ builder.Services.AddAutoMapper(typeof(AppAutomapper));
 // Cloudinary
 builder.Services.Configure<CloudinarySetting>(builder.Configuration.GetSection("CloudinarySettings"));
 builder.Services.AddScoped<IPhotoService, PhotoRepositories>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 
 // Add AutoMapper and configure profiles
 builder.Services.AddAutoMapper(typeof(Program));
@@ -250,6 +254,19 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
+
+// Cấu hình static files cho thư mục Uploads
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "Uploads");
+if (!Directory.Exists(uploadsPath))
+{
+  Directory.CreateDirectory(uploadsPath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+  FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+  RequestPath = "/Uploads"
+});
 
 app.UseCors("MyCors");
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace server.Models;
 
-public partial class Teacher
+public partial class Teacher : IBaseEntity
 {
   public int Id { get; set; }
 
@@ -17,7 +17,7 @@ public partial class Teacher
 
   public string Address { get; set; } = null!;
 
-  public bool Status { get; set; }
+  public bool? Status { get; set; } = true;
 
   public DateTime? DateCreated { get; set; }
 
@@ -25,7 +25,7 @@ public partial class Teacher
 
   public string? PhotoPath { get; set; }
 
-  public bool? Deleted { get; set; }
+  public bool? Deleted { get; set; } = false;
 
   public int? CreatedBy { get; set; }
 

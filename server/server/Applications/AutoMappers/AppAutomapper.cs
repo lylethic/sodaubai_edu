@@ -13,8 +13,9 @@ public class AppAutomapper : Profile
 
     // User maps
     CreateMap<User, UserDto>().ReverseMap();
-    CreateMap<User, CreateUserDto>().ReverseMap();
+    CreateMap<User, UserCreateBody>().ReverseMap();
     CreateMap<User, UpdateUserDto>().ReverseMap();
+    CreateMap<User, ExtendUserBody>().ForMember(dest => dest.ExtendSchool, opt => opt.MapFrom(src => src.School));
 
     // Permission maps
     CreateMap<Permission, PermissionDto>().ReverseMap();
@@ -38,6 +39,7 @@ public class AppAutomapper : Profile
 
     // School
     CreateMap<School, SchoolDto>().ReverseMap();
+    CreateMap<School, ExtendSchool>().ReverseMap();
 
     CreateMap<AcademicYear, AcademicYearDto>().ReverseMap();
 
@@ -80,6 +82,10 @@ public class AppAutomapper : Profile
 
     CreateMap<Teacher, TeacherDto>().ReverseMap();
     CreateMap<Teacher, ExtendTeacher>().ReverseMap();
+    CreateMap<Teacher, TeacherCreateBody>().ReverseMap();
+    CreateMap<Teacher, TeacherDto>()
+      .ForMember(dest => dest.ExtendUser, opt => opt.MapFrom(src => src.User))
+      .ForMember(dest => dest.ExtendSchool, opt => opt.MapFrom(src => src.School));
 
     CreateMap<PhanCongChuNhiem, PhanCongChuNhiemDto>().ReverseMap();
     CreateMap<PhanCongChuNhiem, ExtendPhanCongChuNhiem>()

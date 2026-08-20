@@ -25,7 +25,7 @@ public partial class User : IBaseEntity
 
   public int? UpdatedBy { get; set; }
 
-  public bool? Deleted { get; set; }
+  public bool? Deleted { get; set; } = false;
 
   public virtual ICollection<BiaSoDauBai> BiaSoDauBaiCreatedByNavigations { get; set; } = new List<BiaSoDauBai>();
 
