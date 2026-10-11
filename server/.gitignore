@@ -122,9 +122,11 @@ src/.vs/config/applicationhost.config
 .idea/
 
 #docx, xlsx,
-uploads/
 *.docx
 *.doc
 *.xlsx
+
+server/Uploads/*
+!server/Uploads/.gitkeep
 
 .agents
