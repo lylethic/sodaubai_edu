@@ -1,0 +1,6 @@
+@SoDauBai.Api_HostAddress = http://localhost:5189
+
+GET {{SoDauBai.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

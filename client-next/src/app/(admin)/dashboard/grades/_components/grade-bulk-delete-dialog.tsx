@@ -12,7 +12,6 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { lopHocApiRequest } from '@/apiRequests/lopHoc';
 import { handleErrorApi } from '@/lib/utils';
 import { Trash2Icon } from 'lucide-react';
 import { gradeApiRequest } from '@/apiRequests/grade';

@@ -48,16 +48,19 @@ export default function AcademicYearUpSertForm({
 	const form = useForm<CreateNamHocBodyType>({
 		resolver: zodResolver(CreateNamHocBody),
 		defaultValues: {
-			academicYearId: academicYear?.academicYearId ?? 0,
-			displayAcademicYearName: academicYear?.displayAcademicYearName ?? '',
+			academicYearId: academicYear?.id ?? academicYear?.academicYearId ?? 0,
+			id: academicYear?.id ?? academicYear?.academicYearId ?? 0,
+			displayAcademicYearName:
+				(academicYear?.name || academicYear?.displayAcademicYearName) ?? '',
+			name: (academicYear?.name || academicYear?.displayAcademicYearName) ?? '',
 			yearStart: academicYear?.yearStart
 				? new Date(academicYear.yearStart)
 				: undefined,
 			yearEnd: academicYear?.yearEnd
 				? new Date(academicYear.yearEnd)
 				: undefined,
-			status: academicYear?.status,
-			description: academicYear?.description,
+			status: academicYear?.status ?? true,
+			description: academicYear?.description ?? '',
 		},
 	});
 
@@ -66,8 +69,8 @@ export default function AcademicYearUpSertForm({
 		try {
 			const response = await namHocApiRequest.create({
 				...values,
-				yearStart: new Date(values.yearStart),
-				yearEnd: new Date(values.yearEnd),
+				yearStart: values.yearStart ? new Date(values.yearStart) : undefined,
+				yearEnd: values.yearEnd ? new Date(values.yearEnd) : undefined,
 			});
 
 			toast({ description: response.payload.message });
@@ -83,12 +86,13 @@ export default function AcademicYearUpSertForm({
 		if (!academicYear) return;
 		setLoading(true);
 		try {
+			const id = academicYear.id ?? academicYear.academicYearId;
 			const response = await namHocApiRequest.update(
-				academicYear.academicYearId,
+				id!,
 				{
 					..._values,
-					yearStart: new Date(_values.yearStart),
-					yearEnd: new Date(_values.yearEnd),
+					yearStart: _values.yearStart ? new Date(_values.yearStart) : undefined,
+					yearEnd: _values.yearEnd ? new Date(_values.yearEnd) : undefined,
 				}
 			);
 
@@ -221,6 +225,7 @@ export default function AcademicYearUpSertForm({
 									placeholder='Nhập ghi chú...'
 									rows={3}
 									{...field}
+									value={field.value ?? ''}
 								/>
 							</FormControl>
 							<FormMessage />

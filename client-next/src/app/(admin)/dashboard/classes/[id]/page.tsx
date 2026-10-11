@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { Metadata, ResolvingMetadata } from 'next';
 import envConfig from '@/config';
 import { baseOpenGraph } from '@/app/shared-metadata';
+import { formatDateToDDMMYYYY } from '@/lib/utils';
 
 type Props = {
 	params: { id: string };
@@ -17,21 +18,22 @@ type Props = {
 const getDetailLopHoc = cache(lopHocApiRequest.class);
 
 export async function generateMetadata(
-	{ params, searchParams }: Props,
-	parent: ResolvingMetadata
+	{ params }: Props,
+	_parent: ResolvingMetadata
 ): Promise<Metadata> {
 	const cookieStore = cookies();
 	const accessToken = cookieStore.get('accessToken')!.value;
 	const { payload } = await getDetailLopHoc(Number(params.id), accessToken);
 
 	const result = payload.data;
-	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/classes/' + result.classId;
+	const classId = result?.id ?? result?.classId;
+	const className = result?.name ?? result?.className ?? '';
+	const url = envConfig.NEXT_PUBLIC_URL + '/dashboard/classes/' + classId;
 	return {
-		title: result.className,
+		title: className,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.className,
+			title: className,
 			url,
 		},
 		alternates: {
@@ -44,21 +46,16 @@ export default async function LopHocDetailPage(props: Props) {
 	const params = props.params;
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
-	if (!token)
-		return (
-			Response.json({
-				message: 'Invalid token',
-			}),
-			{
-				status: 400,
-			}
-		);
+	if (!token) return null;
 	let result = null;
 
 	try {
 		const { payload } = await getDetailLopHoc(Number(params.id), token?.value);
 		result = payload.data;
 	} catch (error) {}
+
+	const classId = result?.id ?? result?.classId;
+	const className = result?.name ?? result?.className;
 
 	return (
 		<div className='p-4 flex flex-col items-center overflow-x-auto border mb-4'>
@@ -73,7 +70,7 @@ export default async function LopHocDetailPage(props: Props) {
 			{!result ? (
 				<span>Không có dữ liệu</span>
 			) : (
-				<Table className='min-w-fullrounded-lg shadow'>
+				<Table className='min-w-full rounded-lg shadow'>
 					<TableBody>
 						<TableRow>
 							<TableCell>Mã trường học</TableCell>
@@ -92,7 +89,7 @@ export default async function LopHocDetailPage(props: Props) {
 							<TableCell>{result.teacherName}</TableCell>
 						</TableRow>
 						<TableRow>
-							<TableCell>Mã khối lóp</TableCell>
+							<TableCell>Mã khối lớp</TableCell>
 							<TableCell>{result.gradeId}</TableCell>
 						</TableRow>
 						<TableRow>
@@ -101,11 +98,11 @@ export default async function LopHocDetailPage(props: Props) {
 						</TableRow>
 						<TableRow>
 							<TableCell>Mã lớp học</TableCell>
-							<TableCell>{result.classId}</TableCell>
+							<TableCell>{classId}</TableCell>
 						</TableRow>
 						<TableRow>
 							<TableCell>Lớp học</TableCell>
-							<TableCell>{result.className}</TableCell>
+							<TableCell>{className}</TableCell>
 						</TableRow>
 						<TableRow>
 							<TableCell>Ghi chú</TableCell>
@@ -130,11 +127,11 @@ export default async function LopHocDetailPage(props: Props) {
 						</TableRow>
 						<TableRow>
 							<TableCell>Ngày tạo</TableCell>
-							<TableCell>{result.dateCreated?.toString()}</TableCell>
+							<TableCell>{formatDateToDDMMYYYY(result.dateCreated)}</TableCell>
 						</TableRow>
 						<TableRow>
 							<TableCell>Ngày cập nhật</TableCell>
-							<TableCell>{result.dateUpdated?.toString()}</TableCell>
+							<TableCell>{formatDateToDDMMYYYY(result.dateUpdated)}</TableCell>
 						</TableRow>
 					</TableBody>
 				</Table>

@@ -49,12 +49,12 @@ export default function SemesterUpSertForm({
 	const form = useForm<CreateSemesterBodyType>({
 		resolver: zodResolver(CreateSemesterBody),
 		defaultValues: {
-			semesterId: semester?.semesterId ?? 0,
+			semesterId: semester?.semesterId ?? semester?.id ?? 0,
 			academicYearId: semester?.academicYearId,
-			semesterName: semester?.semesterName ?? '',
+			semesterName: semester?.semesterName ?? semester?.name ?? '',
 			dateStart: semester?.dateStart ? new Date(semester.dateStart) : undefined,
 			dateEnd: semester?.dateEnd ? new Date(semester.dateEnd) : undefined,
-			status: semester?.status,
+			status: semester?.status ?? true,
 			description: semester?.description ?? '',
 		},
 	});
@@ -64,8 +64,8 @@ export default function SemesterUpSertForm({
 		try {
 			const response = await semesterApiRequest.create({
 				...values,
-				dateStart: new Date(values.dateStart),
-				dateEnd: new Date(values.dateEnd),
+				dateStart: values.dateStart ? new Date(values.dateStart) : undefined,
+				dateEnd: values.dateEnd ? new Date(values.dateEnd) : undefined,
 			});
 
 			toast({ description: response.payload.message });
@@ -81,10 +81,11 @@ export default function SemesterUpSertForm({
 		if (!semester) return;
 		setLoading(true);
 		try {
-			const response = await semesterApiRequest.update(semester.semesterId, {
+			const id = semester.semesterId ?? semester.id;
+			const response = await semesterApiRequest.update(id!, {
 				..._values,
-				dateStart: new Date(_values.dateStart),
-				dateEnd: new Date(_values.dateEnd),
+				dateStart: _values.dateStart ? new Date(_values.dateStart) : undefined,
+				dateEnd: _values.dateEnd ? new Date(_values.dateEnd) : undefined,
 			});
 
 			toast({ description: response.payload.message });
@@ -234,6 +235,7 @@ export default function SemesterUpSertForm({
 									placeholder='Nhập ghi chú...'
 									rows={3}
 									{...field}
+									value={field.value ?? ''}
 								/>
 							</FormControl>
 							<FormMessage />

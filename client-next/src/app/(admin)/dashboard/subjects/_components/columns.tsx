@@ -57,6 +57,9 @@ export const getSubjectsColumns = ({
 	{
 		accessorKey: 'subjectId',
 		header: 'Mã môn học',
+		cell: ({ row }) => (
+			<span>{row.original.subjectId || row.original.id}</span>
+		),
 	},
 	{
 		accessorKey: 'displayAcademicYear_Name',
@@ -82,7 +85,9 @@ export const getSubjectsColumns = ({
 		accessorKey: 'subjectName',
 		header: 'Tên môn học hiển thị',
 		cell: ({ row }) => (
-			<span className='font-medium'>{row.original.subjectName}</span>
+			<span className='font-medium'>
+				{row.original.subjectName || row.original.name}
+			</span>
 		),
 	},
 	{

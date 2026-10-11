@@ -16,33 +16,50 @@ import ClassesUploadButton from './classes-upload-button';
 
 type LopHocType = LopHocResType['data'];
 
-export default function ClassesList() {
+interface ClassesListProps {
+	initialClasses?: LopHocType[];
+	initialTotalCount?: number;
+}
+
+export default function ClassesList({
+	initialClasses = [],
+	initialTotalCount = 0,
+}: ClassesListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [selected, setSelected] = useState<LopHocType[]>([]);
 	const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(0);
 
-	const [lopHocs, setLopHocs] = useState<LopHocType[]>([]);
+	const [lopHocs, setLopHocs] = useState<LopHocType[]>(initialClasses);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] =
+		useState<number>(initialTotalCount);
+	const isFirstMount = React.useRef(true);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [rowToDelete, setRowToDelete] = useState<LopHocType | null>(null);
 
 	const fetchData = async (query: QueryType) => {
+		if (loading) return;
 		setLoading(true);
 		try {
 			const response = selectedSchoolId
 				? await lopHocApiRequest.getLopHocBySchool(query, selectedSchoolId)
 				: await lopHocApiRequest.classes(query);
 
-			const { data, pagination } = response.payload;
-			const totalResults = pagination?.totalResults;
+			const payload = response.payload as any;
+			const items =
+				payload?.data?.items ||
+				(Array.isArray(payload?.data) ? payload.data : []);
+			const totalResults =
+				payload?.data?.totalCount ??
+				payload?.pagination?.totalResults ??
+				0;
 
-			setLopHocs(Array.isArray(data) ? data : []);
-			setTotalPageCount(totalResults ?? 0);
+			setLopHocs(items);
+			setTotalPageCount(totalResults);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -52,8 +69,8 @@ export default function ClassesList() {
 
 	const handleEdit = useCallback(
 		(data: LopHocType) =>
-			router.push(`/dashboard/classes/${data.classId}/edit`),
-		[]
+			router.push(`/dashboard/classes/${data.classId || data.id}/edit`),
+		[router]
 	);
 
 	const handleDelete = useCallback((data: LopHocType) => {
@@ -64,14 +81,17 @@ export default function ClassesList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await lopHocApiRequest.delete(rowToDelete.classId);
+			const idToDelete = rowToDelete.classId || rowToDelete.id || 0;
+			const response = await lopHocApiRequest.delete(idToDelete);
 			toast({
 				description: response.payload.message,
 			});
 
-			// Update state lopHocs
 			setLopHocs((prev) =>
-				prev.filter((item) => item.classId !== rowToDelete.classId)
+				prev.filter(
+					(item) =>
+						(item.classId || item.id) !== idToDelete
+				)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -82,13 +102,14 @@ export default function ClassesList() {
 	};
 
 	const handleRedirectToDetail = useCallback(
-		(data: LopHocType) => router.push(`/dashboard/classes/${data.classId}`),
-		[]
+		(data: LopHocType) =>
+			router.push(`/dashboard/classes/${data.classId || data.id}`),
+		[router]
 	);
 
 	const handleRefresh = useCallback(() => {
 		fetchData({ pageNumber, pageSize });
-	}, [pageNumber, pageSize]);
+	}, [pageNumber, pageSize, selectedSchoolId]);
 
 	const handleFilterChange = (schoolId: number | null) => {
 		setSelectedSchoolId(schoolId ?? 0);
@@ -100,7 +121,10 @@ export default function ClassesList() {
 	};
 
 	useEffect(() => {
-		if (loading) return;
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			return;
+		}
 		fetchData({ pageNumber, pageSize });
 	}, [pageNumber, pageSize, selectedSchoolId]);
 
@@ -113,7 +137,13 @@ export default function ClassesList() {
 				pageNumber,
 				pageSize,
 			}),
-		[handleEdit, handleDelete, handleRedirectToDetail, pageNumber, pageSize]
+		[
+			handleEdit,
+			handleDelete,
+			handleRedirectToDetail,
+			pageNumber,
+			pageSize,
+		]
 	);
 
 	return (
@@ -127,7 +157,9 @@ export default function ClassesList() {
 			/>
 
 			<BulkDeleteClasses
-				selectedItems={selected.map((key) => key.classId)}
+				selectedItems={selected.map(
+					(key) => key.classId || key.id || 0
+				)}
 				onDeleted={handleRefresh}
 			/>
 			<DataTable

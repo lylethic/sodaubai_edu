@@ -1,8 +1,12 @@
 export interface AccountType {
+	id?: number;
 	accountId: number;
-	roleName: string;
+	roleName?: string;
 	schoolName?: string;
+	schoolId?: number | null;
 	email: string;
-	dateCreated: Date | null;
-	dateUpdated: Date | null;
+	username?: string | null;
+	avatar?: string | null;
+	dateCreated?: Date | string | null;
+	dateUpdated?: Date | string | null;
 }

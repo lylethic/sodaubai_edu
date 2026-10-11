@@ -30,8 +30,12 @@ export default function SemesterSelect({
 		const fetchHocKys = async (queryObject: QueryType) => {
 			try {
 				const response = await semesterApiRequest.semesters(queryObject);
-				const data = response.payload.data;
-				const result = Array.isArray(data) ? data : [data];
+				const resData = response.payload.data as any;
+				const result = Array.isArray(resData?.items)
+					? resData.items
+					: Array.isArray(resData)
+					? resData
+					: [];
 
 				setSemesters(result);
 				if (result.length > 0 && result[0].status === true && !selected) {

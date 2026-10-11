@@ -16,13 +16,20 @@ export default function HeaderSchool() {
 		const fetchSchoolName = async (schoolId: number) => {
 			try {
 				const { payload } = await schoolApiRequest.getNameOfSchool(schoolId);
-				setSchool(payload.nameSchool);
+				const name =
+					(payload as any)?.data?.nameSchool ??
+					(payload as any)?.data?.name ??
+					(payload as any)?.nameSchool ??
+					'';
+				setSchool(name);
 			} catch (error) {
 				handleErrorApi({ error });
 			}
 		};
 
-		fetchSchoolName(user.schoolId);
+		if (user?.schoolId) {
+			fetchSchoolName(user.schoolId);
+		}
 	}, [user]);
 
 	if (!user) return null;

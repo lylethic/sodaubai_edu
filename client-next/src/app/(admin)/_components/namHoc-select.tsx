@@ -29,13 +29,23 @@ export default function NamHocSelect({
 		const fetchNamHocs = async () => {
 			try {
 				const response = await namHocApiRequest.listNamHocs();
-				const data = response.payload.data;
-				const result = Array.isArray(data) ? data : [data];
+				const resData = response.payload.data as any;
+				const items = Array.isArray(resData?.items)
+					? resData.items
+					: Array.isArray(resData)
+					? resData
+					: [];
+				const result = items.map((y: any) => ({
+					...y,
+					academicYearId: y.id ?? y.academicYearId ?? 0,
+					displayAcademicYearName: y.name || y.displayAcademicYearName || '',
+				}));
 				setNamHocs(result);
 				if (result.length > 0 && result[0].status === true && !selectedNamHoc) {
 					const firstItem = result[0];
-					onSelectedNamHoc(firstItem.academicYearId);
-					setValue('academicYearId', firstItem.academicYearId);
+					const id = firstItem.academicYearId;
+					onSelectedNamHoc(id);
+					setValue('academicYearId', id);
 				}
 			} catch (error: any) {
 				handleErrorApi({ error });
@@ -54,12 +64,14 @@ export default function NamHocSelect({
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className='w-full max-h-60 overflow-y-auto'>
-				{namHocs.map((key) => (
+				{namHocs.map((key) => {
+					const yearId = (key.id ?? key.academicYearId)!;
+					return (
 					<DropdownMenuItem
-						key={key.academicYearId}
+						key={yearId}
 						onClick={() => {
-							onSelectedNamHoc(key.academicYearId);
-							setValue('academicYearId', key.academicYearId);
+							onSelectedNamHoc(yearId);
+							setValue('academicYearId', yearId);
 						}}
 					>
 						<Check
@@ -81,7 +93,8 @@ export default function NamHocSelect({
 							/>
 						</div>
 					</DropdownMenuItem>
-				))}
+					);
+				})}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

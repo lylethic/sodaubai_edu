@@ -1,0 +1,105 @@
+using Microsoft.AspNetCore.Mvc;
+using SoDauBai.Application.Interfaces.Repositories;
+using SoDauBai.Application.Interfaces.Services;
+using SoDauBai.Domain.Entities;
+using SoDauBai.Application.DTOs;
+using Asp.Versioning;
+using SoDauBai.Api.Controllers;
+using SoDauBai.Api.Filters;
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using SoDauBai.Application.Common.Models;
+
+namespace SoDauBai.Api.Controllers.v1;
+
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/[controller]")]
+[Authorize]
+public class RolePermissionController : BaseApiController
+{
+  private readonly IRolePermission _repository;
+
+  public RolePermissionController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IRolePermission repository) : base(mapper)
+  {
+    _repository = repository;
+  }
+
+  [HttpGet]
+  public async Task<IActionResult> Get([FromQuery] QueryObject request)
+  {
+    try
+    {
+      var result = await _repository.GetRolePermissions(request);
+      var data = new PaginatedResponse<RolePermissionDto>
+      {
+        Items = _mapper.Map<IEnumerable<RolePermissionDto>>(result.Items),
+        TotalCount = result.TotalCount,
+        PageNumber = result.PageNumber,
+        PageSize = result.PageSize
+      };
+      return Success(data);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
+  }
+
+  [HttpGet("{id}")]
+  public async Task<IActionResult> Get(int id)
+  {
+    try
+    {
+      var result = await _repository.GetRolePermission(id);
+      if (result == null) return NotFound();
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
+  }
+
+  [HttpPost]
+  public async Task<IActionResult> Post([FromBody] RolePermissionDto entity)
+  {
+    try
+    {
+      var result = await _repository.AddRolePermission(_mapper.Map<RolePermission>(entity));
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
+  }
+
+  [HttpPut("{id}")]
+  public async Task<IActionResult> Put(int id, [FromBody] RolePermissionDto entity)
+  {
+    try
+    {
+      var result = await _repository.UpdateRolePermission(_mapper.Map<RolePermission>(entity));
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
+  }
+
+  [HttpDelete("{id}")]
+  public async Task<IActionResult> Delete(int id)
+  {
+    try
+    {
+      var result = await _repository.DeleteRolePermission(id);
+      return Success(result);
+    }
+    catch (Exception ex)
+    {
+      return Error(ex);
+    }
+  }
+}
+

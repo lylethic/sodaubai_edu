@@ -23,7 +23,7 @@ import {
 import { useAppContext } from '@/app/app-provider';
 import TeacherFilterStatisticByWeekPage from '@/app/(admin)/dashboard/statistics/_components/filter-statistic-form';
 
-type WeeklyStatisticByWeek = ViewScoreListByWeekResType['data'];
+type WeeklyStatisticByWeek = ViewScoreListByWeekResType['data'][number];
 
 export default function TeacherStatisticsList() {
 	const router = useRouter();

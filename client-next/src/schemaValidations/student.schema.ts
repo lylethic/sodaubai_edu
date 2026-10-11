@@ -1,57 +1,65 @@
-import z from 'zod';
+import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
-const StudentSchema = z.object({
-	schoolId: z.number(),
-	accountId: z.number(),
-	studentId: z.number(),
-	gradeId: z.number(),
-	classId: z.number(),
-	roleId: z.number(),
-	schoolName: z.string(),
-	className: z.string(),
-	email: z.string(),
-	fullname: z.string(),
-	status: z.boolean(),
-	description: z.string().nullable(),
-	dateCreated: z.date().nullable(),
-	dateUpdated: z.date().nullable(),
-	address: z.string(),
-	dateOfBirth: z.date(),
+export const StudentSchema = z.object({
+	id: z.number().optional(),
+	studentId: z.number().default(0), // alias
+	classId: z.number().default(0),
+	gradeId: z.number().default(0),
+	userId: z.number().optional(),
+	accountId: z.number().default(0), // alias
+	schoolId: z.number().optional().default(0),
+	roleId: z.number().optional().default(1),
+	schoolName: z.string().optional().nullable(),
+	className: z.string().optional().nullable(),
+	email: z.string().optional().nullable(),
+	fullname: z.string().default(''),
+	address: z.string().optional().nullable(),
+	dateOfBirth: z.union([z.string(), z.date()]).optional().nullable(),
+	status: z.boolean().default(true),
+	description: z.string().optional().nullable(),
+	dateCreated: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdated: z.union([z.string(), z.date()]).optional().nullable(),
 });
 
-export const StudentRes = z.object({
-	status: z.number(),
-	message: z.string(),
-	data: StudentSchema,
-	pagination: z.object({
-		pageNumber: z.number(),
-		pageSize: z.number(),
-		totalResults: z.number(),
-		totalPages: z.number(),
-	}),
-});
-export type StudentResType = z.TypeOf<typeof StudentRes>;
+export type StudentDto = z.infer<typeof StudentSchema>;
+export type StudentSchemaType = StudentDto;
+
+export const StudentRes = createApiResponseSchema(StudentSchema);
+export type StudentResType = z.infer<typeof StudentRes>;
+
+export const StudentDetailRes = StudentRes;
+export type StudentDetailResType = StudentResType;
+
+export const StudentListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(StudentSchema)
+);
+export type StudentListResType = z.infer<typeof StudentListRes>;
+
+export const StudentArrayRes = createApiResponseSchema(z.array(StudentSchema));
+export type StudentArrayResType = z.infer<typeof StudentArrayRes>;
 
 export const CreateStudentBody = z.object({
-	studentId: z.number(),
-	classId: z.number(),
-	gradeId: z.number(),
-	accountId: z.number(),
-	fullname: z.string(),
-	status: z.boolean(),
-	description: z.string(),
-	dateCreated: z.date().nullable(),
-	dateUpdated: z.date().nullable(),
-	address: z.string(),
-	dateOfBirth: z.date(),
+	id: z.number().optional(),
+	studentId: z.number().optional(),
+	classId: z.number({ required_error: 'Vui lòng chọn lớp học' }),
+	gradeId: z.number().optional(),
+	userId: z.number().optional(),
+	accountId: z.number().optional(),
+	fullname: z
+		.string({ required_error: 'Vui lòng nhập họ và tên' })
+		.min(1, 'Vui lòng nhập họ và tên'),
+	address: z.string().optional().nullable(),
+	dateOfBirth: z.union([z.string(), z.date()]).optional().nullable(),
+	status: z.boolean().default(true),
+	description: z.string().optional().nullable(),
+	dateCreated: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdated: z.union([z.string(), z.date()]).optional().nullable(),
 });
-export type CreateStudentBodyType = z.TypeOf<typeof CreateStudentBody>;
+export type CreateStudentBodyType = z.infer<typeof CreateStudentBody>;
 
 export const UpdateStudentBody = CreateStudentBody;
-export type UpdateStudentBodyType = z.TypeOf<typeof UpdateStudentBody>;
-
-export const StudentListRes = z.object({
-	message: z.string(),
-	data: z.array(StudentSchema),
-});
-export type StudentListResType = z.TypeOf<typeof StudentListRes>;
+export type UpdateStudentBodyType = CreateStudentBodyType;

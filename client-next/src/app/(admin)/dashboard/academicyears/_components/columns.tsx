@@ -55,12 +55,18 @@ export const getAcademicYearColumns = ({
 		},
 	},
 	{
-		accessorKey: 'academicYearId',
+		accessorKey: 'id',
 		header: 'Mã năm học',
+		cell: ({ row }) => <span>{row.original.id ?? row.original.academicYearId}</span>,
 	},
 	{
-		accessorKey: 'displayAcademicYearName',
+		accessorKey: 'name',
 		header: 'Năm học hiển thị',
+		cell: ({ row }) => (
+			<span>
+				{row.original.name || row.original.displayAcademicYearName}
+			</span>
+		),
 	},
 	{
 		accessorKey: 'yearStart',

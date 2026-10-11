@@ -5,6 +5,8 @@ import { redirect } from 'next/navigation';
 
 type CustomOptions = Omit<RequestInit, 'method'> & {
 	baseUrl?: string | undefined;
+	token?: string | undefined;
+	responseType?: 'json' | 'blob' | 'text';
 };
 
 const ENTITY_ERROR_STATUS = 422;
@@ -16,6 +18,7 @@ type EntityErrorPayload = {
 		field: string;
 		message: string;
 	}[];
+	[key: string]: any;
 };
 
 export class HttpError extends Error {
@@ -25,7 +28,8 @@ export class HttpError extends Error {
 		[key: string]: any;
 	};
 	constructor({ status, payload }: { status: number; payload: any }) {
-		super('Http Error');
+		const message = payload?.message || 'Http Error';
+		super(message);
 		this.status = status;
 		this.payload = payload;
 	}
@@ -47,7 +51,6 @@ export class EntityError extends HttpError {
 	}
 }
 
-//
 let clientLogoutRequest: null | Promise<any> = null;
 export const isClient = () => typeof window !== 'undefined';
 
@@ -60,9 +63,10 @@ const request = async <Response>(
 
 	if (options?.body instanceof FormData) {
 		body = options.body;
-	} else if (options?.body) {
+	} else if (options?.body !== undefined) {
 		body = JSON.stringify(options.body);
 	}
+
 	const baseHeaders: {
 		[key: string]: string;
 	} =
@@ -72,25 +76,25 @@ const request = async <Response>(
 					'Content-Type': 'application/json',
 			  };
 
+	// Client-side auto-attach authorization header
 	if (isClient()) {
 		const accessToken = localStorage.getItem('accessToken');
 		if (accessToken) {
 			baseHeaders.Authorization = `Bearer ${accessToken}`;
 		}
+	} else if (options?.token) {
+		baseHeaders.Authorization = `Bearer ${options.token}`;
 	}
 
-	// Neu ko truyen baseUrl (|| baseUrl === undefine) thi lay tu envConfig.NEXT_PUBLIC_API_ENDPOINT
-	// Neu truyen baseUrl thi lay gia tri truyen vao, truyen vao '' thi dong nghia vs vc chung ta goi api den Nextjs Server
+	// Base URL resolution
+	// If options?.baseUrl is empty string '', points to Next.js internal server routes
 	const baseUrl =
 		options?.baseUrl === undefined
 			? envConfig.NEXT_PUBLIC_API_ENDPOINT
 			: options.baseUrl;
 
-	// VD: /account/me
-	//     account/me
-	const fullUrl = url.startsWith('/')
-		? `${baseUrl}${url}`
-		: `${baseUrl}/${url}`;
+	const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+	const fullUrl = baseUrl ? `${baseUrl}${cleanUrl}` : cleanUrl;
 
 	const res = await fetch(fullUrl, {
 		...options,
@@ -102,15 +106,28 @@ const request = async <Response>(
 		method,
 	});
 
-	console.log(res);
+	let payload: any;
+	if (options?.responseType === 'blob') {
+		payload = await res.blob();
+	} else if (options?.responseType === 'text') {
+		payload = await res.text();
+	} else {
+		const contentType = res.headers.get('content-type');
+		if (contentType && contentType.includes('application/json')) {
+			payload = await res.json();
+		} else if (res.status === 204) {
+			payload = null;
+		} else {
+			payload = await res.text();
+		}
+	}
 
-	const payload: Response = await res.json();
 	const data = {
 		status: res.status,
-		payload,
+		payload: payload as Response,
 	};
 
-	// Interceptor là noi chúng ta xử lý request và response trước khi trả về cho phía component
+	// Interceptor handles error status codes
 	if (!res.ok) {
 		if (res.status === ENTITY_ERROR_STATUS) {
 			throw new EntityError(
@@ -121,7 +138,9 @@ const request = async <Response>(
 			);
 		} else if (res.status === AUTHENTICATION_ERROR_STATUS) {
 			if (isClient()) {
-				// Client
+				const isAlreadyOnAuthPage =
+					location.pathname === '/login' || location.pathname === '/register';
+
 				if (!clientLogoutRequest) {
 					clientLogoutRequest = fetch('/api/auth/logout', {
 						method: 'POST',
@@ -135,16 +154,16 @@ const request = async <Response>(
 					} finally {
 						localStorage.removeItem('accessToken');
 						localStorage.removeItem('jwtAccessTokenExpiredAt');
+						localStorage.removeItem('user');
 						clientLogoutRequest = null;
-						location.href = '/login';
+						if (!isAlreadyOnAuthPage) {
+							location.href = '/login';
+						}
 					}
 				}
-			}
-			// Server
-			else {
-				const accessToken = (options?.headers as any)?.Authorization.split(
-					'Bearer '
-				)[1];
+			} else {
+				const authHeader = (options?.headers as any)?.Authorization || baseHeaders.Authorization;
+				const accessToken = authHeader?.split('Bearer ')[1] || '';
 				redirect(`/logout?accessToken=${accessToken}`);
 			}
 		} else {
@@ -152,18 +171,18 @@ const request = async <Response>(
 		}
 	}
 
-	// Chi chay phia client (Browser)
+	// Client-side authentication persistence
 	if (isClient()) {
-		if (
-			['Auth/login', 'Auth/register'].some(
-				(item) => item === normalizePath(url)
-			)
-		) {
-			const { token, expiresAt } = (payload as LoginResType).data;
-
-			localStorage.setItem('accessToken', token);
-			localStorage.setItem('jwtAccessTokenExpiredAt', expiresAt);
-		} else if ('Auth/logout' === normalizePath(url)) {
+		const normalized = normalizePath(url).toLowerCase();
+		if (normalized.includes('auth/login') || normalized.includes('auth/register')) {
+			const resData = (payload as any)?.data;
+			if (resData?.token) {
+				localStorage.setItem('accessToken', resData.token);
+				if (resData.expiresAt) {
+					localStorage.setItem('jwtAccessTokenExpiredAt', resData.expiresAt);
+				}
+			}
+		} else if (normalized.includes('auth/logout')) {
 			localStorage.removeItem('accessToken');
 			localStorage.removeItem('jwtAccessTokenExpiredAt');
 			localStorage.removeItem('user');
@@ -182,14 +201,14 @@ const http = {
 	},
 	post<Response>(
 		url: string,
-		body: any,
+		body?: any,
 		options?: Omit<CustomOptions, 'body'> | undefined
 	) {
 		return request<Response>('POST', url, { ...options, body });
 	},
 	put<Response>(
 		url: string,
-		body: any,
+		body?: any,
 		options?: Omit<CustomOptions, 'body'> | undefined
 	) {
 		return request<Response>('PUT', url, { ...options, body });

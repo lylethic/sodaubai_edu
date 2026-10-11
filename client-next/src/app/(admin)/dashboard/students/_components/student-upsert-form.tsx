@@ -87,9 +87,12 @@ export default function StudentUpSertForm({
 		if (!student) return;
 		setLoading(true);
 		try {
-			const response = await studentApiRequest.update(student.studentId, {
+			const studentId = student.id ?? student.studentId;
+			const response = await studentApiRequest.update(studentId, {
 				..._values,
-				dateOfBirth: new Date(_values.dateOfBirth),
+				dateOfBirth: _values.dateOfBirth
+					? new Date(_values.dateOfBirth)
+					: undefined,
 			});
 
 			toast({ description: response.payload.message });
@@ -183,7 +186,7 @@ export default function StudentUpSertForm({
 							<FormLabel>Khối lớp</FormLabel>
 							<FormControl>
 								<GradeSelect
-									selectedGradeId={field.value}
+									selectedGradeId={field.value ?? 0}
 									onSelectedGrade={(gradeId) => field.onChange(gradeId)}
 								/>
 							</FormControl>
@@ -262,6 +265,7 @@ export default function StudentUpSertForm({
 									placeholder='Vui lòng nhập địa chỉ...'
 									rows={3}
 									{...field}
+									value={field.value ?? ''}
 								/>
 							</FormControl>
 							<FormMessage />
@@ -280,6 +284,7 @@ export default function StudentUpSertForm({
 									placeholder='Nhập ghi chú...'
 									rows={3}
 									{...field}
+									value={field.value ?? ''}
 								/>
 							</FormControl>
 							<FormMessage />

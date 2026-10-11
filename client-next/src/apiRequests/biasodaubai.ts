@@ -1,152 +1,267 @@
-import {
-	DetailToUpdateBiaSoDauBaiBody,
-	DetailToUpdateBiaSoDauBaiBodyType,
-} from './../schemaValidations/biaSoDauBai.schema';
-import { QueryType } from './../types/queryType';
 import http from '@/lib/http';
 import {
-	CreateBiaSoDauBaiBodyType,
 	BiaSoDauBaiAddResType,
-	BiaSoDauBaiResType,
 	BiaSoDauBaiByIdResType,
+	BiaSoDauBaiResType,
+	BiaSoListResType,
+	CreateBiaSoDauBaiBodyType,
+	DetailToUpdateBiaSoDauBaiBodyType,
 	UpdateBiaSoDauBaiBodyType,
 } from '@/schemaValidations/biaSoDauBai.schema';
 import { MessageResType } from '@/schemaValidations/common.schema';
+import { ApiResponse, buildQueryString, QueryObject } from '@/types/api';
+import { QueryType } from '@/types/queryType';
+
+export interface BiaSoDauBaiQuery extends QueryObject {
+	schoolId?: number | null;
+	classId?: number | null;
+	academicyearId?: number | null;
+	academicYearId?: number | null;
+	status?: boolean;
+}
+
+const normalizeBiaSoDauBai = (item: any) => {
+	if (!item) return item;
+	const id = item.id ?? item.biaSoDauBaiId ?? 0;
+	const academicYearId =
+		item.academicYearId ?? item.academicyearId ?? 0;
+	return {
+		...item,
+		id,
+		biaSoDauBaiId: item.biaSoDauBaiId ?? id,
+		academicyearId: academicYearId,
+		academicYearId: academicYearId,
+		schoolName: item.schoolName ?? item.extendSchool?.name ?? '',
+		nienKhoaName: item.nienKhoaName ?? item.extendAcademicYear?.name ?? '',
+		className: item.className ?? item.extendClass?.name ?? '',
+	};
+};
 
 const biaSoDauBaiApiRequest = {
-	countBiaSoDauBai: () =>
-		http.get<number | null>('/BiaSoDauBais/count-bia-so-dau-bai'),
+	countBiaSoDauBai: async () => {
+		try {
+			const res = await http.get<BiaSoListResType>(
+				'/v1/bia-so-dau-bais?pageNumber=1&pageSize=1',
+				{ cache: 'no-store' }
+			);
+			return {
+				...res,
+				payload: res.payload?.data?.totalCount ?? 0,
+			};
+		} catch {
+			return { payload: 0 };
+		}
+	},
 
-	countBiaSoDauBaiActive: () =>
-		http.get<number | null>('/BiaSoDauBais/count-bia-so-dau-bai-active'),
+	countBiaSoDauBaiActive: async () => {
+		try {
+			const res = await http.get<BiaSoListResType>(
+				'/v1/bia-so-dau-bais?status=true&pageNumber=1&pageSize=1',
+				{ cache: 'no-store' }
+			);
+			return {
+				...res,
+				payload: res.payload?.data?.totalCount ?? 0,
+			};
+		} catch {
+			return { payload: 0 };
+		}
+	},
 
-	// Teacher
-	// Status: true
-	getAllBia: (pageNumber: number, pageSize: number) =>
-		http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-			{
-				cache: 'no-store',
-			}
-		),
+	getAllBia: async (pageNumber: number, pageSize: number) => {
+		const res = await http.get<BiaSoListResType>(
+			`/v1/bia-so-dau-bais?pageNumber=${pageNumber}&pageSize=${pageSize}&status=true`,
+			{ cache: 'no-store' }
+		);
+		if (res.payload?.data?.items) {
+			res.payload.data.items = res.payload.data.items.map(normalizeBiaSoDauBai);
+		}
+		return res;
+	},
 
-	getAllBiaBySchool: (pageNumber: number, pageSize: number, schoolId: number) =>
-		http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais/get-by-school?pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`,
-			{
-				cache: 'no-store',
-			}
-		),
-
-	getAllBiaBySchoolSelect: (
+	getAllBiaBySchool: async (
 		pageNumber: number,
 		pageSize: number,
 		schoolId: number
-	) =>
-		http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais/get-by-school?pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`,
-			{
-				cache: 'no-store',
-			}
-		),
+	) => {
+		const res = await http.get<BiaSoListResType>(
+			`/v1/bia-so-dau-bais?pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}&status=true`,
+			{ cache: 'no-store' }
+		);
+		if (res.payload?.data?.items) {
+			res.payload.data.items = res.payload.data.items.map(normalizeBiaSoDauBai);
+		}
+		return res;
+	},
 
-	// api/BiaSoDauBais/get-bia-by-school-class?PageNumber=1&PageSize=20&schoolId=1
-	// params: require: schoolId || optional: classId
-	getAllBiaBySchoolClass: (
+	getAllBiaBySchoolSelect: async (
+		pageNumber: number,
+		pageSize: number,
+		schoolId: number
+	) => {
+		return biaSoDauBaiApiRequest.getAllBiaBySchool(pageNumber, pageSize, schoolId);
+	},
+
+	getAllBiaBySchoolClass: async (
 		pageNumber: number,
 		pageSize: number,
 		schoolId: number,
 		classId?: number | null
 	) => {
-		const query = classId
-			? `schoolId=${schoolId}&classId=${classId}`
-			: `pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`;
+		const query: BiaSoDauBaiQuery = {
+			pageNumber,
+			pageSize,
+			schoolId,
+			status: true,
+		};
+		if (classId) {
+			query.classId = classId;
+		}
 
-		return http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais/get-bia-by-school-class?${query}`,
+		const res = await http.get<BiaSoListResType>(
+			`/v1/bia-so-dau-bais${buildQueryString(query)}`,
+			{ cache: 'no-store' }
+		);
+		if (res.payload?.data?.items) {
+			res.payload.data.items = res.payload.data.items.map(normalizeBiaSoDauBai);
+		}
+		return res;
+	},
+
+	getById: async (id: number) => {
+		const res = await http.get<BiaSoDauBaiByIdResType>(
+			`/v1/bia-so-dau-bais/${id}`,
+			{ cache: 'no-store' }
+		);
+		if (res.payload?.data) {
+			res.payload.data = normalizeBiaSoDauBai(res.payload.data);
+		}
+		return res;
+	},
+
+	getDetail: async (id: number, token?: string) => {
+		const res = await http.get<BiaSoDauBaiResType>(
+			`/v1/bia-so-dau-bais/${id}`,
 			{
+				token,
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
 				cache: 'no-store',
 			}
 		);
+		if (res.payload?.data) {
+			res.payload.data = normalizeBiaSoDauBai(res.payload.data);
+		}
+		return res;
 	},
 
-	getById: (id: number) =>
-		http.get<BiaSoDauBaiByIdResType>(`/BiaSoDauBais/${id}`, {
-			cache: 'no-store',
-		}),
-
-	getDetail: (id: number, token: string) =>
-		http.get<BiaSoDauBaiResType>(`/BiaSoDauBais/${id}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		}),
-
-	getDetailToUpdate: (id: number, token: string) =>
-		http.get<DetailToUpdateBiaSoDauBaiBodyType>(
-			`/BiaSoDauBais/get-to-update/${id}`,
+	getDetailToUpdate: async (id: number, token?: string) => {
+		const res = await http.get<DetailToUpdateBiaSoDauBaiBodyType>(
+			`/v1/bia-so-dau-bais/${id}`,
 			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+				token,
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+				cache: 'no-store',
 			}
-		),
+		);
+		if (res.payload?.data) {
+			res.payload.data = normalizeBiaSoDauBai(res.payload.data);
+		}
+		return res;
+	},
 
-	create: (body: CreateBiaSoDauBaiBodyType) =>
-		http.post<BiaSoDauBaiAddResType>(`/BiaSoDauBais`, body),
+	create: (body: CreateBiaSoDauBaiBodyType) => {
+		const payload = {
+			schoolId: body.schoolId ?? body.SchoolId ?? 0,
+			academicyearId:
+				body.academicyearId ??
+				body.academicYearId ??
+				body.AcademicyearId ??
+				0,
+			classId: body.classId ?? body.ClassId ?? 0,
+			status: body.status ?? body.Status ?? true,
+		};
+		return http.post<BiaSoDauBaiAddResType>('/v1/bia-so-dau-bais', payload);
+	},
 
-	delete: (id: number) => http.delete<MessageResType>(`/BiaSoDauBais/${id}`),
+	delete: (id: number) =>
+		http.delete<ApiResponse<boolean>>(`/v1/bia-so-dau-bais/${id}`),
 
-	update: (id: number, body: UpdateBiaSoDauBaiBodyType) =>
-		http.put<MessageResType>(`/BiaSoDauBais/${id}`, body),
+	update: (id: number, body: UpdateBiaSoDauBaiBodyType) => {
+		const payload = {
+			id,
+			schoolId: body.schoolId ?? body.SchoolId ?? 0,
+			academicyearId:
+				body.academicyearId ??
+				body.academicYearId ??
+				body.AcademicyearId ??
+				0,
+			classId: body.classId ?? body.ClassId ?? 0,
+			status: body.status ?? body.Status ?? true,
+		};
+		return http.put<BiaSoDauBaiResType>(`/v1/bia-so-dau-bais/${id}`, payload);
+	},
 
 	bulkdelete: (ids: number[]) =>
-		http.delete<MessageResType>('/BiaSoDauBais/bulkdelete', ids),
+		http.delete<ApiResponse<boolean>>('/v1/bia-so-dau-bais/bulkdelete', ids),
 
-	importExcel: (body: FormData) => {
-		return http.post<MessageResType>(`/BiaSoDauBais/upload`, body);
-	},
+	bulkDelete: (ids: number[]) =>
+		http.delete<ApiResponse<boolean>>('/v1/bia-so-dau-bais/bulkdelete', ids),
 
-	// res: message, array[{}...{}]
-	// http://localhost:5204/api/BiaSoDauBais/search?SchoolId=1&PageNumber=1&PageSize=10
-	search: (
+	importExcel: (body: FormData) =>
+		http.post<MessageResType>('/v1/bia-so-dau-bais/upload', body),
+
+	search: async (
 		pageNumber: number,
 		pageSize: number,
 		schoolId?: number,
 		classId?: number
 	) => {
-		const params = new URLSearchParams({
-			...(schoolId && { schoolId: schoolId.toString() }),
-			...(classId && { classId: classId.toString() }),
-			pageNumber: pageNumber.toString(),
-			pageSize: pageSize.toString(),
-		});
-		return http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais/search?${params.toString()}`
+		const query: BiaSoDauBaiQuery = {
+			pageNumber,
+			pageSize,
+			schoolId: schoolId || undefined,
+			classId: classId || undefined,
+		};
+		const res = await http.get<BiaSoListResType>(
+			`/v1/bia-so-dau-bais${buildQueryString(query)}`,
+			{ cache: 'no-store' }
 		);
+		if (res.payload?.data?.items) {
+			res.payload.data.items = res.payload.data.items.map(normalizeBiaSoDauBai);
+		}
+		return res;
 	},
 
-	// Admin
-	// Status: true and false
-	getAllBiaAdmin: (queryObject: QueryType) =>
-		http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais/get-all-bia-so?pageNumber=${queryObject.pageNumber}&pageSize=${queryObject.pageSize}`
-		),
+	getAllBiaAdmin: async (queryObject: QueryType) => {
+		const res = await http.get<BiaSoListResType>(
+			`/v1/bia-so-dau-bais${buildQueryString(queryObject as QueryObject)}`,
+			{ cache: 'no-store' }
+		);
+		if (res.payload?.data?.items) {
+			res.payload.data.items = res.payload.data.items.map(normalizeBiaSoDauBai);
+		}
+		return res;
+	},
 
-	getAllBiaBySchoolAdmin: (
+	getAllBiaBySchoolAdmin: async (
 		pageNumber: number,
 		pageSize: number,
 		schoolId: number,
-		token: string
-	) =>
-		http.get<BiaSoDauBaiResType>(
-			`/BiaSoDauBais/get-all-bia-so-by-school?pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`,
+		token?: string
+	) => {
+		const res = await http.get<BiaSoListResType>(
+			`/v1/bia-so-dau-bais?pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`,
 			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
+				token,
+				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+				cache: 'no-store',
 			}
-		),
+		);
+		if (res.payload?.data?.items) {
+			res.payload.data.items = res.payload.data.items.map(normalizeBiaSoDauBai);
+		}
+		return res;
+	},
 };
 
 export default biaSoDauBaiApiRequest;

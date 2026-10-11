@@ -4,7 +4,14 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Home } from 'lucide-react';
 
-export default function RollCallPage() {
+export default function RollCallPage({
+	searchParams,
+}: {
+	searchParams?: { [key: string]: string | string[] | undefined };
+}) {
+	const weekId = searchParams?.weekId ? Number(searchParams.weekId) : null;
+	const classId = searchParams?.classId ? Number(searchParams.classId) : null;
+
 	return (
 		<div>
 			<Link href='/'>
@@ -21,7 +28,7 @@ export default function RollCallPage() {
 				danh sách điểm danh
 			</h1>
 
-			<RollCallList />
+			<RollCallList filters={{ weekId, classId }} />
 		</div>
 	);
 }

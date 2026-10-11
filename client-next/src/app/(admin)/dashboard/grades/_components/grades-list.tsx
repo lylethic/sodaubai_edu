@@ -15,31 +15,47 @@ import GradeUploadButton from './grade-upload';
 
 type GradeType = GradeResType['data'];
 
-export default function GradesList() {
+interface GradesListProps {
+	initialGrades?: GradeType[];
+	initialTotalCount?: number;
+}
+
+export default function GradesList({
+	initialGrades = [],
+	initialTotalCount = 0,
+}: GradesListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [selected, setSelected] = useState<GradeType[]>([]);
 
-	const [datas, setDatas] = useState<GradeType[]>([]);
+	const [datas, setDatas] = useState<GradeType[]>(initialGrades);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] =
+		useState<number>(initialTotalCount);
+	const isFirstMount = React.useRef(true);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [rowToDelete, setRowToDelete] = useState<GradeType | null>(null);
 
 	const fetchData = async (query: QueryType) => {
+		if (loading) return;
 		setLoading(true);
 		try {
 			const response = await gradeApiRequest.grades(query);
 
-			const { data, pagination } = response.payload;
+			const payload = response.payload as any;
+			const items =
+				payload?.data?.items ||
+				(Array.isArray(payload?.data) ? payload.data : []);
+			const totalResults =
+				payload?.data?.totalCount ??
+				payload?.pagination?.totalResults ??
+				0;
 
-			const totalResults = pagination?.totalResults;
-
-			setDatas(Array.isArray(data) ? data : []);
-			setTotalPageCount(totalResults ?? 0);
+			setDatas(items);
+			setTotalPageCount(totalResults);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -48,8 +64,9 @@ export default function GradesList() {
 	};
 
 	const handleEdit = useCallback(
-		(data: GradeType) => router.push(`/dashboard/grades/${data.gradeId}/edit`),
-		[]
+		(data: GradeType) =>
+			router.push(`/dashboard/grades/${data.gradeId || data.id}/edit`),
+		[router]
 	);
 
 	const handleDelete = useCallback((data: GradeType) => {
@@ -60,14 +77,17 @@ export default function GradesList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await gradeApiRequest.delete(rowToDelete.gradeId);
+			const idToDelete = rowToDelete.gradeId || rowToDelete.id || 0;
+			const response = await gradeApiRequest.delete(idToDelete);
 			toast({
 				description: response.payload.message,
 			});
 
-			// Update state lopHocs
 			setDatas((prev) =>
-				prev.filter((item) => item.gradeId !== rowToDelete.gradeId)
+				prev.filter(
+					(item) =>
+						(item.gradeId || item.id) !== idToDelete
+				)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -78,8 +98,9 @@ export default function GradesList() {
 	};
 
 	const handleRedirectToDetail = useCallback(
-		(data: GradeType) => router.push(`/dashboard/grades/${data.gradeId}`),
-		[]
+		(data: GradeType) =>
+			router.push(`/dashboard/grades/${data.gradeId || data.id}`),
+		[router]
 	);
 
 	const handleRefresh = useCallback(() => {
@@ -87,7 +108,10 @@ export default function GradesList() {
 	}, [pageNumber, pageSize]);
 
 	useEffect(() => {
-		if (loading) return;
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			return;
+		}
 		fetchData({ pageNumber, pageSize });
 	}, [pageNumber, pageSize]);
 
@@ -100,17 +124,29 @@ export default function GradesList() {
 				pageNumber,
 				pageSize,
 			}),
-		[handleEdit, handleDelete, handleRedirectToDetail, pageNumber, pageSize]
+		[
+			handleEdit,
+			handleDelete,
+			handleRedirectToDetail,
+			pageNumber,
+			pageSize,
+		]
 	);
 
 	return (
-		<>
-			<GradeAddButton />
-			<GradeUploadButton onRefresh={handleRefresh} />
-			<GradeBulkDelete
-				selectedItems={selected.map((key) => key.gradeId)}
-				onDeleted={handleRefresh}
-			/>
+		<div className='p-4'>
+			<div className='flex justify-between items-center'>
+				<GradeAddButton />
+				<div className='flex gap-2 items-center'>
+					<GradeBulkDelete
+						onDeleted={handleRefresh}
+						selectedItems={selected.map(
+							(item) => item.gradeId || item.id || 0
+						)}
+					/>
+					<GradeUploadButton onRefresh={handleRefresh} />
+				</div>
+			</div>
 			<DataTable
 				columns={columns}
 				data={datas}
@@ -126,6 +162,6 @@ export default function GradesList() {
 				setIsDialogOpen={setIsDialogOpen}
 				onConfirmDelete={confirmDelete}
 			/>
-		</>
+		</div>
 	);
 }

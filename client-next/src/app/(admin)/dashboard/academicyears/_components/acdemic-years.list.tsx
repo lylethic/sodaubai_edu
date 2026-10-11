@@ -15,15 +15,26 @@ import AcademicYearUploadButton from './academicYear-upload-button';
 
 type AcademicYearType = AcademicYearResType['data'];
 
-export default function SchoolYearsList() {
+interface SchoolYearsListProps {
+	initialAcademicYears?: AcademicYearType[];
+	initialTotalCount?: number;
+}
+
+export default function SchoolYearsList({
+	initialAcademicYears = [],
+	initialTotalCount = 0,
+}: SchoolYearsListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [selected, setSelected] = useState<AcademicYearType[]>([]);
-	const [academicYears, setAcademicYears] = useState<AcademicYearType[]>([]);
+	const [academicYears, setAcademicYears] =
+		useState<AcademicYearType[]>(initialAcademicYears);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] =
+		useState<number>(initialTotalCount);
+	const isFirstMount = React.useRef(true);
 
 	const [rowToDelete, setRowToDelete] = useState<AcademicYearType | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,11 +44,11 @@ export default function SchoolYearsList() {
 		setLoading(true);
 		try {
 			const { payload } = await namHocApiRequest.namHocs(query);
-			const result = payload.data;
-			const totalResults = payload.pagination?.totalResults;
+			const items = (payload as any)?.data?.items || (Array.isArray(payload?.data) ? payload.data : []);
+			const totalResults = (payload as any)?.data?.totalCount ?? (payload as any)?.pagination?.totalResults ?? 0;
 
-			setAcademicYears(Array.isArray(result) ? result : []);
-			setTotalPageCount(totalResults ?? 0);
+			setAcademicYears(items);
+			setTotalPageCount(totalResults);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -47,7 +58,7 @@ export default function SchoolYearsList() {
 
 	const handleEdit = useCallback(
 		(data: AcademicYearType) =>
-			router.push(`/dashboard/academicyears/${data.academicYearId}/edit`),
+			router.push(`/dashboard/academicyears/${data.id ?? data.academicYearId}/edit`),
 		[]
 	);
 
@@ -59,9 +70,8 @@ export default function SchoolYearsList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const { payload } = await namHocApiRequest.delete(
-				rowToDelete.academicYearId
-			);
+			const id = rowToDelete.id ?? rowToDelete.academicYearId;
+			const { payload } = await namHocApiRequest.delete(id);
 			toast({
 				description: payload.message,
 			});
@@ -69,7 +79,7 @@ export default function SchoolYearsList() {
 			// Update state
 			setAcademicYears((prev) =>
 				prev.filter(
-					(item) => item.academicYearId !== rowToDelete.academicYearId
+					(item) => (item.id ?? item.academicYearId) !== id
 				)
 			);
 		} catch (error) {
@@ -82,7 +92,7 @@ export default function SchoolYearsList() {
 
 	const handleRedirectToDetail = useCallback(
 		(data: AcademicYearType) =>
-			router.push(`/dashboard/academicyears/${data.academicYearId}`),
+			router.push(`/dashboard/academicyears/${data.id ?? data.academicYearId}`),
 		[]
 	);
 
@@ -91,6 +101,12 @@ export default function SchoolYearsList() {
 	}, [pageNumber, pageSize]);
 
 	useEffect(() => {
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialAcademicYears.length > 0 && pageNumber === 1 && pageSize === 20) {
+				return;
+			}
+		}
 		fetchData({ pageNumber, pageSize });
 	}, [pageNumber, pageSize]);
 
@@ -112,7 +128,7 @@ export default function SchoolYearsList() {
 			<AcademicYearAddButton />
 
 			<BulkDeleteAcademicYearDialog
-				selectedItems={selected.map((items) => items.academicYearId)}
+				selectedItems={selected.map((items) => (items.id ?? items.academicYearId)!)}
 				onDeleted={handleRefresh}
 			/>
 

@@ -77,7 +77,9 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 				accountId: data.accountId,
 				schoolId: data.schoolId,
 				fullname: data.fullname,
-				dateOfBirth: new Date(data.dateOfBirth),
+				dateOfBirth: data.dateOfBirth
+					? new Date(data.dateOfBirth)
+					: undefined,
 				gender: data.gender,
 				address: data.address,
 				status: data.status,
@@ -254,7 +256,7 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 									<FormItem>
 										<FormLabel>Trường học</FormLabel>
 										<SchoolSelect
-											selectedSchoolId={field.value}
+											selectedSchoolId={field.value ?? null}
 											onSelectSchool={(schoolId) => field.onChange(schoolId)}
 										/>
 										<FormMessage />
@@ -352,6 +354,7 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 											<Textarea
 												placeholder='Nhập địa chỉ'
 												{...field}
+												value={field.value ?? ''}
 												className='resize-none'
 												rows={5}
 											/>

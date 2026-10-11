@@ -1,12 +1,9 @@
 import React, { HTMLProps } from 'react';
 import { DataTableRowThreeActions } from '@/app/(admin)/_components/data-table-row-three-action';
 import { ColumnDef } from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
-import { formatDateToDDMMYYYY } from '@/lib/utils';
-import { SchoolResType } from '@/schemaValidations/school.schema';
-import { ClassifyResType } from '@/schemaValidations/xepLoaiTietHoc.schema';
+import { ClassificationResType } from '@/schemaValidations/xepLoaiTietHoc.schema';
 
-type ClassifyType = ClassifyResType['data'];
+type ClassifyType = ClassificationResType['data'];
 
 interface ClassifyColumnProps {
 	handleRedirectToDetail: (data: ClassifyType) => void;
@@ -59,15 +56,21 @@ export const getClassifyColumns = ({
 	{
 		accessorKey: 'classificationId',
 		header: 'Mã xếp loại',
+		cell: ({ row }) => (
+			<span>{row.original.classificationId || row.original.id}</span>
+		),
 	},
 	{
 		accessorKey: 'classifyName',
 		header: 'Tên hiển thị',
-		cell: ({ row }) => <span>Xếp loại {row.original.classifyName}</span>,
+		cell: ({ row }) => (
+			<span>Xếp loại {row.original.classifyName || row.original.name}</span>
+		),
 	},
 	{
 		accessorKey: 'score',
 		header: 'Số điểm',
+		cell: ({ row }) => <span>{row.original.score ?? 0}</span>,
 	},
 	{
 		id: 'action',

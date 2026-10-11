@@ -1,99 +1,76 @@
 import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
 export const TeacherSchema = z.object({
-	message: z.string(),
-	data: z.object({
-		teacherId: z.number(),
-		accountId: z.number(),
-		schoolId: z.number(),
-		fullname: z.string(),
-		dateOfBirth: z.date(),
-		gender: z.boolean(),
-		address: z.string(),
-		status: z.boolean(),
-		dateCreate: z.date().nullable().optional(),
-		dateUpdate: z.date().nullable().optional(),
-		photoPath: z.instanceof(File).nullable().optional(),
-	}),
+	id: z.number().optional(),
+	teacherId: z.number().default(0), // alias
+	userId: z.number().optional(),
+	accountId: z.number().default(0), // alias
+	schoolId: z.number().default(0),
+	fullname: z.string().default(''),
+	dateOfBirth: z.union([z.string(), z.date()]).optional().nullable(),
+	gender: z.boolean().default(true),
+	address: z.string().optional().nullable(),
+	status: z.boolean().default(true),
+	photoPath: z.string().optional().nullable(),
+	nameSchool: z.string().optional().nullable(),
+	schoolType: z.boolean().optional().nullable(),
+	dateCreate: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdate: z.union([z.string(), z.date()]).optional().nullable(),
+	dateCreated: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdated: z.union([z.string(), z.date()]).optional().nullable(),
 });
-export type TeacherDetailResType = z.TypeOf<typeof TeacherSchema>;
 
-export const TeacherRes = z.object({
-	message: z.string(),
-	totalResults: z.number().nullable(),
-	data: z.object({
-		teacherId: z.number(),
-		accountId: z.number(),
-		schoolId: z.number(),
-		fullname: z.string(),
-		dateOfBirth: z.string(),
-		gender: z.boolean(),
-		address: z.string(),
-		status: z.boolean(),
-		dateCreate: z.string().nullable().optional(),
-		dateUpdate: z.string().nullable().optional(),
-		nameSchool: z.string().nullable(),
-		schoolType: z.boolean(),
-		photoPath: z.string().nullable(),
-	}),
-	pagination: z.object({
-		pageNumber: z.number(),
-		pageSize: z.number(),
-		totalResults: z.number(),
-		totalPages: z.number(),
-	}),
-});
-export type TeacherResType = z.TypeOf<typeof TeacherRes>;
+export type TeacherDto = z.infer<typeof TeacherSchema>;
+export type TeacherSchemaType = TeacherDto;
+
+export const TeacherRes = createApiResponseSchema(TeacherSchema);
+export type TeacherResType = z.infer<typeof TeacherRes>;
+
+export const TeacherDetailRes = TeacherRes;
+export type TeacherDetailResType = TeacherResType;
+
+export const TeacherListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(TeacherSchema)
+);
+export type TeacherListResType = z.infer<typeof TeacherListRes>;
 
 export const CreateTeacherBody = z.object({
-	TeacherId: z.number(),
-	AccountId: z.number(),
-	SchoolId: z.number(),
-	Fullname: z.string(),
-	DateOfBirth: z.date().max(new Date(), 'DateOfBirth cannot be in the future'),
-	Gender: z.boolean(),
-	Address: z.string(),
-	Status: z.boolean(),
-	DateCreate: z.date().nullable().optional(),
-	DateUpdate: z.date().nullable().optional(),
-	PhotoPath: z.instanceof(File).nullable().optional(),
+	id: z.number().optional(),
+	teacherId: z.number().optional(),
+	TeacherId: z.number().optional(),
+	userId: z.number().optional(),
+	accountId: z.number().optional(),
+	AccountId: z.number().optional(),
+	schoolId: z.number({ required_error: 'Vui lòng chọn trường học' }).optional(),
+	SchoolId: z.number().optional(),
+	fullname: z.string().optional(),
+	Fullname: z.string().optional(),
+	dateOfBirth: z.union([z.string(), z.date()]).nullable().optional(),
+	DateOfBirth: z.union([z.string(), z.date()]).nullable().optional(),
+	gender: z.boolean().optional(),
+	Gender: z.boolean().optional(),
+	address: z.string().nullable().optional(),
+	Address: z.string().nullable().optional(),
+	status: z.boolean().optional(),
+	Status: z.boolean().optional(),
+	photoPath: z.any().nullable().optional(),
+	PhotoPath: z.any().nullable().optional(),
+	dateCreate: z.union([z.string(), z.date()]).nullable().optional(),
+	DateCreate: z.union([z.string(), z.date()]).nullable().optional(),
+	dateUpdate: z.union([z.string(), z.date()]).nullable().optional(),
+	DateUpdate: z.union([z.string(), z.date()]).nullable().optional(),
 });
-export type CreateTeacherBodyType = z.TypeOf<typeof CreateTeacherBody>;
+export type CreateTeacherBodyType = z.infer<typeof CreateTeacherBody>;
 
-export const TeacherListRes = z.object({
-	message: z.string(),
-	data: TeacherSchema,
-});
-
-export type TeacherListResType = z.TypeOf<typeof TeacherListRes>;
-
-export const UpdateTeacherBody = z.object({
-	teacherId: z.number(),
-	accountId: z.number(),
-	schoolId: z.number(),
-	fullname: z.string(),
-	dateOfBirth: z.preprocess(
-		(val) => (typeof val === 'string' ? new Date(val) : val),
-		z.date()
-	),
-	gender: z.boolean(),
-	address: z.string(),
-	status: z.boolean(),
-	dateCreate: z
-		.union([z.string(), z.date()]) // method accept multiple types
-		.transform((value) => (value ? new Date(value) : null))
-		.nullable()
-		.optional(),
-	dateUpdate: z
-		.union([z.string(), z.date()]) // method accept multiple types
-		.transform((value) => (value ? new Date(value) : null))
-		.nullable()
-		.optional(),
-	photoPath: z.instanceof(File).nullable().optional(),
-});
-export type UpdateTeacherBodyType = z.infer<typeof UpdateTeacherBody>;
+export const UpdateTeacherBody = CreateTeacherBody;
+export type UpdateTeacherBodyType = CreateTeacherBodyType;
 
 export const TeacherParams = z.object({
-	accountId: z.coerce.number(),
+	accountId: z.coerce.number().optional(),
+	userId: z.coerce.number().optional(),
 });
-export type TeacherParamsType = z.TypeOf<typeof TeacherParams>;
+export type TeacherParamsType = z.infer<typeof TeacherParams>;

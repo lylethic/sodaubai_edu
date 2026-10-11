@@ -1,10 +1,13 @@
 import React, { HTMLProps } from 'react';
 import { DataTableRowThreeActions } from '@/app/(admin)/_components/data-table-row-three-action';
 import { ColumnDef } from '@tanstack/react-table';
-import { RollCallResType } from '@/schemaValidations/rollcall-schema';
+import {
+	RollCallDto,
+	RollCallResType,
+} from '@/schemaValidations/rollcall-schema';
 import { formatDateToDDMMYYYY } from '@/lib/utils';
 
-type RollCallType = RollCallResType['data'];
+type RollCallType = RollCallDto;
 
 interface RollCallColumnProps {
 	handleRedirectToDetail: (data: RollCallType) => void;

@@ -8,12 +8,16 @@ import { QueryType } from '@/types/queryType';
 import DataTable from '@/app/(admin)/_components/data-table';
 import BulkDeleteBiaSoDauBai from '@/app/(admin)/_components/bulk-delete-sodaubai';
 import biaSoDauBaiApiRequest from '@/apiRequests/biasodaubai';
-import { BiaSoDauBaiResType } from '@/schemaValidations/biaSoDauBai.schema';
+import {
+	BiaSoDauBaiDto,
+	BiaSoDauBaiResType,
+	normalizeBiaSoDauBai,
+} from '@/schemaValidations/biaSoDauBai.schema';
 import { getBiaSoDauBaisColumns } from './columns';
 import SodauBaiAddButton from './sodaubai-add-button';
 import SodauBaiSearchForm from './search-sodaubai-form';
 
-type BiaSoDauBaiType = BiaSoDauBaiResType['data'];
+type BiaSoDauBaiType = BiaSoDauBaiDto;
 
 interface FilterProps {
 	filters?: {
@@ -55,12 +59,16 @@ export default function SoDauBaiListPage({ filters }: FilterProps) {
 					selectedSchool,
 					selectedClass ?? null // Pass null if no class is selected.
 				);
-				const result = response.payload?.data;
-				const totalResults = response.payload.pagination?.totalResults;
+				const rawData: any = response.payload?.data;
+				const rawItems: any[] = Array.isArray(rawData)
+					? rawData
+					: (rawData?.items ?? []);
+				const totalResults =
+					rawData?.totalCount ?? (response.payload as any).pagination?.totalResults ?? rawItems.length;
 
 				// Update state
-				setTotalPageCount(totalResults ? Math.ceil(totalResults) : 0);
-				setBiaSoDauBaisBySchoolClass(Array.isArray(result) ? result : []);
+				setTotalPageCount(totalResults ? Math.ceil(totalResults / pageSize) : 0);
+				setBiaSoDauBaisBySchoolClass(rawItems.map(normalizeBiaSoDauBai));
 			} else {
 				const [countResponse, dataResponse] = await Promise.all([
 					biaSoDauBaiApiRequest.countBiaSoDauBai(),
@@ -68,10 +76,17 @@ export default function SoDauBaiListPage({ filters }: FilterProps) {
 				]);
 
 				const totalCount = countResponse.payload;
-				const data = dataResponse.payload.data;
+				const rawData: any = dataResponse.payload.data;
+				const rawItems: any[] = Array.isArray(rawData)
+					? rawData
+					: (rawData?.items ?? []);
+				const actualTotal =
+					totalCount || rawData?.totalCount || rawItems.length;
 
-				setTotalPageCount(totalCount ? Math.ceil(totalCount) : 0);
-				setBiaSoDauBais(Array.isArray(data) ? data : []);
+				setTotalPageCount(
+					actualTotal ? Math.ceil(actualTotal / (query.pageSize || pageSize)) : 0
+				);
+				setBiaSoDauBais(rawItems.map(normalizeBiaSoDauBai));
 			}
 		} catch (error: any) {
 			handleErrorApi({ error });

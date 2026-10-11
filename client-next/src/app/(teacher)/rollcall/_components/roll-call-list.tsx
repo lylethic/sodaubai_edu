@@ -11,8 +11,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/app/app-provider';
 import { QueryType } from '@/types/queryType';
 import {
+	RollCallDetailDto,
 	RollCallDetailResType,
+	RollCallDto,
 	RollCallResType,
+	normalizeRollCall,
 } from '@/schemaValidations/rollcall-schema';
 import { rollcallApiRequest } from '@/apiRequests/rollcall';
 import FilterRollCall from './filter-rollcall';
@@ -32,7 +35,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { PaginationWithLinks } from '@/components/pagination-with-links';
 import { addHours, differenceInHours } from 'date-fns';
 
-type RollCallType = RollCallResType['data'];
+type RollCallType = RollCallDto;
 
 interface FilterProps {
 	filters?: {
@@ -51,10 +54,10 @@ export default function RollCallList({ filters }: FilterProps) {
 
 	const [rollCalls, setRollCalls] = useState<RollCallType[]>([]);
 	const [rollCallDetails, setRollCallDetails] = useState<
-		RollCallDetailResType['data'][]
+		RollCallDetailDto[]
 	>([]);
-	const [selectedWeek, setSelectedWeek] = useState<number>(0);
-	const [selectedClass, setSelectedClass] = useState<number>(0);
+	const [selectedWeek, setSelectedWeek] = useState<number>(filters?.weekId ?? 0);
+	const [selectedClass, setSelectedClass] = useState<number>(filters?.classId ?? 0);
 	const [selectedSchool, setSelectedSchool] = useState<number>(0);
 
 	const [rowToDelete, setRowToDelete] = useState<RollCallType | null>(null);
@@ -77,10 +80,14 @@ export default function RollCallList({ filters }: FilterProps) {
 				selectedWeek,
 				selectedClass
 			);
-			const result = Array.isArray(payload.data) ? payload.data : [];
-			const totalResults = payload.pagination?.totalResults;
-			setRollCalls(result);
-			setTotalPageCount(totalResults ?? 0);
+			const rawItems = Array.isArray(payload.data)
+				? payload.data
+				: payload.data
+				? [payload.data]
+				: [];
+			const totalResults = payload.pagination?.totalResults ?? rawItems.length;
+			setRollCalls(rawItems.map(normalizeRollCall));
+			setTotalPageCount(totalResults ? Math.ceil(totalResults / query.pageSize) : 0);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -105,16 +112,15 @@ export default function RollCallList({ filters }: FilterProps) {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const { payload } = await rollcallApiRequest.delete(
-				rowToDelete.rollCallId
-			);
+			const id = rowToDelete.rollCallId ?? rowToDelete.id ?? 0;
+			const { payload } = await rollcallApiRequest.delete(id);
 			toast({
 				description: payload.message,
 			});
 
 			// Update state
 			setRollCalls((prev) =>
-				prev.filter((item) => item.rollCallId !== rowToDelete.rollCallId)
+				prev.filter((item) => (item.rollCallId ?? item.id) !== id)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -129,7 +135,7 @@ export default function RollCallList({ filters }: FilterProps) {
 		if (selected.length === rollCalls.length) {
 			setSelected([]); // Deselect all
 		} else {
-			setSelected(rollCalls.map((rollCallId) => rollCallId.rollCallId)); // Select all
+			setSelected(rollCalls.map((item) => item.rollCallId ?? item.id ?? 0)); // Select all
 		}
 	};
 	const handleCheckboxChange = (id: number) => {
@@ -182,18 +188,20 @@ export default function RollCallList({ filters }: FilterProps) {
 				</TableHeader>
 				<TableBody>
 					{rollCalls.map((key, index) => {
-						const createdAtVN = addHours(key.dateAt, 7);
+						const dateAt = key.dateAt ? new Date(key.dateAt) : new Date();
+						const createdAtVN = addHours(dateAt, 7);
 						const isDisabled = differenceInHours(new Date(), createdAtVN) > 2;
+						const rollCallId = key.rollCallId ?? key.id ?? 0;
 						return (
-							<TableRow key={key.rollCallId + index}>
+							<TableRow key={`rollcall-${rollCallId}-${index}`}>
 								<TableCell>
 									<div className='flex items-center'>
 										<Input
 											id='checkbox-table-search-1'
 											type='checkbox'
 											className='w-4 h-4 ms-2'
-											onChange={() => handleCheckboxChange(key.rollCallId)}
-											checked={selected.includes(key.rollCallId)}
+											onChange={() => handleCheckboxChange(rollCallId)}
+											checked={selected.includes(rollCallId)}
 										/>
 										<Label
 											htmlFor='checkbox-table-search-1'
@@ -222,12 +230,14 @@ export default function RollCallList({ filters }: FilterProps) {
 												</TableRow>
 											</TableHeader>
 											<TableBody>
-												{key.rollCallDetails?.map((detail) => (
-													<TableRow key={detail.absenceId}>
+												{key.rollCallDetails?.map((detail, dIdx) => (
+													<TableRow key={detail.absenceId ?? detail.id ?? dIdx}>
 														<TableCell>{detail.studentId}</TableCell>
-														<TableCell>{detail.student.fullname}</TableCell>
+														<TableCell>{detail.student?.fullname ?? '-'}</TableCell>
 														<TableCell>
-															{detail.isExcused ? 'Có phép' : 'Không phép'}
+															{(detail.isExecute || detail.isExcused)
+																? 'Có phép'
+																: 'Không phép'}
 														</TableCell>
 														<TableCell>{detail.description}</TableCell>
 													</TableRow>

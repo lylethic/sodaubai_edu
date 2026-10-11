@@ -104,7 +104,7 @@ export default function EditAccountForm({ params, account }: Props) {
 								<FormLabel>Vai trò</FormLabel>
 								<FormControl>
 									<RoleSelect
-										selectedRoleId={field.value}
+										selectedRoleId={field.value ?? null}
 										onSelectRole={(roleId) => field.onChange(roleId)}
 									/>
 								</FormControl>
@@ -119,7 +119,7 @@ export default function EditAccountForm({ params, account }: Props) {
 							<FormItem>
 								<FormLabel>Trường học</FormLabel>
 								<SchoolSelect
-									selectedSchoolId={field.value}
+									selectedSchoolId={field.value ?? null}
 									onSelectSchool={(schoolId) => field.onChange(schoolId)}
 								/>
 								<FormMessage />

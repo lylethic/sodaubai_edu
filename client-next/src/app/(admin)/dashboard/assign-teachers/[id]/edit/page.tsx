@@ -11,7 +11,7 @@ const getDetail = cache(phanCongChuNhiemApiRequest.phanCong);
 
 type Props = {
 	params: { id: string };
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+	searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 export async function generateMetadata(
@@ -28,10 +28,10 @@ export async function generateMetadata(
 		'/dashboard/assign-teachers/' +
 		account.phanCongChuNhiemId;
 	return {
-		title: account.nameClass,
+		title: account?.nameClass || '',
 		openGraph: {
 			...baseOpenGraph,
-			title: account.nameClass,
+			title: account?.nameClass || '',
 			url,
 		},
 		alternates: {

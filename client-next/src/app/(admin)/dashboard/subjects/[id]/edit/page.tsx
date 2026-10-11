@@ -5,8 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import envConfig from '@/config';
 import { baseOpenGraph } from '@/app/shared-metadata';
-import { ArrowLeft, ArrowRight, Ban, Check } from 'lucide-react';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import { ArrowLeft } from 'lucide-react';
 import { subjectApiRequest } from '@/apiRequests/subject';
 import SubjectUpSertForm from '../../_components/subject-add-upsert-form';
 
@@ -18,22 +17,23 @@ type Props = {
 };
 
 export async function generateMetadata(
-	{ params, searchParams }: Props,
-	parent: ResolvingMetadata
+	{ params }: Props,
+	_parent: ResolvingMetadata
 ): Promise<Metadata> {
 	const cookieStore = cookies();
 	const accessToken = cookieStore.get('accessToken');
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
-	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/subjects/' + result.subjectId;
+	const subjectId = result?.id ?? result?.subjectId;
+	const subjectName = result?.name ?? result?.subjectName ?? '';
+	const url = envConfig.NEXT_PUBLIC_URL + '/dashboard/subjects/' + subjectId;
 
 	return {
-		title: 'Chi tiết môn ' + result.subjectName,
+		title: 'Cập nhật môn ' + subjectName,
 		openGraph: {
 			...baseOpenGraph,
-			title: 'Chi tiết môn ' + result.subjectName,
+			title: 'Cập nhật môn ' + subjectName,
 			url,
 		},
 		alternates: {
@@ -45,7 +45,7 @@ export async function generateMetadata(
 export default async function SubjectEditPage({ params }: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
-	if (!token) return;
+	if (!token) return null;
 
 	let result = null;
 	try {

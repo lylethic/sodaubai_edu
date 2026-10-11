@@ -1,0 +1,57 @@
+using System.Net;
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using SoDauBai.Application.Common.Exceptions;
+using SoDauBai.Application.Common.Models;
+using SoDauBai.Application.Interfaces.Services;
+using SoDauBai.Api.Filters;
+
+namespace SoDauBai.Api.Controllers;
+
+[ApiController]
+[CustomAuthorize]
+public abstract class BaseApiController : ControllerBase
+{
+    protected ILogManager _logger;
+    protected IMapper _mapper;
+    protected readonly IHttpContextAccessor? _httpContextAccessor;
+
+    protected BaseApiController(
+        IMapper mapper,
+        IHttpContextAccessor? httpContextAccessor = null,
+        ILogManager? logger = null)
+    {
+        _mapper = mapper;
+        _httpContextAccessor = httpContextAccessor;
+        _logger = logger ?? throw new Exception("Logger is required");
+    }
+
+    protected IActionResult Success(object result)
+    {
+        return Ok(ApiResponseModel.Success(result));
+    }
+
+    protected IActionResult Error(string message, HttpStatusCode? httpStatus = HttpStatusCode.InternalServerError)
+    {
+        return Ok(ApiResponseModel.Error(message, httpStatus));
+    }
+
+    protected IActionResult Error(Exception ex)
+    {
+        if (ex is ApiException apiEx)
+        {
+            return Ok(ApiResponseModel.Error(apiEx.Message, apiEx.StatusCode));
+        }
+        return Ok(ApiResponseModel.Error(ex.Message, HttpStatusCode.InternalServerError));
+    }
+
+    protected IActionResult CreatedSuccess(object result)
+    {
+        return Created(Request.Path, ApiResponseModel.Success(result, HttpStatusCode.Created));
+    }
+
+    protected IActionResult ErrorWithData(object result, string errorMsg)
+    {
+        return Ok(ApiResponseModel.ErrorWithData(result, errorMsg));
+    }
+}

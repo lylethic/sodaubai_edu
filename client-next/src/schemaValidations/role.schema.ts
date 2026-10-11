@@ -1,59 +1,48 @@
 import { z } from 'zod';
-
-const RoleRes = z
-	.object({
-		status: z.number(),
-		message: z.string(),
-		data: z.object({
-			roleId: z.number(),
-			nameRole: z.string({
-				required_error: 'Vui lòng nhập tên cho vai trò này',
-			}),
-			description: z.string().optional(),
-			dateCreated: z.date().nullable().optional(),
-			dateUpdated: z.date().nullable().optional(),
-		}),
-	})
-	.strict();
-
-export type RoleResType = z.TypeOf<typeof RoleRes>;
-
-export const CreateRoleBody = z.object({
-	NameRole: z.string({
-		required_error: 'Vui lòng nhập tên cho vai trò này',
-	}),
-	Description: z.string().optional(),
-});
-
-export type CreateRoleBodyType = z.TypeOf<typeof CreateRoleBody>;
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
 export const RoleSchema = z.object({
-	roleId: z.number(),
+	id: z.number().optional(),
+	roleId: z.number().optional(),
+	nameRole: z.string({
+		required_error: 'Vui lòng nhập tên cho vai trò này',
+	}),
+	description: z.string().nullable().optional(),
+	dateCreated: z.union([z.string(), z.date()]).nullable().optional(),
+	dateUpdated: z.union([z.string(), z.date()]).nullable().optional(),
+});
+
+export type RoleDto = z.infer<typeof RoleSchema>;
+
+export const RoleRes = createApiResponseSchema(RoleSchema);
+export type RoleResType = z.infer<typeof RoleRes>;
+
+export const RoleListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(RoleSchema)
+);
+export type RoleListResType = z.infer<typeof RoleListRes>;
+
+export const CreateRoleBody = z.object({
 	nameRole: z.string({
 		required_error: 'Vui lòng nhập tên cho vai trò này',
 	}),
 	description: z.string().optional(),
-	dateCreated: z.date().nullable().optional(),
-	dateUpdated: z.date().nullable().optional(),
+	NameRole: z.string().optional(),
+	Description: z.string().optional(),
 });
 
-export const RoleAddRes = z.object({
-	message: z.string(),
-	data: RoleSchema,
-});
+export type CreateRoleBodyType = z.infer<typeof CreateRoleBody>;
 
-export type RoleAddResType = z.TypeOf<typeof RoleAddRes>;
-
-export const RoleListRes = z.object({
-	message: z.string(),
-	data: z.array(RoleSchema),
-});
-
-export type RoleListResType = z.TypeOf<typeof RoleListRes>;
+export const RoleAddRes = RoleRes;
+export type RoleAddResType = RoleResType;
 
 export const UpdateRoleBody = CreateRoleBody;
-export type UpdateRoleBodyType = z.TypeOf<typeof UpdateRoleBody>;
+export type UpdateRoleBodyType = z.infer<typeof UpdateRoleBody>;
 
 export const RoleParams = z.object({
-	roleId: z.coerce.number(),
+	id: z.coerce.number().optional(),
+	roleId: z.coerce.number().optional(),
 });

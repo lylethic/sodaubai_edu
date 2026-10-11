@@ -1,116 +1,85 @@
 import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
-export const AccountRes = z
-	.object({
-		message: z.string(),
-		data: z.object({
-			accountId: z.number().int(),
-			roleId: z.number(),
-			schoolId: z.number(),
-			email: z
-				.string({ required_error: 'Email is required' })
-				.email('Invalid email format'),
-			dateCreated: z.date().nullable().optional(),
-			dateUpdated: z.date().nullable().optional(),
-		}),
-		pagination: z.object({
-			pageNumber: z.number(),
-			pageSize: z.number(),
-			totalResults: z.number(),
-			totalPages: z.number(),
-		}),
-	})
-	.strict();
-
-export type AccountResType = z.TypeOf<typeof AccountRes>;
-
-const AccountDetailRes = z
-	.object({
-		message: z.string(),
-		data: z.object({
-			accountId: z.number(),
-			roleId: z.number(),
-			schoolId: z.number(),
-			email: z
-				.string({ required_error: 'Email is required' })
-				.email('Invalid email format'),
-			teacherId: z.number(),
-			fullName: z.string(),
-			statusTeacher: z.boolean(),
-		}),
-		pagination: z.object({
-			pageNumber: z.number(),
-			pageSize: z.number(),
-			totalResults: z.number(),
-			totalPages: z.number(),
-		}),
-	})
-	.strict();
-
-export type AccountDetailResType = z.TypeOf<typeof AccountDetailRes>;
-
-export const CreateAccountBody = z.object({
-	RoleId: z.number(),
-	SchoolId: z.number(),
-	Email: z
-		.string({ required_error: 'Email is required' })
-		.email('Invalid email format'),
-	Password: z.string().min(6).max(100),
+export const UserSchema = z.object({
+	id: z.number(),
+	accountId: z.number().optional(),
+	schoolId: z.number().nullable().optional(),
+	email: z.string().email(),
+	username: z.string().nullable().optional(),
+	avatar: z.string().nullable().optional(),
+	fullName: z.string().nullable().optional(),
+	teacherId: z.number().nullable().optional(),
+	roleId: z.number().nullable().optional(),
+	statusTeacher: z.boolean().nullable().optional(),
+	dateCreated: z.union([z.string(), z.date()]).nullable().optional(),
+	dateUpdated: z.union([z.string(), z.date()]).nullable().optional(),
 });
 
-export type CreateAccountBodyType = z.TypeOf<typeof CreateAccountBody>;
+export type UserDto = z.infer<typeof UserSchema>;
+export const AccountSchema = UserSchema;
+export type AccountSchemaType = z.infer<typeof AccountSchema>;
 
-export const AccountSchema = z.object({
-	accountId: z.number(),
-	roleId: z.number(),
-	schoolId: z.number(),
+export const AccountRes = createApiResponseSchema(UserSchema);
+export type AccountResType = z.infer<typeof AccountRes>;
+
+export const AccountDetailRes = AccountRes;
+export type AccountDetailResType = AccountResType;
+
+export const AccountListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(UserSchema)
+);
+export type AccountListResType = z.infer<typeof AccountListRes>;
+
+export const CreateAccountBody = z.object({
+	schoolId: z.number({ required_error: 'Vui lòng chọn trường' }),
 	email: z
 		.string({ required_error: 'Email is required' })
 		.email('Invalid email format'),
+	username: z.string().optional(),
+	avatar: z.string().optional(),
 	password: z.string().min(6).max(100).optional(),
-	dateCreated: z.date().nullable().optional(),
-	dateUpdated: z.date().nullable().optional(),
+	passwordHash: z.string().min(6).max(100).optional(),
+	roleId: z.number().optional(),
+	RoleId: z.number().optional(),
+	SchoolId: z.number().optional(),
+	Email: z.string().email().optional(),
+	Password: z.string().optional(),
 });
 
-export const AccountAddRes = z.object({
-	message: z.string(),
-	data: AccountSchema,
-});
-
-export type AccountAddResType = z.TypeOf<typeof AccountAddRes>;
-
-export const AccountListRes = z.object({
-	message: z.string(),
-	data: z.array(AccountSchema),
-});
-
-export type AccountListResType = z.TypeOf<typeof AccountListRes>;
+export type CreateAccountBodyType = z.infer<typeof CreateAccountBody>;
 
 export const UpdateAccountBody = z.object({
-	roleId: z.number(),
-	schoolId: z.number(),
-	email: z.string(),
-	dateCreated: z.date().nullable().optional(),
-	dateUpdated: z.date().nullable().optional(),
-});
-export type UpdateAccountBodyType = z.TypeOf<typeof UpdateAccountBody>;
-
-export const UpdateAccountRes = z.object({
-	message: z.string(),
-	data: UpdateAccountBody,
+	id: z.number().optional(),
+	schoolId: z.number().nullable().optional(),
+	email: z.string().email().optional(),
+	username: z.string().nullable().optional(),
+	avatar: z.string().nullable().optional(),
+	roleId: z.number().nullable().optional(),
+	dateCreated: z.union([z.string(), z.date()]).nullable().optional(),
+	dateUpdated: z.union([z.string(), z.date()]).nullable().optional(),
 });
 
-export type UpdateAccountResType = z.TypeOf<typeof UpdateAccountRes>;
+export type UpdateAccountBodyType = z.infer<typeof UpdateAccountBody>;
+
+export const AccountAddRes = AccountRes;
+export type AccountAddResType = AccountResType;
+
+export const UpdateAccountRes = AccountRes;
+export type UpdateAccountResType = AccountResType;
 
 export const AccountParams = z.object({
 	id: z.coerce.number(),
-	schoolId: z.coerce.number(),
-	roleId: z.coerce.number(),
-	accountId: z.coerce.number(),
+	schoolId: z.coerce.number().optional(),
+	roleId: z.coerce.number().optional(),
+	accountId: z.coerce.number().optional(),
 });
 
 export const UpdateMeBody = z.object({
 	email: z.string().trim().min(2).max(100),
 });
 
-export type UpdateMeBodyType = z.TypeOf<typeof UpdateMeBody>;
+export type UpdateMeBodyType = z.infer<typeof UpdateMeBody>;

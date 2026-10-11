@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import accountApiRequest from '@/apiRequests/account';
 import { useAppContext } from '@/app/app-provider';
 import { PaginationWithLinks } from '@/components/pagination-with-links';
@@ -24,20 +24,30 @@ import { Label } from '@/components/ui/label';
 import { format } from 'date-fns';
 import AccountUploadButton from './account-upload';
 import FilterAccountBySchool from './filter-account-by-schoolId';
+import { User } from 'lucide-react';
 
-export default function AccountList() {
+interface AccountListProps {
+	initialAccounts?: AccountType[];
+	initialTotalCount?: number;
+}
+
+export default function AccountList({
+	initialAccounts = [],
+	initialTotalCount = 0,
+}: AccountListProps) {
 	const { user } = useAppContext();
 	const [loading, setLoading] = useState(false);
-	const [accounts, setAccounts] = useState<AccountType[]>([]);
+	const [accounts, setAccounts] = useState<AccountType[]>(initialAccounts);
 	const [searchAccounts, setSearchAccounts] = useState<AccountType[]>([]);
 	const [selectedAccounts, setSelectedAccounts] = useState<number[]>([]);
 
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] = useState<number>(initialTotalCount);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
 
 	const role = Number(user?.roleId);
 	const [selectedSchoolId, setSelectedSchoolId] = useState<number>(0);
+	const isFirstMount = useRef(true);
 
 	const handleFilterChange = (schoolId: number | null) => {
 		setSelectedSchoolId(schoolId ?? 0);
@@ -59,11 +69,22 @@ export default function AccountList() {
 				school
 			);
 
-			const { data, pagination } = response.payload;
-			const results = Array.isArray(data) ? data : [];
-			const totalResults = pagination.totalResults;
+			const resData = response.payload?.data as any;
+			const items = Array.isArray(resData?.items)
+				? resData.items
+				: Array.isArray(resData)
+				? resData
+				: [];
+			const totalResults = resData?.totalCount ?? 0;
 
-			setAccounts(results);
+			const normalized = items.map((u: any) => ({
+				...u,
+				id: u.id ?? u.accountId,
+				accountId: u.id ?? u.accountId,
+				roleName: u.roleName || (u.username ? `@${u.username}` : 'User'),
+			}));
+
+			setAccounts(normalized);
 			setTotalPageCount(totalResults ? Math.ceil(totalResults) : 0);
 		} catch (error: any) {
 			handleErrorApi({ error });
@@ -112,10 +133,34 @@ export default function AccountList() {
 	};
 
 	useEffect(() => {
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialAccounts.length > 0 && selectedSchoolId === 0 && pageNumber === 1 && pageSize === 20) {
+				return;
+			}
+		}
+
 		if (searchAccounts.length === 0) {
 			fetchAccounts(pageNumber, pageSize, selectedSchoolId);
 		}
 	}, [pageNumber, pageSize, selectedSchoolId]);
+
+	const renderAvatar = (avatar?: string | null, name?: string | null) => {
+		if (avatar) {
+			return (
+				<img
+					src={avatar}
+					alt={name || 'Avatar'}
+					className='w-8 h-8 rounded-full object-cover border'
+				/>
+			);
+		}
+		return (
+			<div className='w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground'>
+				<User className='w-4 h-4' />
+			</div>
+		);
+	};
 
 	return (
 		<>
@@ -145,6 +190,7 @@ export default function AccountList() {
 				selected={selectedAccounts}
 				onDeleted={handleDeleteSuccess}
 			/>
+
 			{searchAccounts.length > 0 ? (
 				<div className='relative overflow-x-auto shadow-md'>
 					<Table className='w-full table-auto border-collapse min-w-[1000px] my-4 rounded-lg border'>
@@ -160,13 +206,19 @@ export default function AccountList() {
 									STT
 								</TableHead>
 								<TableHead scope='col' className='px-2'>
-									Mã tài khoản
+									ID
 								</TableHead>
 								<TableHead scope='col' className='px-2'>
-									Vai trò
+									Avatar
+								</TableHead>
+								<TableHead scope='col' className='px-2'>
+									Username
 								</TableHead>
 								<TableHead scope='col' className='px-2'>
 									Email
+								</TableHead>
+								<TableHead scope='col' className='px-2'>
+									Vai trò
 								</TableHead>
 								<TableHead scope='col' className='px-2'>
 									Trường học
@@ -196,9 +248,13 @@ export default function AccountList() {
 									<TableCell>
 										{index + 1 + (pageNumber - 1) * pageSize}
 									</TableCell>
-									<TableCell>{item.accountId}</TableCell>
-									<TableCell>{item.roleName}</TableCell>
+									<TableCell>{item.id ?? item.accountId}</TableCell>
+									<TableCell>
+										{renderAvatar(item.avatar, item.username || item.email)}
+									</TableCell>
+									<TableCell>{item.username || '-'}</TableCell>
 									<TableCell>{item.email}</TableCell>
+									<TableCell>{item.roleName}</TableCell>
 									<TableCell>{item.schoolName}</TableCell>
 									<TableCell>
 										{item.dateCreated
@@ -249,9 +305,11 @@ export default function AccountList() {
 									/>
 								</TableHead>
 								<TableHead>STT</TableHead>
-								<TableHead>Mã tài khoản</TableHead>
-								<TableHead>Vai trò</TableHead>
+								<TableHead>ID</TableHead>
+								<TableHead>Avatar</TableHead>
+								<TableHead>Username</TableHead>
 								<TableHead>Email</TableHead>
+								<TableHead>Vai trò</TableHead>
 								<TableHead>Trường học</TableHead>
 								<TableHead>Ngày tạo</TableHead>
 								<TableHead>Ngày cập nhật</TableHead>
@@ -264,14 +322,14 @@ export default function AccountList() {
 									<TableCell>
 										<div className='flex items-center'>
 											<Input
-												id='checkbox-table-search-1'
+												id={`checkbox-account-${item.accountId}`}
 												type='checkbox'
 												className='w-4 h-4 ms-2'
 												onChange={() => handleCheckboxChange(item.accountId)}
 												checked={selectedAccounts.includes(item.accountId)}
 											/>
 											<Label
-												htmlFor='checkbox-table-search-1'
+												htmlFor={`checkbox-account-${item.accountId}`}
 												className='sr-only'
 											>
 												checkbox
@@ -281,9 +339,13 @@ export default function AccountList() {
 									<TableCell>
 										{index + 1 + (pageNumber - 1) * pageSize}
 									</TableCell>
-									<TableCell>{item.accountId}</TableCell>
-									<TableCell>{item.roleName}</TableCell>
+									<TableCell>{item.id ?? item.accountId}</TableCell>
+									<TableCell>
+										{renderAvatar(item.avatar, item.username || item.email)}
+									</TableCell>
+									<TableCell>{item.username || '-'}</TableCell>
 									<TableCell>{item.email}</TableCell>
+									<TableCell>{item.roleName}</TableCell>
 									<TableCell>{item.schoolName}</TableCell>
 									<TableCell>
 										{item.dateCreated

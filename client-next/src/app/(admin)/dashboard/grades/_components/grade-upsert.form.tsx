@@ -13,25 +13,9 @@ import {
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectLabel,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
-import {
-	CreateSchoolBody,
-	CreateSchoolBodyType,
-	SchoolResType,
-	UpdateSchoolBodyType,
-} from '@/schemaValidations/school.schema';
-import schoolApiRequest from '@/apiRequests/school';
 import {
 	CreateGradeBody,
 	CreateGradeBodyType,
@@ -42,7 +26,7 @@ import { gradeApiRequest } from '@/apiRequests/grade';
 
 type GradeType = GradeResType['data'];
 
-export default function SchoolUpSertForm({ grade }: { grade?: GradeType }) {
+export default function GradeUpSertForm({ grade }: { grade?: GradeType }) {
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
@@ -50,9 +34,11 @@ export default function SchoolUpSertForm({ grade }: { grade?: GradeType }) {
 	const form = useForm<CreateGradeBodyType>({
 		resolver: zodResolver(CreateGradeBody),
 		defaultValues: {
-			gradeId: grade?.gradeId ?? 0,
+			id: grade?.id ?? grade?.gradeId ?? 0,
+			gradeId: grade?.gradeId ?? grade?.id ?? 0,
 			academicYearId: grade?.academicYearId,
-			gradeName: grade?.gradeName,
+			gradeName: grade?.gradeName ?? grade?.name ?? '',
+			name: grade?.name ?? grade?.gradeName ?? '',
 			description: grade?.description ?? '',
 			dateCreated: grade?.dateCreated ? new Date(grade.dateCreated) : null,
 			dateUpdated: grade?.dateUpdated ? new Date(grade.dateUpdated) : null,
@@ -77,7 +63,8 @@ export default function SchoolUpSertForm({ grade }: { grade?: GradeType }) {
 		if (!grade) return;
 		setLoading(true);
 		try {
-			const response = await gradeApiRequest.update(grade.gradeId, _values);
+			const idToUpdate = grade.id ?? grade.gradeId ?? 0;
+			const response = await gradeApiRequest.update(idToUpdate, _values);
 
 			toast({ description: response.payload.message });
 			router.refresh();
@@ -126,6 +113,7 @@ export default function SchoolUpSertForm({ grade }: { grade?: GradeType }) {
 					)}
 				/>
 				<FormField
+					control={form.control}
 					name='academicYearId'
 					render={({ field }) => (
 						<FormItem>
@@ -163,9 +151,10 @@ export default function SchoolUpSertForm({ grade }: { grade?: GradeType }) {
 							<FormLabel>Ghi chú</FormLabel>
 							<FormControl>
 								<Textarea
-									placeholder='Địa chỉ trường học...'
+									placeholder='Ghi chú khối lớp...'
 									rows={3}
-									{...field}
+									value={field.value ?? ''}
+									onChange={field.onChange}
 								/>
 							</FormControl>
 							<FormMessage />

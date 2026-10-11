@@ -16,13 +16,12 @@ type Props = {
 export default async function ClassifyEditPage({ params }: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
-	if (!token) return;
+	if (!token) return null;
 	let result = null;
 
 	try {
 		const { payload } = await getDetail(Number(params.id), token.value);
 		result = payload.data;
-		console.log(result);
 	} catch (error) {}
 
 	return (

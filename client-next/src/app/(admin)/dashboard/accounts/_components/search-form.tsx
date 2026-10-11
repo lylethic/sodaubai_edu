@@ -50,20 +50,27 @@ export function SearchForm({
 	const handleSearch = async (query: string, queryObject: QueryType) => {
 		if (loading || !query.trim()) return;
 		setLoading(true);
-		// onSearchResults([], { totalPages: 0, totalResults: 0 });
 		try {
-			// await new Promise((resolve) => setTimeout(resolve, 1000));
 			const response = await accountApiRequest.relativeSearchAccounts(
 				queryObject.pageNumber,
 				queryObject.pageSize,
 				school,
 				query
 			);
-			const { data, pagination } = response.payload;
-			const result = Array.isArray(data) ? data : [];
-			const totalResults = pagination.totalResults;
+			const resData = response.payload?.data as any;
+			const items = Array.isArray(resData?.items)
+				? resData.items
+				: Array.isArray(resData)
+				? resData
+				: [];
+			const totalResults = resData?.totalCount ?? items.length;
+			const normalized: AccountType[] = items.map((u: any) => ({
+				...u,
+				accountId: u.id ?? u.accountId,
+				roleName: u.roleName || (u.username ? `@${u.username}` : 'User'),
+			}));
 
-			if (data) onSearchResults(result, totalResults);
+			onSearchResults(normalized, totalResults);
 		} catch (error: any) {
 			handleErrorApi({ error });
 		} finally {

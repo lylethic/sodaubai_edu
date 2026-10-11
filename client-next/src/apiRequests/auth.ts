@@ -1,28 +1,28 @@
-// import { SlideSessionBodyType } from './../../../server/src/schemaValidations/auth.schema';
 import http from '@/lib/http';
 import { MessageResType } from './../schemaValidations/common.schema';
 import {
 	LoginBodyType,
 	LoginResType,
+	MyInfoResType,
 	RegisterBodyType,
 	RegisterResType,
 	SlideSessionResType,
 } from '@/schemaValidations/auth.schema';
 
 const authApiRequest = {
-	login: (body: LoginBodyType) => http.post<LoginResType>('Auth/login', body),
+	login: (body: LoginBodyType) => http.post<LoginResType>('/auth/login', body),
 
 	register: (body: RegisterBodyType) =>
-		http.post<RegisterResType>('auth/register', body),
+		http.post<RegisterResType>('/auth/register', body),
 
 	auth: (body: { accessToken: string; expiresAt: string }) =>
-		http.post<RegisterResType>('api/auth', body, {
-			baseUrl: '', // truyen '' de goi den Next.js Server
+		http.post<RegisterResType>('/api/auth', body, {
+			baseUrl: '', // Send to Next.js route handler
 		}),
 
 	logoutFromNextServerToServer: (accessToken: string) =>
 		http.post<MessageResType>(
-			'/Auth/logout',
+			'/auth/logout',
 			{},
 			{
 				headers: {
@@ -46,7 +46,7 @@ const authApiRequest = {
 
 	slideSessionFromNextServerToServer: (accessToken: string) =>
 		http.post<SlideSessionResType>(
-			'/Auth/refresh',
+			'/auth/refresh',
 			{ accessToken },
 			{
 				headers: {
@@ -62,6 +62,15 @@ const authApiRequest = {
 			{},
 			{ baseUrl: '' }
 		),
+
+	getMyInfo: (username?: string, token?: string) => {
+		const query = username ? `?username=${encodeURIComponent(username)}` : '';
+		return http.get<MyInfoResType>(`/v1/auth/me${query}`, {
+			token,
+			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+			cache: 'no-store',
+		});
+	},
 };
 
 export default authApiRequest;

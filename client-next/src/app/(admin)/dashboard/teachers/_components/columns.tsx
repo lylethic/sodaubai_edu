@@ -7,6 +7,7 @@ import { ArrowUpDown } from 'lucide-react';
 import { DataTableColumnHeader } from '@/app/(admin)/_components/data-table-column-header';
 import React, { HTMLProps } from 'react';
 import { DataTableRowThreeActions } from '@/app/(admin)/_components/data-table-row-three-action';
+import { formatDateToDDMMYYYY } from '@/lib/utils';
 
 type TeacherType = TeacherResType['data'];
 
@@ -87,10 +88,20 @@ export const getTeacherscolumns = ({
 	{
 		accessorKey: 'dateOfBirth',
 		header: 'Ngày sinh',
+		cell: ({ row }) => (
+			<span>
+				{row.original.dateOfBirth
+					? formatDateToDDMMYYYY(row.original.dateOfBirth)
+					: '_'}
+			</span>
+		),
 	},
 	{
 		accessorKey: 'gender',
 		header: 'Giới tính',
+		cell: ({ row }) => (
+			<span>{row.original.gender ? 'Nam' : 'Nữ'}</span>
+		),
 	},
 	{
 		accessorKey: 'address',
@@ -118,10 +129,18 @@ export const getTeacherscolumns = ({
 	{
 		accessorKey: 'dateCreate',
 		header: 'Ngày tạo',
+		cell: ({ row }) => {
+			const date = row.original.dateCreate || row.original.dateCreated;
+			return <span>{date ? formatDateToDDMMYYYY(date) : '_'}</span>;
+		},
 	},
 	{
 		accessorKey: 'dateUpdated',
 		header: 'Ngày cập nhật',
+		cell: ({ row }) => {
+			const date = row.original.dateUpdate || row.original.dateUpdated;
+			return <span>{date ? formatDateToDDMMYYYY(date) : '_'}</span>;
+		},
 	},
 	{
 		id: 'action',

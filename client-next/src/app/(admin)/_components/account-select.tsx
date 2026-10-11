@@ -50,13 +50,17 @@ export default function AccountSelect({
 		) => {
 			try {
 				const response = await accountApiRequest.accountsByRoleIdSchoolId(
-					selectedRoleId,
-					selectedSchoolId,
 					page,
-					size
+					size,
+					selectedRoleId ?? undefined,
+					selectedSchoolId ?? undefined
 				);
-				const data = response.payload.data;
-				const result = Array.isArray(data) ? data : [];
+				const resData = response.payload.data as any;
+				const result = Array.isArray(resData?.items)
+					? resData.items
+					: Array.isArray(resData)
+					? resData
+					: [];
 				if (isAppending) {
 					setAccounts((prev) => [...prev, ...result]);
 				} else {
@@ -88,7 +92,7 @@ export default function AccountSelect({
 					)}
 				>
 					{selectedAccount
-						? accounts.find((key) => key.accountId === selectedAccount)
+						? accounts.find((key) => (key.id ?? key.accountId) === selectedAccount)
 								?.email || selectedAccount
 						: 'Chọn email tài khoản...'}
 					<ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
@@ -103,26 +107,29 @@ export default function AccountSelect({
 						) : (
 							<>
 								<CommandGroup>
-									{accounts.map((key) => (
+									{accounts.map((key) => {
+										const accId = key.id ?? key.accountId ?? 0;
+										return (
 										<CommandItem
-											key={key.accountId}
-											value={String(key.accountId)}
+											key={accId}
+											value={String(accId)}
 											onSelect={() => {
-												onSelectedAccount(key.accountId);
-												setValue('ClassId', key.accountId);
+												onSelectedAccount(accId);
+												setValue('ClassId', accId);
 											}}
 										>
 											<Check
 												className={cn(
 													'mr-2 h-4 w-4',
-													key.accountId === selectedAccount
+													accId === selectedAccount
 														? 'opacity-100'
 														: 'opacity-0'
 												)}
 											/>
 											{key.email}
 										</CommandItem>
-									))}
+										);
+									})}
 								</CommandGroup>
 								{hasMore && (
 									<div className='flex justify-center p-2'>

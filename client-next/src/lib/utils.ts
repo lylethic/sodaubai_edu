@@ -99,9 +99,12 @@ export const formatDateToVietnam = (date: any) => {
 	return `${year}-${month}-${day}`;
 };
 
-export function formatDateToDDMMYYYY(dateString: Date | null): string {
+export function formatDateToDDMMYYYY(
+	dateString?: Date | string | null
+): string {
 	if (!dateString) return '_';
 	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return '_';
 	return new Intl.DateTimeFormat('vi-VN', {
 		day: '2-digit',
 		month: '2-digit',
@@ -113,12 +116,41 @@ export function formatDateToDDMMYYYY(dateString: Date | null): string {
 	}).format(date);
 }
 
-export function formatDateToDDMMYYYYNoTime(dateString: Date | null): string {
+export function formatDateToDDMMYYYYNoTime(
+	dateString?: Date | string | null
+): string {
 	if (!dateString) return '_';
 	const date = new Date(dateString);
+	if (isNaN(date.getTime())) return '_';
 	return new Intl.DateTimeFormat('vi-VN', {
 		day: '2-digit',
 		month: '2-digit',
 		year: 'numeric',
 	}).format(date);
 }
+
+/**
+ * Normalizes image paths to absolute URLs or relative paths starting with '/'
+ */
+export function getImageSrc(src?: string | null): string {
+	if (!src || !src.trim()) return '/images/programmer.png';
+	const trimmed = src.trim();
+
+	// Absolute web URLs (Cloudinary, external CDN, etc.)
+	if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+		return trimmed;
+	}
+
+	// Backend relative upload paths like 'Uploads/User/abc.jpg' or '/Uploads/User/abc.jpg'
+	if (trimmed.toLowerCase().includes('uploads/')) {
+		const relativePath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+		const backendHost =
+			process.env.NEXT_PUBLIC_API_ENDPOINT?.replace(/\/api\/?$/, '') ||
+			'http://localhost:5000';
+		return `${backendHost}${relativePath}`;
+	}
+
+	// Local frontend static assets (must start with leading '/')
+	return trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+}
+

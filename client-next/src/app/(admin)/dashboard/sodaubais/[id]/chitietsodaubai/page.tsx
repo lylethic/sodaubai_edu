@@ -21,18 +21,28 @@ type Props = {
 	searchParams: { [key: string]: string | string[] | undefined };
 };
 
-export default async function ChiTietSoDauBaiPage({ params }: Props) {
+export default async function ChiTietSoDauBaiPage({
+	params,
+	searchParams,
+}: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
 
 	let result = null;
-	if (!token) return;
+	if (!token) return null;
 
 	try {
 		const { payload } = await getInfoByBia(Number(params.id), token.value);
-		result = payload.data;
-		console.log(result);
+		result = Array.isArray(payload.data) ? payload.data[0] : payload.data;
 	} catch (error) {}
+
+	const academicYearId = searchParams?.academicYearId
+		? Number(searchParams.academicYearId)
+		: null;
+	const semesterId = searchParams?.semesterId
+		? Number(searchParams.semesterId)
+		: null;
+	const weekId = searchParams?.weekId ? Number(searchParams.weekId) : null;
 
 	return (
 		<Suspense fallback={<LoadingSpinner />}>
@@ -64,7 +74,7 @@ export default async function ChiTietSoDauBaiPage({ params }: Props) {
 					</CardContent>
 				</Card>
 			)}
-			<ChiTietSoDauBai />
+			<ChiTietSoDauBai filters={{ academicYearId, semesterId, weekId }} />
 		</Suspense>
 	);
 }

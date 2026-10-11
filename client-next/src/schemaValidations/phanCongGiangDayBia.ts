@@ -1,48 +1,52 @@
-import z from 'zod';
+import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
-const PhanCongGiangDaySchema = z.object({
-	phanCongGiangDayId: z.number(),
-	biaSoDauBaiId: z.number(),
-	teacherId: z.number(),
-	status: z.number(),
-	dateCreated: z.date().nullable(),
-	dateUpdated: z.date().nullable(),
+export const PhanCongGiangDaySchema = z.object({
+	id: z.number().optional(),
+	phanCongGiangDayId: z.number().default(0), // alias
+	biaSoDauBaiId: z.number().default(0),
+	teacherId: z.number().default(0),
+	fullname: z.string().optional().nullable(),
+	classId: z.number().optional().default(0),
+	className: z.string().optional().nullable(),
+	status: z.boolean().default(true),
+	dateCreated: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdated: z.union([z.string(), z.date()]).optional().nullable(),
 });
 
-export type PhanCongGiangDaySchemaResType = z.TypeOf<
-	typeof PhanCongGiangDaySchema
+export type PC_GiangDay_BiaSDBDto = z.infer<typeof PhanCongGiangDaySchema>;
+export type PhanCongGiangDaySchemaResType = PC_GiangDay_BiaSDBDto;
+
+export const PhanCongGiangDayRes = createApiResponseSchema(
+	PhanCongGiangDaySchema
+);
+export type PhanCongGiangDayResType = z.infer<typeof PhanCongGiangDayRes>;
+
+export const PhanCongGiangDayListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(PhanCongGiangDaySchema)
+);
+export type PhanCongGiangDayListResType = z.infer<
+	typeof PhanCongGiangDayListRes
 >;
 
-export const PhanCongGiangDayRes = z.object({
-	status: z.number(),
-	message: z.string(),
-	data: z.object({
-		phanCongGiangDayId: z.number(),
-		biaSoDauBaiId: z.number(),
-		teacherId: z.number(),
-		fullname: z.string(),
-		classId: z.number(),
-		className: z.string(),
-		status: z.boolean(),
-		dateCreated: z.date().nullable(),
-		dateUpdated: z.date().nullable(),
-	}),
-	pagination: z.object({
-		pageNumber: z.number(),
-		pageSize: z.number(),
-		totalPages: z.number(),
-		totalResults: z.number(),
-	}),
-});
-export type PhanCongGiangDayResType = z.TypeOf<typeof PhanCongGiangDayRes>;
+export const PhanCongGiangDayArrayRes = createApiResponseSchema(
+	z.array(PhanCongGiangDaySchema)
+);
+export type PhanCongGiangDayArrayResType = z.infer<
+	typeof PhanCongGiangDayArrayRes
+>;
 
 export const CreatePhanCongBody = z.object({
-	phanCongGiangDayId: z.number(),
-	biaSoDauBaiId: z.number(),
-	teacherId: z.number(),
-	status: z.boolean(),
+	id: z.number().optional(),
+	phanCongGiangDayId: z.number().optional(),
+	biaSoDauBaiId: z.number({ required_error: 'Vui lòng chọn sổ đầu bài' }),
+	teacherId: z.number({ required_error: 'Vui lòng chọn giáo viên' }),
+	status: z.boolean().default(true),
 });
-export type CreatePhanCongBodyType = z.TypeOf<typeof CreatePhanCongBody>;
+export type CreatePhanCongBodyType = z.infer<typeof CreatePhanCongBody>;
 
 export const UpdatePhanCongBody = CreatePhanCongBody;
-export type UpdatePhanCongBodyType = z.TypeOf<typeof UpdatePhanCongBody>;
+export type UpdatePhanCongBodyType = CreatePhanCongBodyType;

@@ -26,16 +26,18 @@ export async function generateMetadata(
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
+	const id = result?.id ?? result?.academicYearId;
+	const name = result?.name || result?.displayAcademicYearName || '';
 	const url =
 		envConfig.NEXT_PUBLIC_URL +
 		'/dashboard/academicyears/' +
-		result.academicYearId;
+		id;
 
 	return {
-		title: 'Năm học ' + result.displayAcademicYearName,
+		title: 'Năm học ' + name,
 		openGraph: {
 			...baseOpenGraph,
-			title: 'Năm học ' + result.displayAcademicYearName,
+			title: 'Năm học ' + name,
 			url,
 		},
 		alternates: {
@@ -77,7 +79,7 @@ export default async function AcademicYearDetailPage({
 							</Button>
 						</Link>
 						<Link
-							href={`/dashboard/academicyears/${result.academicYearId}/edit`}
+							href={`/dashboard/academicyears/${result.id ?? result.academicYearId}/edit`}
 							className='flex justify-center items-center my-4'
 						>
 							<Button
@@ -95,11 +97,11 @@ export default async function AcademicYearDetailPage({
 						<TableBody>
 							<TableRow>
 								<TableCell>Mã năm học</TableCell>
-								<TableCell>{result.academicYearId}</TableCell>
+								<TableCell>{result.id ?? result.academicYearId}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Tên hiển thị năm học</TableCell>
-								<TableCell>{result.displayAcademicYearName}</TableCell>
+								<TableCell>{result.name || result.displayAcademicYearName}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Thời gian bắt đầu</TableCell>

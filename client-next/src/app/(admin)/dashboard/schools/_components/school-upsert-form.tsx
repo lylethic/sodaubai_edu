@@ -44,14 +44,16 @@ export default function SchoolUpSertForm({ school }: { school?: SchoolType }) {
 	const form = useForm<CreateSchoolBodyType>({
 		resolver: zodResolver(CreateSchoolBody),
 		defaultValues: {
-			schoolId: school?.schoolId ?? 0,
+			schoolId: school?.id ?? school?.schoolId ?? 0,
 			provinceId: school?.provinceId,
 			districtId: school?.districtId,
-			nameSchool: school?.nameSchool ?? '',
+			nameSchool: (school?.name || school?.nameSchool) ?? '',
+			name: (school?.name || school?.nameSchool) ?? '',
 			address: school?.address ?? '',
 			phoneNumber: school?.phoneNumber,
 			schoolType: school?.schoolType,
 			description: school?.description ?? '',
+			level: school?.level ?? 3,
 			dateCreated: school?.dateCreated ? new Date(school.dateCreated) : null,
 			dateUpdated: school?.dateUpdated ? new Date(school.dateUpdated) : null,
 		},
@@ -75,8 +77,9 @@ export default function SchoolUpSertForm({ school }: { school?: SchoolType }) {
 		if (!school) return;
 		setLoading(true);
 		try {
+			const id = school.id ?? school.schoolId;
 			const response = await schoolApiRequest.updateSchool(
-				school.schoolId,
+				id!,
 				_values
 			);
 
@@ -184,6 +187,7 @@ export default function SchoolUpSertForm({ school }: { school?: SchoolType }) {
 									placeholder='Địa chỉ trường học...'
 									rows={3}
 									{...field}
+									value={field.value ?? ''}
 								/>
 							</FormControl>
 							<FormMessage />
@@ -214,7 +218,7 @@ export default function SchoolUpSertForm({ school }: { school?: SchoolType }) {
 						<FormItem>
 							<FormLabel>Phân loại trường học</FormLabel>
 							<Select
-								value={field.value}
+								value={field.value ?? undefined}
 								onValueChange={(value) => field.onChange(value)}
 							>
 								<SelectTrigger className='w-[180px]'>
@@ -247,6 +251,7 @@ export default function SchoolUpSertForm({ school }: { school?: SchoolType }) {
 									placeholder='Nhập ghi chú...'
 									rows={3}
 									{...field}
+									value={field.value ?? ''}
 								/>
 							</FormControl>
 							<FormMessage />

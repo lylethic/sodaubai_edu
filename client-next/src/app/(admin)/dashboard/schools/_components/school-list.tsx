@@ -22,15 +22,24 @@ import LoadingSpinner from '../../loading';
 
 type SchoolType = SchoolResType['data'];
 
-export default function SchoolsList() {
+interface SchoolsListProps {
+	initialSchools?: SchoolType[];
+	initialTotalCount?: number;
+}
+
+export default function SchoolsList({
+	initialSchools = [],
+	initialTotalCount = 0,
+}: SchoolsListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [selected, setSelected] = useState<SchoolType[]>([]);
-	const [data, setData] = useState<SchoolType[]>([]);
+	const [data, setData] = useState<SchoolType[]>(initialSchools);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] = useState<number>(initialTotalCount);
+	const isFirstMount = React.useRef(true);
 
 	const [rowToDelete, setRowToDelete] = useState<SchoolType | null>(null);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -44,10 +53,12 @@ export default function SchoolsList() {
 				query.pageNumber,
 				query.pageSize
 			);
-			const { data, pagination } = response.payload;
+			const payload = response.payload as any;
+			const items = payload?.data?.items || (Array.isArray(payload?.data) ? payload.data : []);
+			const total = payload?.data?.totalCount ?? payload?.pagination?.totalResults ?? 0;
 
-			setData(Array.isArray(data) ? data : []);
-			setTotalPageCount(pagination.totalResults ?? 0);
+			setData(items);
+			setTotalPageCount(total);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -58,16 +69,15 @@ export default function SchoolsList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await schoolApiRequest.deleteSchool(
-				rowToDelete.schoolId
-			);
+			const id = rowToDelete.id ?? rowToDelete.schoolId;
+			const response = await schoolApiRequest.deleteSchool(id);
 			toast({
 				description: response.payload.message,
 			});
 
 			// Update state
 			setData((prev) =>
-				prev.filter((item) => item.schoolId !== rowToDelete.schoolId)
+				prev.filter((item) => (item.id ?? item.schoolId) !== id)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -79,7 +89,7 @@ export default function SchoolsList() {
 
 	const handleEdit = useCallback(
 		(data: SchoolType) =>
-			router.push(`/dashboard/schools/${data.schoolId}/edit`),
+			router.push(`/dashboard/schools/${data.id ?? data.schoolId}/edit`),
 		[]
 	);
 
@@ -89,7 +99,7 @@ export default function SchoolsList() {
 	}, []);
 
 	const handleRedirectToDetail = useCallback(
-		(data: SchoolType) => router.push(`/dashboard/schools/${data.schoolId}`),
+		(data: SchoolType) => router.push(`/dashboard/schools/${data.id ?? data.schoolId}`),
 		[]
 	);
 
@@ -98,6 +108,12 @@ export default function SchoolsList() {
 	}, [pageNumber, pageSize]);
 
 	useEffect(() => {
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialSchools.length > 0 && pageNumber === 1 && pageSize === 20) {
+				return;
+			}
+		}
 		fetchData({ pageNumber, pageSize });
 	}, [pageNumber, pageSize]);
 
@@ -118,7 +134,7 @@ export default function SchoolsList() {
 			<StudentAddButton />
 			<SchoolUploadButton onSuccess={handleRefresh} />
 			<BulkDeleteSchoolDialog
-				selectedItems={selected.map((key) => key.schoolId)}
+				selectedItems={selected.map((key) => key.id ?? key.schoolId!)}
 				onDeleted={handleRefresh}
 			/>
 			<DataTable

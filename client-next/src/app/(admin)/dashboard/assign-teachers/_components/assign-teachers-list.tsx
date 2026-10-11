@@ -16,7 +16,6 @@ import DeleteAssignTeacher from './delete-assign-teacher';
 import FilterAssignTeachers from './filter-assign-teachers';
 import BulkDeleteAssignTeachersButton from './bulk-delete';
 
-type PhanCongListType = PhanCongChuNhiemListResType['data'];
 type PhanCongType = PhanCongChuNhiemResType['data'];
 
 interface FilterProps {
@@ -28,7 +27,7 @@ interface FilterProps {
 }
 
 export default function AssignTeachersList({ filters }: FilterProps) {
-	const [phanCongChuNhiems, setPhanCongChuNhiem] = useState<PhanCongListType>(
+	const [phanCongChuNhiems, setPhanCongChuNhiem] = useState<PhanCongType[]>(
 		[]
 	);
 	const router = useRouter();
@@ -38,7 +37,7 @@ export default function AssignTeachersList({ filters }: FilterProps) {
 	const [rowToDelete, setRowToDelete] = useState<PhanCongType | null>(null);
 
 	// This is use for delete 1.
-	const [selected, setSelected] = useState<PhanCongListType>([]);
+	const [selected, setSelected] = useState<PhanCongType[]>([]);
 
 	// filter params
 	const [selectedSchoolId, setSelectedSchoolId] = useState<number>(0);
@@ -77,11 +76,15 @@ export default function AssignTeachersList({ filters }: FilterProps) {
 				selectedClassId !== 0 ? selectedClassId : null
 			);
 
-			const data = response.payload.data;
-			const totalResults = response.payload.pagination?.totalResults;
+			const data = response.payload.data as any;
+			const items = data?.items ?? (Array.isArray(data) ? data : []);
+			const totalResults =
+				data?.totalCount ??
+				(response.payload as any).pagination?.totalResults ??
+				0;
 
 			setTotalPageCount(totalResults ? totalResults : 0);
-			setPhanCongChuNhiem(Array.isArray(data) ? data : []);
+			setPhanCongChuNhiem(items);
 		} catch (error: any) {
 			handleErrorApi({ error });
 		} finally {

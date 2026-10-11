@@ -18,22 +18,23 @@ type Props = {
 };
 
 export async function generateMetadata(
-	{ params, searchParams }: Props,
-	parent: ResolvingMetadata
+	{ params }: Props,
+	_parent: ResolvingMetadata
 ): Promise<Metadata> {
 	const cookieStore = cookies();
 	const accessToken = cookieStore.get('accessToken');
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
-	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/grades/' + result?.gradeId;
+	const gradeId = result?.id ?? result?.gradeId;
+	const gradeName = result?.name ?? result?.gradeName ?? '';
+	const url = envConfig.NEXT_PUBLIC_URL + '/dashboard/grades/' + gradeId;
 
 	return {
-		title: result.gradeName,
+		title: gradeName,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.gradeName,
+			title: gradeName,
 			url,
 		},
 		alternates: {
@@ -42,20 +43,23 @@ export async function generateMetadata(
 	};
 }
 
-export default async function GradeEditPage({ params }: Props) {
+export default async function GradeDetailPage({ params }: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
-	if (!token) return;
+	if (!token) return null;
 	let result = null;
 	try {
 		const { payload } = await getDetail(Number(params.id), token.value);
 		result = payload.data;
 	} catch (error) {}
 
+	const gradeId = result?.id ?? result?.gradeId;
+	const gradeName = result?.name ?? result?.gradeName;
+
 	return (
 		<div className='flex flex-col items-center justify-center'>
 			<h1 className='text-center mt-4 text-lg uppercase font-bold'>
-				Chỉnh sửa khối lớp
+				Chi tiết khối lớp
 			</h1>
 			<div className='flex items-center justify-center'>
 				<Link
@@ -67,17 +71,19 @@ export default async function GradeEditPage({ params }: Props) {
 						Quay về
 					</Button>
 				</Link>
-				<Link href={`/dashboard/grades/${result?.gradeId}/edit`}>
-					<Button
-						variant={'outline'}
-						type='button'
-						title='Chỉnh sửa'
-						className='bg-yellow-400 text-black ms-2'
-					>
-						Chỉnh sửa
-						<ArrowRight />
-					</Button>
-				</Link>
+				{gradeId && (
+					<Link href={`/dashboard/grades/${gradeId}/edit`}>
+						<Button
+							variant={'outline'}
+							type='button'
+							title='Chỉnh sửa'
+							className='bg-yellow-400 text-black ms-2'
+						>
+							Chỉnh sửa
+							<ArrowRight />
+						</Button>
+					</Link>
+				)}
 			</div>
 			{!result && <div>Không tìm thấy thông tin!</div>}
 			{result && (
@@ -86,7 +92,11 @@ export default async function GradeEditPage({ params }: Props) {
 						<TableBody>
 							<TableRow>
 								<TableCell>Mã khối lớp</TableCell>
-								<TableCell>{result.gradeId}</TableCell>
+								<TableCell>{gradeId}</TableCell>
+							</TableRow>
+							<TableRow>
+								<TableCell>Tên khối lớp</TableCell>
+								<TableCell>{gradeName}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Mã năm học</TableCell>

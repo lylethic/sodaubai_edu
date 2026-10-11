@@ -18,7 +18,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { rollcallApiRequest } from '@/apiRequests/rollcall';
-import { RollCallResType } from '@/schemaValidations/rollcall-schema';
+import {
+	RollCallDto,
+	RollCallResType,
+} from '@/schemaValidations/rollcall-schema';
 import { Trash2 } from 'lucide-react';
 
 export default function RollCallDeleteDialog({
@@ -26,7 +29,7 @@ export default function RollCallDeleteDialog({
 	onDelete,
 	disabled,
 }: {
-	data: RollCallResType['data'];
+	data: RollCallDto;
 	onDelete: (rollCallId: number) => void;
 	disabled: boolean;
 }) {
@@ -34,11 +37,12 @@ export default function RollCallDeleteDialog({
 
 	const confirmDelete = async () => {
 		try {
-			const { payload } = await rollcallApiRequest.delete(data.rollCallId);
+			const id = data.rollCallId ?? data.id ?? 0;
+			const { payload } = await rollcallApiRequest.delete(id);
 			toast({
 				description: payload.message,
 			});
-			onDelete(data.rollCallId);
+			onDelete(id);
 		} catch (error) {
 			handleErrorApi({ error });
 		}

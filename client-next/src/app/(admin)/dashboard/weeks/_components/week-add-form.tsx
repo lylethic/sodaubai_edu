@@ -55,8 +55,8 @@ export default function WeekAddForm({ week }: { week?: WeekType }) {
 		try {
 			const response = await weekApiRequest.create({
 				...values,
-				weekStart: new Date(values.weekStart),
-				weekEnd: new Date(values.weekEnd),
+				weekStart: values.weekStart ? new Date(values.weekStart) : undefined,
+				weekEnd: values.weekEnd ? new Date(values.weekEnd) : undefined,
 			});
 
 			toast({ description: response.payload.message });
@@ -74,8 +74,8 @@ export default function WeekAddForm({ week }: { week?: WeekType }) {
 		try {
 			const response = await weekApiRequest.update(week.weekId, {
 				..._values,
-				weekStart: new Date(_values.weekStart),
-				weekEnd: new Date(_values.weekEnd),
+				weekStart: _values.weekStart ? new Date(_values.weekStart) : undefined,
+				weekEnd: _values.weekEnd ? new Date(_values.weekEnd) : undefined,
 			});
 
 			toast({ description: response.payload.message });

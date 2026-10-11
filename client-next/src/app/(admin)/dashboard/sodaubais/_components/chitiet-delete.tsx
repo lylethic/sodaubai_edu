@@ -17,7 +17,10 @@ import {
 	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { ChiTietSoDauBaiResType } from '@/schemaValidations/chiTietSoDauBai.schema';
+import {
+	ChiTietSoDauBaiDto,
+	ChiTietSoDauBaiResType,
+} from '@/schemaValidations/chiTietSoDauBai.schema';
 import chiTietSoDauBaiApiRequest from '@/apiRequests/chiTietSoDauBai';
 import { Trash } from 'lucide-react';
 
@@ -25,19 +28,18 @@ export default function DeleteChiTietSoDauBai({
 	chitiet,
 	onDelete,
 }: {
-	chitiet: ChiTietSoDauBaiResType['data'];
+	chitiet: ChiTietSoDauBaiDto;
 	onDelete: (chiTietSoDauBaiId: number) => void;
 }) {
 	const { toast } = useToast();
 
 	const handleDelete = async () => {
 		try {
-			const result = await chiTietSoDauBaiApiRequest.delete(
-				chitiet.chiTietSoDauBaiId
-			);
+			const id = chitiet.chiTietSoDauBaiId ?? chitiet.id ?? 0;
+			const result = await chiTietSoDauBaiApiRequest.delete(id);
 			toast({ description: result.payload.message });
 
-			onDelete(chitiet.chiTietSoDauBaiId);
+			onDelete(id);
 		} catch (error: any) {
 			handleErrorApi({ error });
 		}

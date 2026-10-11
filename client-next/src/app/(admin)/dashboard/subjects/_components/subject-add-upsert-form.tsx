@@ -26,13 +26,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/navigation';
 import {
-	CreateStudentBody,
-	CreateStudentBodyType,
-	StudentResType,
-	UpdateStudentBodyType,
-} from '@/schemaValidations/student.schema';
-import { studentApiRequest } from '@/apiRequests/student';
-import {
 	CreateSubjectBody,
 	CreateSubjectBodyType,
 	SubjectResType,
@@ -50,15 +43,17 @@ export default function SubjectUpSertForm({
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
-	const [selectedSchoolId, setSelectedSchoolId] = useState<number | null>(0);
 
 	const form = useForm<CreateSubjectBodyType>({
 		resolver: zodResolver(CreateSubjectBody),
 		defaultValues: {
-			subjectId: subject?.gradeId ?? 0,
-			gradeId: subject?.gradeId,
-			subjectName: subject?.subjectName ?? '',
+			id: subject?.id ?? subject?.subjectId ?? 0,
+			subjectId: subject?.subjectId ?? subject?.id ?? 0,
+			gradeId: subject?.gradeId ?? null,
+			name: subject?.name ?? subject?.subjectName ?? '',
+			subjectName: subject?.subjectName ?? subject?.name ?? '',
 			status: subject?.status ?? true,
+			description: subject?.description ?? '',
 		},
 	});
 
@@ -80,8 +75,9 @@ export default function SubjectUpSertForm({
 		if (!subject) return;
 		setLoading(true);
 		try {
+			const idToUpdate = subject.id ?? subject.subjectId ?? 0;
 			const response = await subjectApiRequest.update(
-				subject.subjectId,
+				idToUpdate,
 				_values
 			);
 
@@ -121,9 +117,9 @@ export default function SubjectUpSertForm({
 							<FormControl>
 								<Input
 									type='number'
-									placeholder='Mã khối lớp...'
-									alt='Mã khối lớp...'
-									value={field.value}
+									placeholder='Mã môn học...'
+									alt='Mã môn học...'
+									value={field.value ?? 0}
 									disabled
 								/>
 							</FormControl>
@@ -142,7 +138,7 @@ export default function SubjectUpSertForm({
 									type='number'
 									placeholder='Mã khối lớp...'
 									alt='Mã khối lớp...'
-									value={field.value}
+									value={field.value ?? ''}
 									onChange={(e) => field.onChange(Number(e.target.value))}
 								/>
 							</FormControl>

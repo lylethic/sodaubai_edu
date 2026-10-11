@@ -1,7 +1,6 @@
 'use client';
 import { useToast } from '@/hooks/use-toast';
 import {
-	CreateLopHocBodyType,
 	LopHocSchemaType,
 	UpdateLopHocBody,
 	UpdateLopHocBodyType,
@@ -51,11 +50,11 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 	const form = useForm<UpdateLopHocBodyType>({
 		resolver: zodResolver(UpdateLopHocBody),
 		defaultValues: {
-			GradeId: lopHoc?.gradeId,
-			AcademicYearId: lopHoc?.academicYearId,
-			TeacherId: lopHoc?.teacherId,
-			SchoolId: lopHoc?.schoolId,
-			ClassName: lopHoc?.className,
+			GradeId: lopHoc?.gradeId ?? undefined,
+			AcademicYearId: lopHoc?.academicYearId ?? undefined,
+			TeacherId: lopHoc?.teacherId ?? undefined,
+			SchoolId: lopHoc?.schoolId ?? undefined,
+			ClassName: lopHoc?.className || lopHoc?.name || '',
 			Status: lopHoc?.status ?? true,
 			Description: lopHoc?.description ?? '',
 		},
@@ -69,9 +68,10 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 	const handleUpdateLopHoc = async (_values: UpdateLopHocBodyType) => {
 		if (!lopHoc) return;
 		setLoading(true);
-		let values = _values;
 		try {
-			const response = await lopHocApiRequest.update(Number(params.id), values);
+			const idToUpdate =
+				lopHoc.id ?? lopHoc.classId ?? Number(params.id);
+			const response = await lopHocApiRequest.update(idToUpdate, _values);
 
 			toast({ description: response.payload.message });
 			router.refresh();
@@ -86,24 +86,22 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 	useEffect(() => {
 		if (lopHoc) {
 			form.reset({
-				GradeId: lopHoc?.gradeId,
-				AcademicYearId: lopHoc?.academicYearId,
-				TeacherId: lopHoc?.teacherId,
-				SchoolId: lopHoc?.schoolId,
-				ClassName: lopHoc?.className,
+				GradeId: lopHoc?.gradeId ?? undefined,
+				AcademicYearId: lopHoc?.academicYearId ?? undefined,
+				TeacherId: lopHoc?.teacherId ?? undefined,
+				SchoolId: lopHoc?.schoolId ?? undefined,
+				ClassName: lopHoc?.className || lopHoc?.name || '',
 				Status: lopHoc?.status ?? true,
 				Description: lopHoc?.description ?? '',
 			});
 		} else {
 			form.reset();
 		}
-	}, [lopHoc]);
+	}, [lopHoc, form]);
 
 	async function onSubmit(values: UpdateLopHocBodyType) {
 		if (loading) return;
 		if (lopHoc) await handleUpdateLopHoc(values);
-
-		// console.log('Form Data:', form.getValues());
 	}
 
 	return (
@@ -131,7 +129,7 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 								<FormLabel>Năm học</FormLabel>
 								<FormControl>
 									<NamHocSelect
-										selectedNamHoc={field.value}
+										selectedNamHoc={field.value ?? null}
 										onSelectedNamHoc={(key) => field.onChange(key)}
 									/>
 								</FormControl>
@@ -147,7 +145,7 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 								<FormLabel>Trường học</FormLabel>
 								<FormControl>
 									<SchoolSelect
-										selectedSchoolId={field.value}
+										selectedSchoolId={field.value ?? null}
 										onSelectSchool={(schoolId) => field.onChange(schoolId)}
 									/>
 								</FormControl>
@@ -163,7 +161,7 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 								<FormLabel>Khối lớp học</FormLabel>
 								<FormControl>
 									<GradeSelect
-										selectedGradeId={field.value}
+										selectedGradeId={field.value ?? null}
 										onSelectedGrade={(gradeId) => field.onChange(gradeId)}
 									/>
 								</FormControl>
@@ -196,8 +194,8 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 								<FormLabel>Giáo viên chủ nhiệm</FormLabel>
 								<FormControl>
 									<TeachersBySchoolSelect
-										selectedSchoolId={selectedSchoolId}
-										selectedTeacherId={field.value}
+										selectedSchoolId={selectedSchoolId ?? 0}
+										selectedTeacherId={field.value ?? 0}
 										onSelectTeacher={(teacherId) => field.onChange(teacherId)}
 									/>
 								</FormControl>
@@ -216,7 +214,8 @@ export default function ClassEditForm({ params, lopHoc }: Props) {
 										className='resize-none'
 										rows={3}
 										placeholder='Ghi chú'
-										{...field}
+										value={field.value ?? ''}
+										onChange={field.onChange}
 									/>
 								</FormControl>
 							</FormItem>

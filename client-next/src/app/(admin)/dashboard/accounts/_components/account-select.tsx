@@ -40,8 +40,12 @@ const AccountSelect = ({
 	const getAccountsList = async () => {
 		try {
 			const response = await accountApiRequest.accountsSelect();
-			const data = response.payload.data;
-			const result = Array.isArray(data) ? data : [data];
+			const resData = response.payload.data as any;
+			const result = Array.isArray(resData?.items)
+				? resData.items
+				: Array.isArray(resData)
+				? resData
+				: [];
 
 			setAccounts(result);
 		} catch (error) {
@@ -66,7 +70,7 @@ const AccountSelect = ({
 						)}
 					>
 						{selectedAccount
-							? accounts.find((item) => item.accountId === selectedAccount)
+							? accounts.find((item) => (item.id ?? item.accountId) === selectedAccount)
 									?.email
 							: 'Chọn email cho tài khoản'}
 						<ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
@@ -80,26 +84,29 @@ const AccountSelect = ({
 								<CommandEmpty>Không tìm thấy.</CommandEmpty>
 							) : (
 								<CommandGroup>
-									{accounts.map((item) => (
+									{accounts.map((item) => {
+										const accId = item.id ?? item.accountId ?? 0;
+										return (
 										<CommandItem
-											value={String(item.accountId)}
-											key={item.schoolId}
+											value={String(accId)}
+											key={accId}
 											onSelect={() => {
-												onSelectAccount(item.accountId);
-												setValue('id', item.accountId);
+												onSelectAccount(accId);
+												setValue('id', accId);
 											}}
 										>
 											<Check
 												className={cn(
 													'mr-2 h-4 w-4',
-													item.accountId === selectedAccount
+													accId === selectedAccount
 														? 'opacity-100'
 														: 'opacity-0'
 												)}
 											/>
 											{item.email}
 										</CommandItem>
-									))}
+										);
+									})}
 								</CommandGroup>
 							)}
 						</CommandList>

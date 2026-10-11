@@ -26,7 +26,10 @@ import { weekApiRequest } from '@/apiRequests/week';
 import teacherApiRequest from '@/apiRequests/teacher';
 import { PhanCongMonHocApiRequest } from '@/apiRequests/phanCongMonHoc';
 import { DaysOfWeekResType } from '@/schemaValidations/week.schema';
-import { ChiTietSoDauBaiResType } from '@/schemaValidations/chiTietSoDauBai.schema';
+import {
+	ChiTietSoDauBaiDto,
+	normalizeChiTietSoDauBai,
+} from '@/schemaValidations/chiTietSoDauBai.schema';
 import chiTietSoDauBaiApiRequest from '@/apiRequests/chiTietSoDauBai';
 import FilterChiTietSodauBai from './filter-chi-tiet-sodaubai';
 import ChiTietSoDauBaiAddButton from './chi-tiet-so-dau-bai-add-button';
@@ -49,9 +52,9 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 
 	const [loading, setLoading] = useState(false);
 	const [chiTietSoDauBais, setChiTietSoDauBais] = useState<
-		ChiTietSoDauBaiResType['data'][]
+		ChiTietSoDauBaiDto[]
 	>([]);
-	const [daysOfWeek, setDaysOfWeek] = useState<DaysOfWeekResType['data'][]>([]);
+	const [daysOfWeek, setDaysOfWeek] = useState<DaysOfWeekResType['data']>([]);
 	const [selectedWeekId, setSelectedWeekId] = useState<number>(0);
 	const [selectedAcademicYearId, setSelectedAcademicYearId] =
 		useState<number>(0);
@@ -101,8 +104,9 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 				selectedWeekId,
 				Number(id)
 			);
-			const result = payload.data;
-			setChiTietSoDauBais(Array.isArray(result) ? result : []);
+			const result: any = payload.data;
+			const rawItems = Array.isArray(result) ? result : (result?.items ?? []);
+			setChiTietSoDauBais(rawItems.map(normalizeChiTietSoDauBai));
 		} catch (error: any) {
 			handleErrorApi({ error });
 		} finally {
@@ -130,7 +134,9 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 				const { payload } = await teacherApiRequest.teacherByAccountId(
 					user.accountId
 				);
-				setTeacherId(payload.data.teacherId);
+				if (payload.data?.teacherId) {
+					setTeacherId(payload.data.teacherId);
+				}
 			}
 		} catch (error) {
 			handleErrorApi({ error });
@@ -211,7 +217,10 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 
 										return compareToRecord.length > 0 ? (
 											compareToRecord.map((key) => {
-												const createdAtVN = addHours(key.createdAt, 7);
+												const createdAt = key.createdAt || key.dateCreated;
+												const createdAtVN = createdAt
+													? addHours(new Date(createdAt), 7)
+													: new Date();
 												const isDisabled =
 													differenceInHours(new Date(), createdAtVN) > 2;
 
@@ -329,7 +338,11 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 
 										return compareToRecord.length > 0 ? (
 											compareToRecord.map((record, index) => {
-												const createdAtVN = addHours(record.createdAt, 7);
+												const createdAt =
+													record.createdAt || record.dateCreated;
+												const createdAtVN = createdAt
+													? addHours(new Date(createdAt), 7)
+													: new Date();
 												const isDisabled =
 													differenceInHours(new Date(), createdAtVN) > 2;
 

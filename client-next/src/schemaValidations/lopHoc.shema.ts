@@ -1,79 +1,65 @@
 import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
 export const LopHocSchema = z.object({
-	classId: z.number(),
-	gradeId: z.number(),
-	teacherId: z.number(),
-	academicYearId: z.number(),
-	schoolId: z.number(),
-	className: z.string(),
-	status: z.boolean(),
-	description: z.string().optional(),
-	dateCreated: z.date().optional().nullable(),
-	dateUpdated: z.date().optional().nullable(),
+	id: z.number().optional(),
+	classId: z.number().default(0),
+	name: z.string().optional(),
+	className: z.string().default(''),
+	gradeId: z.number().optional().nullable(),
+	gradeName: z.string().optional().nullable(),
+	teacherId: z.number().optional().nullable(),
+	teacherName: z.string().optional().nullable(),
+	academicYearId: z.number().optional().nullable(),
+	nienKhoa: z.string().optional().nullable(),
+	schoolId: z.number().optional().nullable(),
+	schoolName: z.string().optional().nullable(),
+	schoolLevel: z.number().optional().nullable(),
+	status: z.boolean().default(true),
+	description: z.string().optional().nullable(),
+	dateCreated: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdated: z.union([z.string(), z.date()]).optional().nullable(),
 });
 
-export type LopHocSchemaType = z.TypeOf<typeof LopHocSchema>;
+export type LopHocSchemaType = z.infer<typeof LopHocSchema>;
+export type ClassDetailsDto = LopHocSchemaType;
+export type ClassDto = LopHocSchemaType;
 
-const LopHocDetail = z.object({
-	classId: z.number(),
-	schoolId: z.number(),
-	schoolName: z.string(),
-	teacherId: z.number(),
-	teacherName: z.string(),
-	gradeId: z.number(),
-	gradeName: z.string(),
-	nienKhoa: z.string(),
-	academicYearId: z.number(),
-	className: z.string(),
-	status: z.boolean(),
-	description: z.string().optional(),
-	dateCreated: z.date().optional(),
-	dateUpdated: z.date().optional(),
-});
+export const LopHocRes = createApiResponseSchema(LopHocSchema);
+export type LopHocResType = z.infer<typeof LopHocRes>;
 
-const LopHocRes = z
-	.object({
-		message: z.string(),
-		data: LopHocDetail,
-		pagination: z
-			.object({
-				pageNumber: z.number(),
-				pageSize: z.number(),
-				totalResults: z.number(),
-				totalPages: z.number(),
-			})
-			.optional()
-			.nullable(),
-	})
-	.strict();
+export const LopHocListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(LopHocSchema)
+);
+export type LopHocListResType = z.infer<typeof LopHocListRes>;
 
-export type LopHocResType = z.TypeOf<typeof LopHocRes>;
-
-const LopHocResDetailsToUpdate = z.object({
-	message: z.string(),
-	data: LopHocSchema,
-});
-export type LopHocResDetailsToUpdateType = z.TypeOf<
-	typeof LopHocResDetailsToUpdate
->;
+export const LopHocResDetailsToUpdate = LopHocRes;
+export type LopHocResDetailsToUpdateType = LopHocResType;
 
 export const CreateLopHocBody = z.object({
-	GradeId: z.number(),
-	TeacherId: z.number(),
-	AcademicYearId: z.number(),
-	SchoolId: z.number(),
-	ClassName: z.string(),
-	Status: z.boolean(),
-	Description: z.string(),
+	id: z.number().optional(),
+	classId: z.number().optional(),
+	className: z.string().optional(),
+	ClassName: z.string().optional(),
+	name: z.string().optional(),
+	gradeId: z.number().optional(),
+	GradeId: z.number().optional(),
+	teacherId: z.number().optional(),
+	TeacherId: z.number().optional(),
+	academicYearId: z.number().optional(),
+	AcademicYearId: z.number().optional(),
+	schoolId: z.number().optional(),
+	SchoolId: z.number().optional(),
+	status: z.boolean().optional(),
+	Status: z.boolean().optional(),
+	description: z.string().optional().nullable(),
+	Description: z.string().optional().nullable(),
 });
 
-export type CreateLopHocBodyType = z.TypeOf<typeof CreateLopHocBody>;
-
-export const LopHocListRes = z.object({
-	message: z.string(),
-	data: z.array(LopHocSchema),
-});
+export type CreateLopHocBodyType = z.infer<typeof CreateLopHocBody>;
 
 export const UpdateLopHocBody = CreateLopHocBody;
-export type UpdateLopHocBodyType = z.TypeOf<typeof UpdateLopHocBody>;
+export type UpdateLopHocBodyType = z.infer<typeof UpdateLopHocBody>;

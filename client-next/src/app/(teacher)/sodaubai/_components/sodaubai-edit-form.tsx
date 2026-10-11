@@ -123,7 +123,7 @@ export default function SoDauBaiEditForm({ params, biaSoDauBai }: Props) {
 							<FormItem>
 								<FormLabel>Trường học</FormLabel>
 								<SchoolSelect
-									selectedSchoolId={field.value}
+									selectedSchoolId={field.value ?? null}
 									onSelectSchool={(schoolId) => field.onChange(schoolId)}
 								/>
 								<FormMessage />
@@ -137,8 +137,8 @@ export default function SoDauBaiEditForm({ params, biaSoDauBai }: Props) {
 							<FormItem>
 								<FormLabel>Mã lớp học</FormLabel>
 								<LopHocSelect
-									selectedClassId={field.value}
-									selectedSchoolId={selectedSchoolId}
+									selectedClassId={field.value ?? null}
+									selectedSchoolId={selectedSchoolId ?? null}
 									onSelectedLopHoc={(item) => field.onChange(item)}
 								/>
 								<FormMessage />
@@ -153,7 +153,7 @@ export default function SoDauBaiEditForm({ params, biaSoDauBai }: Props) {
 							<FormItem>
 								<FormLabel>Năm học</FormLabel>
 								<NamHocSelect
-									selectedNamHoc={field.value}
+									selectedNamHoc={field.value ?? null}
 									onSelectedNamHoc={(key) => field.onChange(key)}
 								/>
 								<FormMessage />

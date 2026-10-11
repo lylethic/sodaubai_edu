@@ -25,8 +25,9 @@ export async function generateMetadata(
 	const { payload } = await getDetailAccount(Number(params.id), accessToken);
 
 	const account = payload.data;
+	const accountId = account.id ?? account.accountId;
 	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/accounts/' + account.accountId;
+		envConfig.NEXT_PUBLIC_URL + '/dashboard/accounts/' + accountId;
 	return {
 		title: account.email,
 		openGraph: {

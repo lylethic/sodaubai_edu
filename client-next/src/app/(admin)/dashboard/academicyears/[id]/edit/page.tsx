@@ -25,16 +25,18 @@ export async function generateMetadata(
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
+	const id = result?.id ?? result?.academicYearId;
+	const name = result?.name || result?.displayAcademicYearName || '';
 	const url =
 		envConfig.NEXT_PUBLIC_URL +
 		'/dashboard/academicyears/' +
-		result.academicYearId;
+		id;
 
 	return {
-		title: 'Năm học ' + result.displayAcademicYearName,
+		title: 'Năm học ' + name,
 		openGraph: {
 			...baseOpenGraph,
-			title: 'Năm học ' + result.displayAcademicYearName,
+			title: 'Năm học ' + name,
 			url,
 		},
 		alternates: {

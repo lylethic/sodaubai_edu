@@ -1,66 +1,70 @@
 'use client';
-import { isClient } from '@/lib/http';
+// import { isClient } from '@/lib/http';
 import { AccountResType } from '@/schemaValidations/account.schema';
 import {
-	createContext,
-	useCallback,
-	useContext,
-	useEffect,
-	useState,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from 'react';
 
 type User = AccountResType['data'];
 
 const AppContext = createContext<{
-	user: User | null;
-	setUser: (user: User | null) => void;
-	isAuthenticated: boolean;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  isAuthenticated: boolean;
 }>({
-	user: null,
-	setUser: () => {},
-	isAuthenticated: false,
+  user: null,
+  setUser: () => {},
+  isAuthenticated: false,
 });
 
 export const useAppContext = () => {
-	const context = useContext(AppContext);
-	return context;
+  const context = useContext(AppContext);
+  return context;
 };
 
 export default function AppProvider({
-	children,
+  children,
 }: {
-	children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-	const [user, setUserState] = useState<User | null>(() => {
-		// if (isClient()) {
-		//   const _user = localStorage.getItem('user')
-		//   return _user ? JSON.parse(_user) : null
-		// }
-		return null;
-	});
-	const isAuthenticated = Boolean(user);
-	const setUser = useCallback(
-		(user: User | null) => {
-			setUserState(user);
-			localStorage.setItem('user', JSON.stringify(user));
-		},
-		[setUserState]
-	);
+  const [user, setUserState] = useState<User | null>(() => {
+    // if (isClient()) {
+    //   const _user = localStorage.getItem('user')
+    //   return _user ? JSON.parse(_user) : null
+    // }
+    return null;
+  });
+  const isAuthenticated = Boolean(user);
+  const setUser = useCallback(
+    (user: User | null) => {
+      setUserState(user);
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('user');
+      }
+    },
+    [setUserState],
+  );
 
-	useEffect(() => {
-		const _user = localStorage.getItem('user');
-		setUserState(_user ? JSON.parse(_user) : null);
-	}, [setUserState]);
+  useEffect(() => {
+    const _user = localStorage.getItem('user');
+    setUserState(_user ? JSON.parse(_user) : null);
+  }, [setUserState]);
 
-	return (
-		<AppContext.Provider
-			value={{
-				user,
-				setUser,
-				isAuthenticated,
-			}}
-		>
-			{children}
-		</AppContext.Provider>
-	);
+  return (
+    <AppContext.Provider
+      value={{
+        user,
+        setUser,
+        isAuthenticated,
+      }}
+    >
+      {children}
+    </AppContext.Provider>
+  );
 }

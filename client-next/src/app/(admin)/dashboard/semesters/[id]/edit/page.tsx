@@ -25,14 +25,16 @@ export async function generateMetadata(
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
+	const id = result?.semesterId ?? result?.id;
+	const semesterName = result?.semesterName || result?.name || '';
 	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/semesters/' + result.semesterId;
+		envConfig.NEXT_PUBLIC_URL + '/dashboard/semesters/' + id;
 
 	return {
-		title: result.semesterName + ' - ' + result.displayAcademicYearName,
+		title: semesterName,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.semesterName + ' - ' + result.displayAcademicYearName,
+			title: semesterName,
 			url,
 		},
 		alternates: {

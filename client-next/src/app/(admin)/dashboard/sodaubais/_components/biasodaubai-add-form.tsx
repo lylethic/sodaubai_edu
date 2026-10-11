@@ -147,7 +147,7 @@ export default function BiaSoDauBaiAddForm({
 								<FormItem>
 									<FormLabel>Trường học</FormLabel>
 									<SchoolSelect
-										selectedSchoolId={field.value}
+										selectedSchoolId={field.value ?? null}
 										onSelectSchool={(schoolId) => field.onChange(schoolId)}
 									/>
 									<FormMessage />
@@ -161,8 +161,8 @@ export default function BiaSoDauBaiAddForm({
 								<FormItem>
 									<FormLabel>Mã lớp học</FormLabel>
 									<LopHocSelect
-										selectedClassId={field.value}
-										selectedSchoolId={selectedSchoolId}
+										selectedClassId={field.value ?? null}
+										selectedSchoolId={selectedSchoolId ?? null}
 										onSelectedLopHoc={(item) => field.onChange(item)}
 									/>
 									<FormMessage />
@@ -178,7 +178,7 @@ export default function BiaSoDauBaiAddForm({
 									<FormLabel>Năm học</FormLabel>
 									<FormControl>
 										<NamHocSelect
-											selectedNamHoc={field.value}
+											selectedNamHoc={field.value ?? null}
 											onSelectedNamHoc={(key) => field.onChange(key)}
 										/>
 									</FormControl>

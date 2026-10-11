@@ -65,11 +65,18 @@ const LoginForm = () => {
 				description: result.payload.message,
 			});
 
+			const rawAccountId = decodeToken.AccountId ?? decodeToken.UserId ?? decodeToken.id;
+			const accountIdNum = rawAccountId ? Number(rawAccountId) : 0;
+			const roleIdNum = decodeToken.RoleId ? Number(decodeToken.RoleId) : undefined;
+			const schoolIdNum = decodeToken.SchoolId ? Number(decodeToken.SchoolId) : null;
+			const emailStr = decodeToken.Email || decodeToken.email || values.Email;
+
 			setUser({
-				accountId: decodeToken.AccountId,
-				roleId: decodeToken.RoleId,
-				schoolId: decodeToken.SchoolId,
-				email: decodeToken.Email,
+				id: accountIdNum,
+				accountId: accountIdNum,
+				roleId: roleIdNum,
+				schoolId: schoolIdNum,
+				email: emailStr,
 			});
 			router.push('/sodaubai');
 			router.refresh();

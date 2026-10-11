@@ -44,15 +44,17 @@ export default function StudentsList() {
 				query,
 				selectedSchoolId
 			);
-			const { status, data, pagination } = payload;
-			const totalResults = pagination?.totalResults;
+			const { status, data, pagination } = payload as any;
+			const items = data?.items ?? (Array.isArray(data) ? data : []);
+			const totalResults =
+				data?.totalCount ?? pagination?.totalResults ?? 0;
 
-			if ((!data && status === 404) || Array(data).length === 0) {
+			if ((!data && status === 404) || items.length === 0) {
 				setData([]);
 				setTotalPageCount(0);
 			} else {
-				setData(Array.isArray(data) ? data : []);
-				setTotalPageCount(totalResults ?? 0);
+				setData(items);
+				setTotalPageCount(totalResults);
 			}
 		} catch (error) {
 			handleErrorApi({ error });

@@ -25,14 +25,16 @@ export async function generateMetadata(
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
+	const schoolId = result?.id ?? result?.schoolId;
+	const schoolName = result?.name || result?.nameSchool || '';
 	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/schools/' + result?.schoolId;
+		envConfig.NEXT_PUBLIC_URL + '/dashboard/schools/' + schoolId;
 
 	return {
-		title: result.nameSchool,
+		title: schoolName,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.nameSchool,
+			title: schoolName,
 			url,
 		},
 		alternates: {

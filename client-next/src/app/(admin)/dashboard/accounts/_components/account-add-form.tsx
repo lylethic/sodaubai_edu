@@ -42,7 +42,7 @@ export default function AccountAddForm({ account }: { account?: Account }) {
 			RoleId: account?.roleId ?? 0,
 			SchoolId: account?.schoolId ?? 0,
 			Email: account?.email ?? '',
-			Password: account?.password ?? '',
+			Password: '',
 		},
 	});
 
@@ -87,7 +87,7 @@ export default function AccountAddForm({ account }: { account?: Account }) {
 							<FormLabel>Vai trò</FormLabel>
 							<FormControl>
 								<RoleSelect
-									selectedRoleId={field.value}
+									selectedRoleId={field.value ?? null}
 									onSelectRole={(roleId) => field.onChange(roleId)}
 								/>
 							</FormControl>
@@ -102,7 +102,7 @@ export default function AccountAddForm({ account }: { account?: Account }) {
 						<FormItem>
 							<FormLabel>Trường học</FormLabel>
 							<SchoolSelect
-								selectedSchoolId={field.value}
+								selectedSchoolId={field.value ?? null}
 								onSelectSchool={(schoolId) => field.onChange(schoolId)}
 							/>
 							<FormMessage />
