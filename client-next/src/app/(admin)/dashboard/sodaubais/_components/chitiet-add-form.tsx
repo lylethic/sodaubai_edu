@@ -162,7 +162,7 @@ export default function ChiTietSodauBaiAddForm({
 								<FormItem>
 									<FormLabel>Học kỳ</FormLabel>
 									<SemesterSelect
-										selected={field.value}
+										selected={field.value ?? null}
 										onSelectedSemester={(semesterId) =>
 											field.onChange(semesterId)
 										}
@@ -177,7 +177,7 @@ export default function ChiTietSodauBaiAddForm({
 								<FormItem>
 									<FormLabel>Tuần học</FormLabel>
 									<WeekSelect
-										selectedWeekId={field.value}
+										selectedWeekId={field.value ?? null}
 										onSelectWeek={(weekId) => field.onChange(weekId)}
 									/>
 								</FormItem>
@@ -240,7 +240,7 @@ export default function ChiTietSodauBaiAddForm({
 								<FormItem>
 									<FormLabel>Môn học</FormLabel>
 									<SubjectSelect
-										selected={field.value}
+										selected={field.value ?? null}
 										onSelectedSubject={(subjectId) => field.onChange(subjectId)}
 									/>
 								</FormItem>
@@ -270,7 +270,7 @@ export default function ChiTietSodauBaiAddForm({
 								<FormItem>
 									<FormLabel>Xếp loại tiết học</FormLabel>
 									<XepLoaiTietHocSelect
-										selected={field.value}
+										selected={field.value ?? null}
 										onSelectedClassify={(classificationId) =>
 											field.onChange(classificationId)
 										}
@@ -348,6 +348,7 @@ export default function ChiTietSodauBaiAddForm({
 											placeholder='Ký tên...'
 											type='text'
 											{...field}
+											value={field.value ?? ''}
 											onChange={(e) => field.onChange(Number(e.target.value))}
 										/>
 									</FormControl>

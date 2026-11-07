@@ -58,10 +58,15 @@ export function SearchTeacherForm({
 				query
 			);
 
-			const { data, pagination } = response.payload;
-			const accountsArray = Array.isArray(data) ? data : [data];
+			const data = response.payload.data as any;
+			const accountsArray =
+				data?.items ?? (Array.isArray(data) ? data : []);
+			const totalResults =
+				data?.totalCount ??
+				(response.payload as any).pagination?.totalResults ??
+				0;
 
-			onSearchResults(accountsArray, pagination.totalResults);
+			onSearchResults(accountsArray, totalResults);
 		} catch (error: any) {
 			handleErrorApi({ error });
 		} finally {

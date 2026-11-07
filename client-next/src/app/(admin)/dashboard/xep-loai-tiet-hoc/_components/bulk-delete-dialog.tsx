@@ -14,8 +14,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Trash2Icon } from 'lucide-react';
-import { studentApiRequest } from '@/apiRequests/student';
-import schoolApiRequest from '@/apiRequests/school';
 import { xepLoaiApiRequest } from '@/apiRequests/xeploaiTiethoc';
 
 type Props = {
@@ -57,7 +55,7 @@ export default function BulkDeleteClassifyDialog(props: Props) {
 				<AlertDialogHeader>
 					<AlertDialogTitle>Bạn có muốn xóa các xếp loại này?</AlertDialogTitle>
 					<AlertDialogDescription>
-						Các trường học đã chọn sẽ bị xóa vĩnh viễn.
+						Các điểm xếp loại đã chọn sẽ bị xóa vĩnh viễn.
 					</AlertDialogDescription>
 				</AlertDialogHeader>
 				<AlertDialogFooter>

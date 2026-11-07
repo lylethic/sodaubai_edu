@@ -1,6 +1,6 @@
 'use client';
 
-import React, { Suspense, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import {
 	FormControl,
 	FormField,
@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { handleErrorApi } from '@/lib/utils';
+import { getImageSrc, handleErrorApi } from '@/lib/utils';
 import {
 	UpdateTeacherBody,
 	UpdateTeacherBodyType,
@@ -34,6 +34,7 @@ import teacherApiRequest from '@/apiRequests/teacher';
 import { ArrowLeft } from 'lucide-react';
 import LoadingSpinner from '@/app/(admin)/dashboard/loading';
 import Image from 'next/image';
+import schoolApiRequest from '@/apiRequests/school';
 
 type Props = {
 	params: { id: string };
@@ -47,37 +48,60 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 	const [loading, setLoading] = useState(false);
 	const { toast } = useToast();
 	const router = useRouter();
+	const [schoolName, setSchoolName] = useState<string>('');
 
 	const form = useForm<UpdateTeacherBodyType>({
 		resolver: zodResolver(UpdateTeacherBody),
 		defaultValues: {
 			teacherId: teacher?.teacherId ?? 0,
-			accountId: teacher?.accountId ?? 0,
+			userId: teacher?.userId ?? teacher.userId,
 			schoolId: teacher?.schoolId ?? 0,
 			fullname: teacher?.fullname,
 			dateOfBirth: teacher?.dateOfBirth,
 			gender: teacher?.gender,
 			address: teacher?.address,
 			status: teacher?.status,
-			dateCreate: teacher?.dateCreate,
-			dateUpdate: teacher?.dateUpdate,
 			photoPath: teacher?.photoPath,
 		},
 	});
 
+	const fetchSchool = async (schoolId: number) => {
+		if (!schoolId) {
+			setSchoolName('');
+			return;
+		}
+		try {
+			const { payload } = await schoolApiRequest.getNameOfSchool(schoolId);
+			const name =
+				(payload as any)?.data?.nameSchool ??
+				(payload as any)?.data?.name ??
+				(payload as any)?.nameSchool ??
+				'';
+			setSchoolName(name);
+		} catch (error) {
+			console.error('Không thể lấy tên trường:', error);
+		}
+	};
+
+	useEffect(() => {
+		if (teacher?.schoolId) {
+			fetchSchool(teacher.schoolId);
+		}
+	}, [teacher?.schoolId]);
+
 	if (!teacher) {
 		return <div>Không tìm thấy giáo viên</div>;
 	}
-
 	const updateTeacher = async (data: UpdateTeacherBodyType) => {
 		setLoading(true);
 		try {
 			const result = await teacherApiRequest.update(Number(params.id), {
 				teacherId: data.teacherId,
-				accountId: data.accountId,
 				schoolId: data.schoolId,
 				fullname: data.fullname,
-				dateOfBirth: new Date(data.dateOfBirth),
+				dateOfBirth: data.dateOfBirth
+					? new Date(data.dateOfBirth)
+					: undefined,
 				gender: data.gender,
 				address: data.address,
 				status: data.status,
@@ -98,6 +122,9 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 	async function onSubmit(values: UpdateTeacherBodyType) {
 		if (loading) return;
 		await updateTeacher(values);
+		if (values.schoolId) {
+			await fetchSchool(values.schoolId);
+		}
 	}
 
 	return (
@@ -145,11 +172,7 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 												) : (
 													<div className='flex items-center justify-center w-32 h-32 rounded-full overflow-hidden border'>
 														<Image
-															src={
-																teacher.photoPath instanceof File
-																	? URL.createObjectURL(teacher.photoPath)
-																	: teacher.photoPath ?? ''
-															}
+															src={getImageSrc(teacher.photoPath)}
 															className='object-cover'
 															placeholder='empty'
 															alt={`Ảnh của giáo viên ${teacher.fullname}`}
@@ -198,6 +221,7 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 											<FormControl>
 												<Input
 													type='number'
+                          disabled
 													placeholder='Nhập mã giáo viên...'
 													{...field}
 													value={
@@ -220,14 +244,15 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 								/>
 								<FormField
 									control={form.control}
-									name='accountId'
+									name='userId'
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Nhập tài khoản</FormLabel>
+											<FormLabel>Nhập mã tài khoản người dùng</FormLabel>
 											<FormControl>
 												<Input
-													placeholder='Nhập mã tài khoản...'
-													type='number'
+													placeholder='Nhập mã tài khoản người dùng...'
+													disabled
+                          type='number'
 													{...field}
 													value={
 														field.value !== undefined
@@ -249,20 +274,37 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 								/>
 							</div>
 
-							<FormField
+							{/* <FormField
 								control={form.control}
 								name='schoolId'
 								render={({ field }) => (
 									<FormItem>
 										<FormLabel>Trường học</FormLabel>
 										<SchoolSelect
-											selectedSchoolId={field.value}
-											onSelectSchool={(schoolId) => field.onChange(schoolId)}
+											selectedSchoolId={field.value ?? null}
+											onSelectSchool={(schoolId) => {
+												field.onChange(schoolId);
+												if (schoolId) {
+													fetchSchool(schoolId);
+												}
+											}}
 										/>
 										<FormMessage />
 									</FormItem>
 								)}
-							/>
+							/> */}
+
+							<FormItem>
+								<FormLabel>Tên trường hiện tại</FormLabel>
+								<FormControl>
+									<Input
+										value={schoolName}
+										placeholder='Chưa có thông tin trường'
+										readOnly
+										disabled
+									/>
+								</FormControl>
+							</FormItem>
 
 							<FormField
 								control={form.control}
@@ -357,10 +399,44 @@ export default function TeacherUpdateForm({ params, teacher }: Props) {
 											<Textarea
 												placeholder='Nhập địa chỉ'
 												{...field}
+												value={field.value ?? ''}
 												className='resize-none'
 												rows={5}
 											/>
 										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name='status'
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Trạng thái</FormLabel>
+										<Select
+                    disabled
+											value={
+												field.value !== undefined
+													? field.value
+														? '1'
+														: '0'
+													: '1'
+											}
+											onValueChange={(value) => field.onChange(value === '1')}
+										>
+											<SelectTrigger className='w-full'>
+												<SelectValue placeholder='Chọn trạng thái' />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectGroup>
+													<SelectLabel>Trạng thái</SelectLabel>
+													<SelectItem value='1'>Hoạt động</SelectItem>
+													<SelectItem value='0'>Tạm khóa</SelectItem>
+												</SelectGroup>
+											</SelectContent>
+										</Select>
 										<FormMessage />
 									</FormItem>
 								)}

@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { handleErrorApi } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import {
+	ChiTietSoDauBaiDto,
 	UpdateChiTietBody,
 	UpdateChiTietBodyType,
 } from '@/schemaValidations/chiTietSoDauBai.schema';
@@ -30,7 +31,7 @@ interface Props {
 	params: {
 		chiTietSoDauBaiId: string;
 	};
-	chiTietSoDauBai: UpdateChiTietBodyType;
+	chiTietSoDauBai: ChiTietSoDauBaiDto;
 }
 
 export default function ChiTietEditForm({ params, chiTietSoDauBai }: Props) {
@@ -309,6 +310,7 @@ export default function ChiTietEditForm({ params, chiTietSoDauBai }: Props) {
 										placeholder='Ký tên...'
 										type='text'
 										{...field}
+										value={field.value ?? ''}
 										onChange={(e) => field.onChange(Number(e.target.value))}
 									/>
 								</FormControl>

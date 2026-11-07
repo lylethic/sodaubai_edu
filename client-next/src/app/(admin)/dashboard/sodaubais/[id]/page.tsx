@@ -28,15 +28,16 @@ export async function generateMetadata(
 	const { payload } = await biaSoDauBaiDetails(Number(params.id), accessToken);
 
 	const result = payload.data;
+	const title = result.className || 'Chi tiết sổ đầu bài';
 	const url =
 		envConfig.NEXT_PUBLIC_URL +
 		'/dashboard/biasodaubais/' +
 		result.biaSoDauBaiId;
 	return {
-		title: result.className,
+		title: title,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.className,
+			title: title,
 			url,
 		},
 		alternates: {
@@ -128,11 +129,11 @@ export default async function BiaSoDauBaiDetailsPage({ params }: Props) {
 							</TableRow>
 							<TableRow>
 								<TableCell>Ngày tạo</TableCell>
-								<TableCell>{biaSoDauBai.dateCreated}</TableCell>
+								<TableCell>{biaSoDauBai.dateCreated ? String(biaSoDauBai.dateCreated) : '-'}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Ngày cập nhật</TableCell>
-								<TableCell>{biaSoDauBai.dateUpdated}</TableCell>
+								<TableCell>{biaSoDauBai.dateUpdated ? String(biaSoDauBai.dateUpdated) : '-'}</TableCell>
 							</TableRow>
 						</TableBody>
 					</Table>

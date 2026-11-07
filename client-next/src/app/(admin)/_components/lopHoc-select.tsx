@@ -42,7 +42,8 @@ export default function LopHocSelect({
 					selectedSchoolId
 				);
 				const data = response.payload.data;
-				const result = Array.isArray(data) ? data : [];
+				const result =
+					(data as any)?.items || (Array.isArray(data) ? data : []);
 				setLopHocs(result);
 			} catch (error: any) {
 				handleErrorApi({ error });

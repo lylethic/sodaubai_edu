@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
 import { handleErrorApi } from '@/lib/utils';
-import { StudentListResType } from '@/schemaValidations/student.schema';
+import { StudentResType } from '@/schemaValidations/student.schema';
 import { PlusCircle } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 
@@ -49,7 +49,7 @@ export default function StudentList({
 	onSelectStudents,
 }: Props) {
 	const [loading, setLoading] = useState(false);
-	const [students, setStudents] = useState<StudentListResType['data']>([]);
+	const [students, setStudents] = useState<StudentResType['data'][]>([]);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
 	const [totalPageCount, setTotalPageCount] = useState<number>(0);
@@ -87,9 +87,9 @@ export default function StudentList({
 				Number(classId)
 			);
 
-			const { data, pagination } = response.payload;
+			const { data } = response.payload;
 			const results = Array.isArray(data) ? data : [];
-			const totalResults = pagination.totalResults;
+			const totalResults = results.length;
 
 			setStudents(results);
 			setTotalPageCount(totalResults ? Math.ceil(totalResults) : 0);

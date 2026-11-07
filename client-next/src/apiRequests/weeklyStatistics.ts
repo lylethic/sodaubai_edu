@@ -6,31 +6,38 @@ import {
 	ViewScoreListByWeekResType,
 	WeeklyStatisticsType,
 } from '@/schemaValidations/weekly-statistics';
+import { QueryType } from '@/types/queryType';
 
 export const weeklyStatisticsApiRequest = {
-	weeklyEvaluations: (weekId: number) =>
-		http.get<WeeklyStatisticsType>(`/WeeklyEvaluations?weekId=${weekId}`),
+	weeklyEvaluations: (weekId: number, pag: QueryType) =>
+		http.get<WeeklyStatisticsType>(
+			`/v1/weekly-evaluations?weekId=${weekId}&pageNumber=${pag.pageNumber}&pageSize=${pag.pageSize}`
+		),
 
 	create: (body: CreateWeeklyStatisticsType) =>
-		http.post<MessageResType>('/WeeklyEvaluations', body),
+		http.post<MessageResType>('/v1/weekly-evaluations', body),
 
 	weeklyEvaluationsById: (id: number) =>
-		http.get<WeeklyStatisticsType>(`/weeklyEvaluations/${id}`),
+		http.get<WeeklyStatisticsType>(`/v1/weekly-evaluations/${id}`),
 
 	update: (id: number, body: UpdateWeeklyStatisticsType) =>
-		http.put<MessageResType>(`/WeeklyEvaluations/${id}`, body),
+		http.put<MessageResType>(`/v1/weekly-evaluations/${id}`, body),
 
 	delete: (id: number) =>
-		http.delete<MessageResType>(`/WeeklyEvaluations/${id}`),
+		http.delete<MessageResType>(`/v1/weekly-evaluations/${id}`),
 
 	bulkdelete: (ids: number[]) =>
-		http.delete<MessageResType>(`/WeeklyEvaluations/bulk-delete`, ids),
+		http.delete<MessageResType>(`/v1/weekly-evaluations/bulk-delete`, ids),
 
 	viewScoreByWeekId: (weekId: number) =>
-		http.get(`/WeeklyEvaluations/get-score/${weekId}`),
+		http.get<number | { totalScore: number }>(
+			`/v1/weekly-evaluations/get-score/${weekId}`
+		),
 
 	viewScoreListByWeek: (schoolId: number, weekId: number, gradeId: number) =>
 		http.get<ViewScoreListByWeekResType>(
-			`/WeeklyEvaluations/get-score-by-week?schoolId=${schoolId}&weekId=${weekId}&gradeId=${gradeId}`
+			`/v1/weekly-evaluations/get-score-by-week?schoolId=${schoolId}&weekId=${weekId}&gradeId=${gradeId}`
 		),
 };
+
+export default weeklyStatisticsApiRequest;

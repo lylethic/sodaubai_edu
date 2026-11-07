@@ -57,6 +57,9 @@ export const getLopHocColumns = ({
 	{
 		accessorKey: 'classId',
 		header: 'Mã lớp học',
+		cell: ({ row }) => (
+			<span>{row.original.classId || row.original.id}</span>
+		),
 	},
 	{
 		accessorKey: 'schoolName',
@@ -77,6 +80,9 @@ export const getLopHocColumns = ({
 	{
 		accessorKey: 'className',
 		header: 'Lớp học',
+		cell: ({ row }) => (
+			<span>{row.original.className || row.original.name}</span>
+		),
 	},
 	{
 		accessorKey: 'description',

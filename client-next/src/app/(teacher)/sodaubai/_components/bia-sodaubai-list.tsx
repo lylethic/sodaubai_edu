@@ -7,12 +7,16 @@ import { useRouter } from 'next/navigation';
 import { QueryType } from '@/types/queryType';
 import DataTable from '@/app/(admin)/_components/data-table';
 import biaSoDauBaiApiRequest from '@/apiRequests/biasodaubai';
-import { BiaSoDauBaiResType } from '@/schemaValidations/biaSoDauBai.schema';
+import {
+	BiaSoDauBaiDto,
+	BiaSoDauBaiResType,
+	normalizeBiaSoDauBai,
+} from '@/schemaValidations/biaSoDauBai.schema';
 import { getBiaSoDauBaisColumns } from './columns';
 import SodauBaiSearchForm from './search-sodaubai-form';
 import { useAppContext } from '@/app/app-provider';
 
-type BiaSoDauBaiType = BiaSoDauBaiResType['data'];
+type BiaSoDauBaiType = BiaSoDauBaiDto;
 
 export default function SoDauBaiListPage() {
 	const { user } = useAppContext();
@@ -48,15 +52,15 @@ export default function SoDauBaiListPage() {
 					selectedClass ?? null
 				);
 
-				if (!Array.isArray(payload.data) || payload.data.length === 0) {
-					toast({ description: payload.message });
-				}
+				const rawData: any = payload?.data;
+				const rawItems: any[] = Array.isArray(rawData)
+					? rawData
+					: (rawData?.items ?? []);
+				const totalResults =
+					rawData?.totalCount ?? (payload as any).pagination?.totalResults ?? rawItems.length;
 
-				const result = payload?.data;
-				const totalResults = payload.pagination?.totalResults;
-
-				setTotalPageCount(totalResults ? Math.ceil(totalResults) : 0);
-				setBiaSoDauBaisBySchoolClass(Array.isArray(result) ? result : []);
+				setTotalPageCount(totalResults ? Math.ceil(totalResults / pageSize) : 0);
+				setBiaSoDauBaisBySchoolClass(rawItems.map(normalizeBiaSoDauBai));
 			} else {
 				const { payload } = await biaSoDauBaiApiRequest.getAllBiaBySchool(
 					query.pageNumber,
@@ -64,11 +68,17 @@ export default function SoDauBaiListPage() {
 					schoolId
 				);
 
-				const data = payload.data;
-				const totalResults = payload.pagination?.totalResults;
+				const rawData: any = payload?.data;
+				const rawItems: any[] = Array.isArray(rawData)
+					? rawData
+					: (rawData?.items ?? []);
+				const totalResults =
+					rawData?.totalCount ?? (payload as any).pagination?.totalResults ?? rawItems.length;
 
-				setTotalPageCount(totalResults ? Math.ceil(totalResults) : 1);
-				setBiaSoDauBais(Array.isArray(data) ? data : []);
+				setTotalPageCount(
+					totalResults ? Math.ceil(totalResults / (query.pageSize || pageSize)) : 1
+				);
+				setBiaSoDauBais(rawItems.map(normalizeBiaSoDauBai));
 			}
 		} catch (error: any) {
 			handleErrorApi({ error });
@@ -112,7 +122,7 @@ export default function SoDauBaiListPage() {
 	return (
 		<div className='mt-4'>
 			<SodauBaiSearchForm
-				schoolId={user.schoolId}
+				schoolId={user.schoolId ?? 0}
 				classId={selectedClass}
 				onFilterChange={handleFilterChange}
 				onReset={handleResetFilters}

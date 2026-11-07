@@ -6,7 +6,6 @@ import envConfig from '@/config';
 import { baseOpenGraph } from '@/app/shared-metadata';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import schoolApiRequest from '@/apiRequests/school';
 import GradeUpSertForm from '../../_components/grade-upsert.form';
 import { gradeApiRequest } from '@/apiRequests/grade';
 
@@ -18,22 +17,23 @@ type Props = {
 };
 
 export async function generateMetadata(
-	{ params, searchParams }: Props,
-	parent: ResolvingMetadata
+	{ params }: Props,
+	_parent: ResolvingMetadata
 ): Promise<Metadata> {
 	const cookieStore = cookies();
 	const accessToken = cookieStore.get('accessToken');
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
-	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/grades/' + result?.gradeId;
+	const gradeId = result?.id ?? result?.gradeId;
+	const gradeName = result?.name ?? result?.gradeName ?? '';
+	const url = envConfig.NEXT_PUBLIC_URL + '/dashboard/grades/' + gradeId;
 
 	return {
-		title: result.gradeName,
+		title: gradeName,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.gradeName,
+			title: gradeName,
 			url,
 		},
 		alternates: {
@@ -45,7 +45,7 @@ export async function generateMetadata(
 export default async function GradeEditPage({ params }: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
-	if (!token) return;
+	if (!token) return null;
 	let result = null;
 	try {
 		const { payload } = await getDetail(Number(params.id), token.value);

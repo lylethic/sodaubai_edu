@@ -21,12 +21,22 @@ export default async function CardUser() {
 			throw new Error('Invalid decoded token');
 		}
 
+		const schoolId = Number(decodeToken.SchoolId ?? 0);
 		const { payload } = await accountApiRequest.countNumberOfAccountsBySchool(
-			decodeToken.SchoolId,
+			schoolId,
 			accessToken.value
 		);
 
-		amountOfAccount = payload ?? 0;
+		const data: any = payload?.data;
+		if (typeof data === 'number') {
+			amountOfAccount = data;
+		} else if (data && typeof data.totalCount === 'number') {
+			amountOfAccount = data.totalCount;
+		} else if (data && Array.isArray(data.items)) {
+			amountOfAccount = data.items.length;
+		} else {
+			amountOfAccount = 0;
+		}
 	} catch (error) {}
 
 	return (

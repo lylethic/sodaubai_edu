@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { WeekListResType } from '@/schemaValidations/week.schema';
+import { WeekResType } from '@/schemaValidations/week.schema';
 import { useToast } from '@/hooks/use-toast';
 import { getWeekColumns } from './columns';
 import DataTable from '@/app/(admin)/_components/data-table';
@@ -13,29 +13,45 @@ import WeekAddButton from './week-add-button';
 import DeleteWeekDialog from './delete-week-dialog';
 import BulkDeleteWeeks from './bulk-delete-week-dialog';
 
-type WeekType = WeekListResType['data'];
+type WeekType = WeekResType['data'];
 
-export default function WeekList() {
+interface WeekListProps {
+	initialWeeks?: WeekType[];
+	initialTotalCount?: number;
+}
+
+export default function WeekList({
+	initialWeeks = [],
+	initialTotalCount = 0,
+}: WeekListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
 	const [selected, setSelected] = useState<WeekType[]>([]);
-	const [weeks, setWeeks] = useState<WeekType[]>([]);
+	const [weeks, setWeeks] = useState<WeekType[]>(initialWeeks);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] =
+		useState<number>(initialTotalCount);
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [rowToDelete, setRowToDelete] = useState<WeekType | null>(null);
+	const isFirstMount = React.useRef(true);
 
 	const fetchData = async (query: QueryType) => {
 		setLoading(true);
 		try {
 			const response = await weekApiRequest.weeks(query);
-			const result = response.payload.data;
-			const totalResults = response.payload.pagination?.totalResults;
+			const payload = response.payload as any;
+			const items =
+				payload?.data?.items ||
+				(Array.isArray(payload?.data) ? payload.data : []);
+			const totalResults =
+				payload?.data?.totalCount ??
+				payload?.pagination?.totalResults ??
+				0;
 
-			setWeeks(Array.isArray(result) ? result : []);
+			setWeeks(items);
 			setTotalPageCount(totalResults ?? 0);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -44,7 +60,8 @@ export default function WeekList() {
 		}
 	};
 	const handleEdit = useCallback(
-		(data: WeekType) => router.push(`/dashboard/weeks/${data.weekId}/edit`),
+		(data: WeekType) =>
+			router.push(`/dashboard/weeks/${data.weekId ?? data.id}/edit`),
 		[]
 	);
 
@@ -56,14 +73,15 @@ export default function WeekList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await weekApiRequest.delete(rowToDelete.weekId);
+			const id = (rowToDelete.weekId ?? rowToDelete.id)!;
+			const response = await weekApiRequest.delete(id);
 			toast({
 				description: response.payload.message,
 			});
 
 			// Update state
 			setWeeks((prev) =>
-				prev.filter((item) => item.weekId !== rowToDelete.weekId)
+				prev.filter((item) => (item.weekId ?? item.id) !== id)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -74,7 +92,8 @@ export default function WeekList() {
 	};
 
 	const handleRedirectToDetail = useCallback(
-		(data: WeekType) => router.push(`/dashboard/weeks/${data.weekId}`),
+		(data: WeekType) =>
+			router.push(`/dashboard/weeks/${data.weekId ?? data.id}`),
 		[]
 	);
 
@@ -83,7 +102,12 @@ export default function WeekList() {
 	}, [pageNumber, pageSize]);
 
 	useEffect(() => {
-		if (loading) return;
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialWeeks.length > 0 && pageNumber === 1 && pageSize === 20) {
+				return;
+			}
+		}
 
 		fetchData({ pageNumber, pageSize });
 	}, [pageNumber, pageSize]);
@@ -104,7 +128,7 @@ export default function WeekList() {
 		<>
 			<WeekAddButton />
 			<BulkDeleteWeeks
-				selectedItems={selected.map((key) => key.weekId)}
+				selectedItems={selected.map((key) => (key.weekId ?? key.id)!)}
 				onDeleted={handleRefresh}
 			/>
 			<DataTable

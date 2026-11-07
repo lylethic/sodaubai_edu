@@ -58,10 +58,14 @@ export const getSemesterColumns = ({
 	{
 		accessorKey: 'semesterId',
 		header: 'Mã học kỳ',
+		cell: ({ row }) => <span>{row.original.semesterId ?? row.original.id}</span>,
 	},
 	{
 		accessorKey: 'semesterName',
 		header: 'Tên hiển thị học kỳ',
+		cell: ({ row }) => (
+			<span>{row.original.semesterName || row.original.name}</span>
+		),
 	},
 	{
 		accessorKey: 'academicYearId',

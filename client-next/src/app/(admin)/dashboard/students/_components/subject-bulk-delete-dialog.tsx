@@ -14,7 +14,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Trash2Icon } from 'lucide-react';
-import { studentApiRequest } from '@/apiRequests/student';
 import { subjectApiRequest } from '@/apiRequests/subject';
 
 type Props = {

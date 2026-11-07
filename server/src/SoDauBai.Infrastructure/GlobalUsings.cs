@@ -1,0 +1,24 @@
+global using Microsoft.Extensions.Configuration;
+global using Microsoft.AspNetCore.Hosting;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;
+global using Microsoft.EntityFrameworkCore;
+global using AutoMapper;
+global using Microsoft.AspNetCore.Http;
+global using SoDauBai.Domain.Common;
+global using SoDauBai.Domain.Entities;
+global using SoDauBai.Application.Common.Exceptions;
+global using SoDauBai.Application.Common.Models;
+global using SoDauBai.Application.DTOs;
+global using SoDauBai.Application.DTOs.Common;
+global using SoDauBai.Application.DTOs.Search;
+global using SoDauBai.Application.DTOs.Types;
+global using SoDauBai.Application.Interfaces.Repositories;
+global using SoDauBai.Application.Interfaces.Services;
+global using SoDauBai.Infrastructure.Data;
+global using SoDauBai.Infrastructure.Repositories;
+global using SoDauBai.Infrastructure.Services;
+global using SoDauBai.Infrastructure.Helpers;
+

@@ -26,7 +26,7 @@ import WeekSelect from '@/app/(admin)/_components/week-select';
 import LopHocSelect from '@/app/(admin)/_components/lopHoc-select';
 import { useAppContext } from '@/app/app-provider';
 import StudentByClassSelect from '@/app/(admin)/_components/student-select';
-import { StudentListResType } from '@/schemaValidations/student.schema';
+import { StudentDto } from '@/schemaValidations/student.schema';
 import { studentApiRequest } from '@/apiRequests/student';
 import { handleErrorApi } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -46,7 +46,7 @@ const RollCallsFormField = () => {
 	const schoolId = user?.schoolId;
 	const [selectedClassId, setSelectedClassId] = useState<number>(0);
 	const [loading, setLoading] = useState(false);
-	const [students, setStudents] = useState<StudentListResType['data']>([]);
+	const [students, setStudents] = useState<StudentDto[]>([]);
 	const [selectedStudent, setSelectedStudent] = useState<number[]>([]);
 
 	const handleCheckboxChange = (id: number) => {

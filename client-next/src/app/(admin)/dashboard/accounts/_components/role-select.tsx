@@ -34,9 +34,18 @@ const RoleSelect = ({ selectedRoleId, onSelectRole }: RoleSelectProps) => {
 	const getRoleList = async () => {
 		try {
 			const response = await roleApiRequest.getRoleNoPagination();
-			const data = response.payload.data;
-			const RolesArray = Array.isArray(data) ? data : [data];
-			setRoles(RolesArray);
+			const resData = response.payload.data as any;
+			const items = Array.isArray(resData?.items)
+				? resData.items
+				: Array.isArray(resData)
+				? resData
+				: [];
+			const normalized: RoleType[] = items.map((r: any) => ({
+				roleId: r.id ?? r.roleId,
+				nameRole: r.nameRole,
+				description: r.description,
+			}));
+			setRoles(normalized);
 		} catch (error) {
 			console.error('Failed to fetch Roles', error);
 		}

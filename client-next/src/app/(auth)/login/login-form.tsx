@@ -1,143 +1,132 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from '@/components/ui/form';
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
-import { Input } from '@/components/ui/input';
-import { LoginBody, LoginBodyType } from '@/schemaValidations/auth.schema';
-import { useToast } from '@/hooks/use-toast';
-import authApiRequest from '@/apiRequests/auth';
-import { useRouter } from 'next/navigation';
-import { decodeJWT, handleErrorApi } from '@/lib/utils';
-import { useAppContext } from '@/app/app-provider';
-import { JwtAccessTokenPayload } from '@/types/jwt';
-import { Loader2 } from 'lucide-react';
+import { Input } from "@/components/ui/input";
+import { LoginBody, LoginBodyType } from "@/schemaValidations/auth.schema";
+import { useToast } from "@/hooks/use-toast";
+import authApiRequest from "@/apiRequests/auth";
+import { useRouter } from "next/navigation";
+import { handleErrorApi } from "@/lib/utils";
+import { useAppContext, useLoading } from "@/app/app-provider";
 
 const LoginForm = () => {
-	const [loading, setLoading] = useState(false);
-	const { setUser } = useAppContext();
-	const { toast } = useToast();
-	const router = useRouter();
+  const { showLoading, hideLoading } = useLoading();
+  const { setUser } = useAppContext();
+  const { toast } = useToast();
+  const router = useRouter();
 
-	//
-	const form = useForm<LoginBodyType>({
-		resolver: zodResolver(LoginBody),
-		defaultValues: {
-			Email: '',
-			Password: '',
-		},
-	});
+  //
+  const form = useForm<LoginBodyType>({
+    resolver: zodResolver(LoginBody),
+    defaultValues: {
+      Email: "",
+      Password: "",
+    },
+  });
 
-	async function onSubmit(values: LoginBodyType) {
-		if (loading) return;
-		setLoading(true);
-		try {
-			const result = await authApiRequest.login(values);
-			// console.log(result);
+  async function onSubmit(values: LoginBodyType) {
+    showLoading();
+    try {
+      const result = await authApiRequest.login(values);
 
-			const decodeToken = decodeJWT<JwtAccessTokenPayload>(
-				result.payload.data.token
-			);
+      await authApiRequest.auth({
+        accessToken: result.payload.data.token,
+        expiresAt: result.payload.data.expiresAt,
+      });
 
-			if (!decodeToken) {
-				return toast({
-					description: 'Access Token not found',
-				});
-			}
+      toast({
+        description: result.payload.message,
+      });
 
-			await authApiRequest.auth({
-				accessToken: result.payload.data.token,
-				expiresAt: result.payload.data.expiresAt,
-			});
+      const { userInfo } = result.payload.data;
 
-			toast({
-				description: result.payload.message,
-			});
+      setUser({
+        id: userInfo.id,
+        email: userInfo.email,
+        username: userInfo.username,
+        avatar: userInfo.avatar,
+        schoolId: userInfo.schoolId,
+        schoolName: userInfo.schoolName,
+        schoolType: userInfo.schoolType,
+        schoolPhoneNumber: userInfo.schoolPhoneNumber,
+        teacherId: userInfo.teacherId,
+        fullname: userInfo.fullName,
+      });
+      router.push("/sodaubai");
+      router.refresh();
+    } catch (error: any) {
+      handleErrorApi({
+        error,
+        setError: form.setError,
+        duration: 3000,
+      });
+    } finally {
+      hideLoading();
+    }
+  }
 
-			setUser({
-				accountId: decodeToken.AccountId,
-				roleId: decodeToken.RoleId,
-				schoolId: decodeToken.SchoolId,
-				email: decodeToken.Email,
-			});
-			router.push('/sodaubai');
-			router.refresh();
-		} catch (error: any) {
-			handleErrorApi({
-				error,
-				setError: form.setError,
-				duration: 3000,
-			});
-		} finally {
-			setLoading(false);
-		}
-	}
+  return (
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className='space-y-2 max-w-[600px] flex-shrink-0 w-full'
+        noValidate
+      >
+        <FormField
+          control={form.control}
+          name='Email'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type='email'
+                  placeholder='Nhập email người dùng...'
+                  autoComplete='email'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name='Password'
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mật khẩu</FormLabel>
+              <FormControl>
+                <Input
+                  type='password'
+                  placeholder='Nhập mật khẩu..'
+                  autoComplete='current-password'
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-	return (
-		<Form {...form}>
-			<form
-				onSubmit={form.handleSubmit(onSubmit)}
-				className='space-y-2 max-w-[600px] flex-shrink-0 w-full'
-				noValidate
-			>
-				<FormField
-					control={form.control}
-					name='Email'
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Email</FormLabel>
-							<FormControl>
-								<Input
-									type='email'
-									placeholder='Nhập email người dùng...'
-									autoComplete='email'
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-				<FormField
-					control={form.control}
-					name='Password'
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Mật khẩu</FormLabel>
-							<FormControl>
-								<Input
-									type='password'
-									placeholder='Nhập mật khẩu..'
-									autoComplete='current-password'
-									{...field}
-								/>
-							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<Button type='submit' className='!mt-8 w-full'>
-					{loading ? (
-						<Loader2 className='mr-2 h-4 w-4 animate-spin' />
-					) : (
-						'Đăng nhập'
-					)}
-				</Button>
-			</form>
-		</Form>
-	);
+        <Button type='submit' className='!mt-8 w-full'>
+          Đăng nhập
+        </Button>
+      </form>
+    </Form>
+  );
 };
 
 export default LoginForm;

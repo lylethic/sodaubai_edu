@@ -44,12 +44,13 @@ export function middleware(request: NextRequest) {
 	const isAuthPath = isPathMatch(pathname, authPaths);
 	const isTeacherPath = isPathMatch(pathname, teacherPaths);
 	const isAdminPath = isPathMatch(pathname, adminPaths);
+	const isMePath = pathname === '/me' || pathname.startsWith('/me/');
 
 	const decodeToken = accessToken ? decodeJWT(accessToken) : null;
 	const role = decodeToken?.RoleId ? Number(decodeToken.RoleId) : null;
 
 	// 🛑 Chưa đăng nhập và truy cập private path
-	if (!accessToken && (isTeacherPath || isAdminPath)) {
+	if (!accessToken && (isTeacherPath || isAdminPath || isMePath)) {
 		if (!isAuthPath) {
 			return NextResponse.redirect(new URL('/login', request.url));
 		}
@@ -104,5 +105,7 @@ export const config = {
 		'/report',
 		'/sodaubai/chitietsodaubai/:id*',
 		'/rollcall',
+		'/me',
+		'/me/:path*',
 	],
 };

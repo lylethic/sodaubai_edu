@@ -26,14 +26,16 @@ export async function generateMetadata(
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
+	const schoolId = result?.id ?? result?.schoolId;
+	const schoolName = result?.name || result?.nameSchool || '';
 	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/schools/' + result.schoolId;
+		envConfig.NEXT_PUBLIC_URL + '/dashboard/schools/' + schoolId;
 
 	return {
-		title: result.nameSchool,
+		title: schoolName,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.nameSchool,
+			title: schoolName,
 			url,
 		},
 		alternates: {
@@ -73,7 +75,7 @@ export default async function StudentAddPage({ params }: Props) {
 						Quay về
 					</Button>
 				</Link>
-				<Link href={`/dashboard/schools/${result?.schoolId}/edit`}>
+				<Link href={`/dashboard/schools/${result?.id ?? result?.schoolId}/edit`}>
 					<Button
 						variant={'outline'}
 						type='button'
@@ -92,19 +94,15 @@ export default async function StudentAddPage({ params }: Props) {
 						<TableBody>
 							<TableRow>
 								<TableCell>Mã trường học</TableCell>
-								<TableCell>{result.schoolId}</TableCell>
-							</TableRow>
-							<TableRow>
-								<TableCell>Mã tỉnh thành</TableCell>
-								<TableCell>{result.provinceId}</TableCell>
-							</TableRow>
-							<TableRow>
-								<TableCell>Mã huyện</TableCell>
-								<TableCell>{result.districtId}</TableCell>
+								<TableCell>{result.id ?? result.schoolId}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Tên trường học</TableCell>
-								<TableCell>{result.nameSchool}</TableCell>
+								<TableCell>{result.name || result.nameSchool}</TableCell>
+							</TableRow>
+							<TableRow>
+								<TableCell>Cấp học</TableCell>
+								<TableCell>{result.level ?? '_'}</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Địa chỉ trường học</TableCell>

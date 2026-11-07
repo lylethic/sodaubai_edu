@@ -1,52 +1,45 @@
 import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
-const SemesterSchema = z.object({
+export const SemesterSchema = z.object({
 	semesterId: z.number(),
-	semesterName: z.string(),
-	dateStart: z.date(),
-	dateEnd: z.date(),
-	description: z.string(),
-	status: z.boolean(),
+	id: z.number().optional(), // alias
 	academicYearId: z.number(),
-	displayAcademicYearName: z.string(),
-	yearStart: z.date(),
-	yearEnd: z.date(),
+	semesterName: z.string({ required_error: 'Vui lòng nhập tên học kỳ' }),
+	name: z.string().optional(), // alias
+	dateStart: z.union([z.string(), z.date()]).nullable().optional(),
+	dateEnd: z.union([z.string(), z.date()]).nullable().optional(),
+	description: z.string().nullable().optional(),
+	status: z.boolean(),
+	displayAcademicYearName: z.string().nullable().optional(),
+	yearStart: z.union([z.string(), z.date()]).nullable().optional(),
+	yearEnd: z.union([z.string(), z.date()]).nullable().optional(),
 });
 
-export const SemesterRes = z
-	.object({
-		status: z.number(),
-		message: z.string(),
-		data: SemesterSchema,
-		pagination: z
-			.object({
-				pageNumber: z.number(),
-				pageSize: z.number(),
-				totalResults: z.number(),
-				totalPages: z.number(),
-			})
-			.optional()
-			.nullable(),
-	})
-	.strict();
-export type SemesterResType = z.TypeOf<typeof SemesterRes>;
+export type SemesterDto = z.infer<typeof SemesterSchema>;
+export type SemesterType = SemesterDto;
+
+export const SemesterRes = createApiResponseSchema(SemesterSchema);
+export type SemesterResType = z.infer<typeof SemesterRes>;
+
+export const SemesterListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(SemesterSchema)
+);
+export type SemesterListResType = z.infer<typeof SemesterListRes>;
 
 export const CreateSemesterBody = z.object({
-	semesterId: z.number(),
-	academicYearId: z.number(),
-	semesterName: z.string(),
-	dateStart: z.date(),
-	dateEnd: z.date(),
-	description: z.string(),
+	semesterId: z.number().optional(),
+	academicYearId: z.number({ required_error: 'Vui lòng chọn năm học' }),
+	semesterName: z.string({ required_error: 'Vui lòng nhập tên học kỳ' }),
+	dateStart: z.union([z.string(), z.date()]).nullable().optional(),
+	dateEnd: z.union([z.string(), z.date()]).nullable().optional(),
+	description: z.string().nullable().optional(),
 	status: z.boolean(),
 });
-export type CreateSemesterBodyType = z.TypeOf<typeof CreateSemesterBody>;
+export type CreateSemesterBodyType = z.infer<typeof CreateSemesterBody>;
 
 export const UpdateSemesterBody = CreateSemesterBody;
-export type UpdateSemesterBodyType = z.TypeOf<typeof UpdateSemesterBody>;
-
-export const SemesterListRes = z.object({
-	message: z.string(),
-	data: z.array(SemesterSchema),
-});
-export type SemesterListResType = z.TypeOf<typeof SemesterListRes>;
+export type UpdateSemesterBodyType = z.infer<typeof UpdateSemesterBody>;

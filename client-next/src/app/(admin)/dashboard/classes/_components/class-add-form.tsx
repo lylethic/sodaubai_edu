@@ -34,7 +34,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog';
-import { Plus, PlusCircle } from 'lucide-react';
+import { PlusCircle } from 'lucide-react';
 import SchoolSelect from '@/app/(admin)/_components/school-select';
 import NamHocSelect from '@/app/(admin)/_components/namHoc-select';
 import GradeSelect from '@/app/(admin)/_components/grade-select';
@@ -63,11 +63,11 @@ export default function ClassAddForm({
 	const form = useForm<CreateLopHocBodyType>({
 		resolver: zodResolver(CreateLopHocBody),
 		defaultValues: {
-			GradeId: lopHoc?.gradeId,
-			AcademicYearId: lopHoc?.academicYearId,
-			TeacherId: lopHoc?.teacherId,
-			SchoolId: lopHoc?.schoolId,
-			ClassName: lopHoc?.className,
+			GradeId: lopHoc?.gradeId ?? undefined,
+			AcademicYearId: lopHoc?.academicYearId ?? undefined,
+			TeacherId: lopHoc?.teacherId ?? undefined,
+			SchoolId: lopHoc?.schoolId ?? undefined,
+			ClassName: lopHoc?.className || lopHoc?.name || '',
 			Status: lopHoc?.status ?? true,
 			Description: lopHoc?.description ?? '',
 		},
@@ -96,9 +96,9 @@ export default function ClassAddForm({
 	const handleUpdateLopHoc = async (_values: UpdateLopHocBodyType) => {
 		if (!lopHoc) return;
 		setLoading(true);
-		let values = _values;
 		try {
-			const response = await lopHocApiRequest.update(lopHoc.classId, values);
+			const idToUpdate = lopHoc.id ?? lopHoc.classId ?? 0;
+			const response = await lopHocApiRequest.update(idToUpdate, _values);
 
 			toast({ description: response.payload.message });
 			form.reset();
@@ -117,24 +117,23 @@ export default function ClassAddForm({
 		else {
 			await handleUpdateLopHoc(values);
 		}
-		// console.log('Form Data:', form.getValues());
 	}
 
 	useEffect(() => {
 		if (lopHoc) {
 			form.reset({
-				GradeId: lopHoc?.gradeId,
-				AcademicYearId: lopHoc?.academicYearId,
-				TeacherId: lopHoc?.teacherId,
-				SchoolId: lopHoc?.schoolId,
-				ClassName: lopHoc?.className,
+				GradeId: lopHoc?.gradeId ?? undefined,
+				AcademicYearId: lopHoc?.academicYearId ?? undefined,
+				TeacherId: lopHoc?.teacherId ?? undefined,
+				SchoolId: lopHoc?.schoolId ?? undefined,
+				ClassName: lopHoc?.className || lopHoc?.name || '',
 				Status: lopHoc?.status ?? true,
 				Description: lopHoc?.description ?? '',
 			});
 		} else {
 			form.reset();
 		}
-	}, [isOpen, lopHoc]);
+	}, [isOpen, lopHoc, form]);
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange} modal={true}>
@@ -170,7 +169,7 @@ export default function ClassAddForm({
 									<FormLabel>Năm học</FormLabel>
 									<FormControl>
 										<NamHocSelect
-											selectedNamHoc={field.value}
+											selectedNamHoc={field.value ?? null}
 											onSelectedNamHoc={(key) => field.onChange(key)}
 										/>
 									</FormControl>
@@ -186,7 +185,7 @@ export default function ClassAddForm({
 									<FormLabel>Trường học</FormLabel>
 									<FormControl>
 										<SchoolSelect
-											selectedSchoolId={field.value}
+											selectedSchoolId={field.value ?? null}
 											onSelectSchool={(schoolId) => field.onChange(schoolId)}
 										/>
 									</FormControl>
@@ -202,7 +201,7 @@ export default function ClassAddForm({
 									<FormLabel>Khối lớp học</FormLabel>
 									<FormControl>
 										<GradeSelect
-											selectedGradeId={field.value}
+											selectedGradeId={field.value ?? null}
 											onSelectedGrade={(gradeId) => field.onChange(gradeId)}
 										/>
 									</FormControl>
@@ -235,8 +234,8 @@ export default function ClassAddForm({
 									<FormLabel>Giáo viên chủ nhiệm</FormLabel>
 									<FormControl>
 										<TeachersBySchoolSelect
-											selectedSchoolId={selectedSchoolId}
-											selectedTeacherId={field.value}
+											selectedSchoolId={selectedSchoolId ?? 0}
+											selectedTeacherId={field.value ?? 0}
 											onSelectTeacher={(teacherId) => field.onChange(teacherId)}
 										/>
 									</FormControl>
@@ -255,7 +254,8 @@ export default function ClassAddForm({
 											className='resize-none'
 											rows={3}
 											placeholder='Ghi chú'
-											{...field}
+											value={field.value ?? ''}
+											onChange={field.onChange}
 										/>
 									</FormControl>
 								</FormItem>

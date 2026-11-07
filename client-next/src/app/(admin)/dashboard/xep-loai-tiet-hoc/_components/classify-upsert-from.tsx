@@ -15,16 +15,15 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useRouter } from 'next/navigation';
-import schoolApiRequest from '@/apiRequests/school';
 import {
-	ClassifyResType,
-	CreateClassifyBody,
-	CreateClassifyBodyType,
-	UpdateClassifyBodyType,
+	ClassificationResType,
+	CreateClassificationBody,
+	CreateClassificationBodyType,
+	UpdateClassificationBodyType,
 } from '@/schemaValidations/xepLoaiTietHoc.schema';
 import { xepLoaiApiRequest } from '@/apiRequests/xeploaiTiethoc';
 
-type ClassifyType = ClassifyResType['data'];
+type ClassifyType = ClassificationResType['data'];
 
 export default function ClassifyUpSertForm({
 	classify,
@@ -35,16 +34,16 @@ export default function ClassifyUpSertForm({
 	const { toast } = useToast();
 	const router = useRouter();
 
-	const form = useForm<CreateClassifyBodyType>({
-		resolver: zodResolver(CreateClassifyBody),
+	const form = useForm<CreateClassificationBodyType>({
+		resolver: zodResolver(CreateClassificationBody),
 		defaultValues: {
-			classificationId: classify?.classificationId ?? 0,
-			classifyName: classify?.classifyName,
-			score: classify?.score,
+			classificationId: classify?.classificationId ?? classify?.id ?? 0,
+			classifyName: classify?.classifyName ?? classify?.name ?? '',
+			score: classify?.score ?? 0,
 		},
 	});
 
-	const handleCreate = async (values: CreateClassifyBodyType) => {
+	const handleCreate = async (values: CreateClassificationBodyType) => {
 		setLoading(true);
 		try {
 			const { payload } = await xepLoaiApiRequest.create(values);
@@ -58,12 +57,13 @@ export default function ClassifyUpSertForm({
 		}
 	};
 
-	const handleUpdate = async (_values: UpdateClassifyBodyType) => {
+	const handleUpdate = async (_values: UpdateClassificationBodyType) => {
 		if (!classify) return;
 		setLoading(true);
 		try {
+			const idToUpdate = classify.id ?? classify.classificationId ?? 0;
 			const response = await xepLoaiApiRequest.update(
-				classify.classificationId,
+				idToUpdate,
 				_values
 			);
 
@@ -76,7 +76,7 @@ export default function ClassifyUpSertForm({
 		}
 	};
 
-	async function onSubmit(values: CreateClassifyBodyType) {
+	async function onSubmit(values: CreateClassificationBodyType) {
 		if (loading) return;
 
 		if (!classify) await handleCreate(values);
@@ -136,7 +136,7 @@ export default function ClassifyUpSertForm({
 								<Input
 									type='number'
 									placeholder='Số điểm...'
-									value={field.value}
+									value={field.value ?? ''}
 									onChange={(e) => field.onChange(Number(e.target.value))}
 								/>
 							</FormControl>

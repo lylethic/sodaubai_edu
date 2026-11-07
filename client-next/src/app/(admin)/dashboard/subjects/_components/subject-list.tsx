@@ -16,19 +16,27 @@ import SubjectDeleteDialog from './subject-delete-dialog';
 import BulkDeleteSubjectDialog from '../../students/_components/subject-bulk-delete-dialog';
 import SubjectUploadButton from './subject-upload';
 
-type SubjectType = SubjectListResType['data'];
 type SubjectObjectType = SubjectResType['data'];
 
-export default function SubjectsList() {
+interface SubjectsListProps {
+	initialSubjects?: SubjectObjectType[];
+	initialTotalCount?: number;
+}
+
+export default function SubjectsList({
+	initialSubjects = [],
+	initialTotalCount = 0,
+}: SubjectsListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
-	const [selected, setSelected] = useState<SubjectType>([]);
+	const [selected, setSelected] = useState<SubjectObjectType[]>([]);
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
-
-	const [data, setData] = useState<SubjectType>([]);
+	const [totalPageCount, setTotalPageCount] =
+		useState<number>(initialTotalCount);
+	const [data, setData] = useState<SubjectObjectType[]>(initialSubjects);
+	const isFirstMount = React.useRef(true);
 
 	const [rowToDelete, setRowToDelete] = useState<SubjectObjectType | null>(
 		null
@@ -36,14 +44,21 @@ export default function SubjectsList() {
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 	const fetchData = async (query: QueryType) => {
+		if (loading) return;
 		setLoading(true);
 		try {
 			const response = await subjectApiRequest.subjects(query);
-			const { data, message, pagination } = response.payload;
-			const totalResults = pagination.totalResults;
+			const payload = response.payload as any;
+			const items =
+				payload?.data?.items ||
+				(Array.isArray(payload?.data) ? payload.data : []);
+			const totalResults =
+				payload?.data?.totalCount ??
+				payload?.pagination?.totalResults ??
+				0;
 
-			setData(Array.isArray(data) ? data : []);
-			setTotalPageCount(pagination.totalResults);
+			setData(items);
+			setTotalPageCount(totalResults);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -53,14 +68,14 @@ export default function SubjectsList() {
 
 	const handleRedirectToDetail = useCallback(
 		(data: SubjectObjectType) =>
-			router.push(`/dashboard/subjects/${data.subjectId}`),
-		[]
+			router.push(`/dashboard/subjects/${data.subjectId || data.id}`),
+		[router]
 	);
 
 	const handleEdit = useCallback(
-		(data: SubjectResType['data']) =>
-			router.push(`/dashboard/subjects/${data.subjectId}/edit`),
-		[]
+		(data: SubjectObjectType) =>
+			router.push(`/dashboard/subjects/${data.subjectId || data.id}/edit`),
+		[router]
 	);
 
 	const handleDelete = useCallback((data: SubjectObjectType) => {
@@ -71,14 +86,17 @@ export default function SubjectsList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await subjectApiRequest.delete(rowToDelete.subjectId);
+			const idToDelete = rowToDelete.subjectId || rowToDelete.id || 0;
+			const response = await subjectApiRequest.delete(idToDelete);
 			toast({
 				description: response.payload.message,
 			});
 
-			// Update state
 			setData((prev) =>
-				prev.filter((item) => item.subjectId !== rowToDelete.subjectId)
+				prev.filter(
+					(item) =>
+						(item.subjectId || item.id) !== idToDelete
+				)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -93,7 +111,10 @@ export default function SubjectsList() {
 	}, [pageNumber, pageSize]);
 
 	useEffect(() => {
-		if (loading) return;
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			return;
+		}
 		fetchData({ pageNumber, pageSize });
 	}, [pageNumber, pageSize]);
 
@@ -106,7 +127,13 @@ export default function SubjectsList() {
 				pageNumber,
 				pageSize,
 			}),
-		[handleEdit, handleDelete, handleRedirectToDetail, pageNumber, pageSize]
+		[
+			handleEdit,
+			handleDelete,
+			handleRedirectToDetail,
+			pageNumber,
+			pageSize,
+		]
 	);
 
 	return (
@@ -115,7 +142,9 @@ export default function SubjectsList() {
 			<SubjectUploadButton onSuccess={handleRefresh} />
 
 			<BulkDeleteSubjectDialog
-				selectedItems={selected.map((key) => key.subjectId)}
+				selectedItems={selected.map(
+					(key) => key.subjectId || key.id || 0
+				)}
 				onDeleted={handleRefresh}
 			/>
 			<DataTable

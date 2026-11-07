@@ -11,25 +11,26 @@ const getDetailClass = cache(lopHocApiRequest.getDetail);
 
 type Props = {
 	params: { id: string };
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+	searchParams: { [key: string]: string | string[] | undefined };
 };
 
 export async function generateMetadata(
-	{ params, searchParams }: Props,
-	parent: ResolvingMetadata
+	{ params }: Props,
+	_parent: ResolvingMetadata
 ): Promise<Metadata> {
 	const cookieStore = cookies();
 	const accessToken = cookieStore.get('accessToken')!.value;
 	const { payload } = await getDetailClass(Number(params.id), accessToken);
 
-	const account = payload.data;
-	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/accounts/' + account.classId;
+	const classItem = payload.data;
+	const classId = classItem?.id ?? classItem?.classId;
+	const className = classItem?.name ?? classItem?.className ?? '';
+	const url = envConfig.NEXT_PUBLIC_URL + '/dashboard/classes/' + classId;
 	return {
-		title: account.className,
+		title: className,
 		openGraph: {
 			...baseOpenGraph,
-			title: account.className,
+			title: className,
 			url,
 		},
 		alternates: {
@@ -41,7 +42,7 @@ export async function generateMetadata(
 export default async function LopHocEditPage({ params }: Props) {
 	const cookieStore = cookies();
 	const token = cookieStore.get('accessToken');
-	if (!token) return;
+	if (!token) return null;
 	let result = null;
 	try {
 		const { payload } = await getDetailClass(Number(params.id), token.value);

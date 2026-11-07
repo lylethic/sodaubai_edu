@@ -1,145 +1,161 @@
-import http from '@/lib/http';
+import http from "@/lib/http";
 import {
-	AccountDetailResType,
-	AccountAddResType,
-	AccountResType,
-	CreateAccountBodyType,
-	UpdateAccountBodyType,
-} from '@/schemaValidations/account.schema';
-import { MessageResType } from '@/schemaValidations/common.schema';
+  UserDetailResType,
+  UserAddResType,
+  UserResType,
+  UserListResType,
+  CreateUserBodyType,
+  UpdateUserBodyType,
+} from "@/schemaValidations/account.schema";
+import { MessageResType } from "@/schemaValidations/common.schema";
+import { ApiResponse, buildQueryString, QueryObject } from "@/types/api";
 
 const accountApiRequest = {
-	// lay dc token, ko lay duoc trong cookie (lay trong handler)
-	accounts: (
-		pageNumber: number,
-		pageSize: number,
-		schoolId?: number | null
-	) => {
-		const queryOptions = !schoolId
-			? `pageNumber=${pageNumber}&pageSize=${pageSize}`
-			: `pageNumber=${pageNumber}&pageSize=${pageSize}&schoolId=${schoolId}`;
+  /**
+   * Get paginated list of users from /api/v1/user
+   */
+  getUsers: (
+    query?: QueryObject & { schoolId?: number | null; status?: boolean | null },
+    token?: string,
+  ) =>
+    http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+      cache: "no-store",
+    }),
 
-		return http.get<AccountResType>(`/Accounts?${queryOptions}`, {
-			cache: 'no-store',
-		});
-	},
+  /**
+   * Backwards compatible accounts call
+   */
+  accounts: (
+    pageNumber: number = 1,
+    pageSize: number = 20,
+    schoolId?: number | null,
+    token?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (schoolId) query.schoolId = schoolId;
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+      cache: "no-store",
+    });
+  },
 
-	getAccountsBySchool: (
-		idSchool: number | null,
-		pageNumber?: number,
-		pageSize?: number
-	) =>
-		http.get<AccountResType>(
-			`/Accounts/get-accounts-by-school?schoolId=${idSchool}&pageNumber=${pageNumber}&pageSize=${pageSize}`,
-			{ cache: 'no-store' }
-		),
+  getAccountsBySchool: (
+    idSchool: number | null,
+    pageNumber: number = 1,
+    pageSize: number = 20,
+    token?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (idSchool) query.schoolId = idSchool;
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+      cache: "no-store",
+    });
+  },
 
-	accountsSelect: () => http.get<AccountResType>(`/Accounts`),
+  accountsSelect: (token?: string) =>
+    http.get<UserListResType>(`/v1/user?pageNumber=1&pageSize=100`, {
+      token,
+      cache: "no-store",
+    }),
 
-	accountsServer: (pageNumber: number, pageSize: number, token: string) =>
-		http.get<AccountResType>(
-			`/Accounts?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-			{
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-				cache: 'no-store',
-			}
-		),
+  accountsServer: (pageNumber: number, pageSize: number, token: string) =>
+    http.get<UserListResType>(
+      `/v1/user?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      {
+        token,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      },
+    ),
 
-	getDetail: (id: number, token: string) =>
-		http.get<AccountResType>(`/Accounts/${id}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-			cache: 'no-store',
-		}),
+  getUser: (id: number, token?: string) =>
+    http.get<UserResType>(`/v1/user/${id}`, {
+      token,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }),
 
-	getAccountById: (id: number, token: string) =>
-		http.get<AccountResType>(`/Accounts/${id}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-			cache: 'no-store',
-		}),
+  accountsByRoleIdSchoolId: (
+    pageNumber: number,
+    pageSize: number,
+    roleId?: number,
+    schoolId?: number,
+    token?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (schoolId) query.schoolId = schoolId;
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+    });
+  },
 
-	getAccountHasName: (id: number, token: string) =>
-		http.get<AccountDetailResType>(`/Accounts/${id}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		}),
+  countNumberOfAccounts: (token?: string) =>
+    http.get<UserListResType>("/v1/user?pageNumber=1&pageSize=1", {
+      token,
+      cache: "no-store",
+    }),
 
-	// get-accounts-by-role?PageNumber=1&PageSize=20&roleId=1&schoolId=1
-	accountsByRoleIdSchoolId: (
-		roleId: number | null,
-		schoolId?: number | null,
-		pageNumber?: number | null,
-		pageSize?: number | null
-	) => {
-		const queryOptions = new URLSearchParams();
+  countNumberOfAccountsBySchool: (id: number, token?: string) =>
+    http.get<UserListResType>(
+      `/v1/user?schoolId=${id}&pageNumber=1&pageSize=1`,
+      {
+        token,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+      },
+    ),
 
-		if (pageNumber != null)
-			queryOptions.append('pageNumber', pageNumber.toString());
+  addAccount: (body: CreateUserBodyType) => {
+    const payload = {
+      schoolId: body.schoolId || body.SchoolId || 0,
+      email: body.email || body.Email || "",
+      username: body.username || (body.email || body.Email || "").split("@")[0],
+      avatar: body.avatar || null,
+      passwordHash: body.password || body.passwordHash || body.Password || "",
+    };
+    return http.post<UserAddResType>("/v1/user", payload);
+  },
 
-		if (pageSize != null) queryOptions.append('pageSize', pageSize.toString());
+  updateAccount: (id: number, body: UpdateUserBodyType) =>
+    http.put<UserAddResType>(`/v1/user/${id}`, { id, ...body }),
 
-		if (roleId !== null && roleId !== undefined) {
-			queryOptions.append('roleId', roleId.toString());
-		}
+  deleteAccount: (id: number) =>
+    http.delete<ApiResponse<boolean>>(`/v1/user/${id}`),
 
-		if (schoolId !== null && schoolId !== undefined) {
-			queryOptions.append('schoolId', schoolId.toString());
-		}
-		return http.get<AccountResType>(
-			`/Accounts/get-accounts-by-role?${queryOptions.toString()}`
-		);
-	},
+  bulkDeleteAccount: (ids: number[]) => {
+    // Sequentially or parallel delete for endpoints without dedicated bulk
+    return Promise.all(
+      ids.map((id) => http.delete<ApiResponse<boolean>>(`/v1/user/${id}`)),
+    );
+  },
 
-	countNumberOfAccounts: () =>
-		http.get<number | null>('/Accounts/count-number-of-accounts', {
-			cache: 'no-store',
-		}),
+  uploadAvatar: (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("id", id.toString());
+    formData.append("file", file);
+    return http.post<UserResType>("/v1/user/upload", formData);
+  },
 
-	countNumberOfAccountsBySchool: (id: number) =>
-		http.get<number | null>(
-			`/Accounts/count-number-of-accounts-by-school?id=${id}`,
-			{
-				cache: 'no-store',
-			}
-		),
+  importExcel: (formData: FormData) =>
+    http.post<MessageResType>("/v1/user/upload", formData),
 
-	addAccount: (body: CreateAccountBodyType) =>
-		http.post<AccountAddResType>('/Accounts', body),
+  relativeSearchAccounts: (
+    pageNumber: number,
+    pageSize: number,
+    schoolId?: number,
+    keyword?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (schoolId) query.schoolId = schoolId;
+    if (keyword) query.keyword = keyword;
 
-	updateAccount: (id: number, body: UpdateAccountBodyType) =>
-		http.put<AccountAddResType>(`/Accounts/${id}`, body),
-
-	deleteAccount: (id: number) => http.delete<MessageResType>(`/Accounts/${id}`),
-
-	bulkDeleteAccount: (ids: number[]) =>
-		http.delete<MessageResType>(`/Accounts/bulkdelete`, ids),
-
-	importExcel: (formData: FormData) =>
-		http.post<MessageResType>(`/Accounts/upload`, formData),
-
-	relativeSearchAccounts: (
-		pageNumber: number,
-		pageSize: number,
-		schoolId?: number,
-		name?: string
-	) => {
-		const params = new URLSearchParams({
-			...(schoolId && { schoolId: schoolId.toString() }),
-			...(name && { name: name }),
-			pageNumber: pageNumber.toString(),
-			pageSize: pageSize.toString(),
-		}).toString();
-
-		return http.get<AccountResType>(`/Accounts/search?${params.toString()}`, {
-			cache: 'no-store',
-		});
-	},
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      cache: "no-store",
+    });
+  },
 };
 
 export default accountApiRequest;

@@ -37,11 +37,15 @@ export default function TeachingAssignmentList() {
 	const fetchData = async (page: QueryType) => {
 		setLoading(true);
 		try {
-			const { payload } = await phanCongGiangDayApiRequest.phanCongGiangDays(
-				page
-			);
-			const totalResults = payload.pagination?.totalResults ?? 0;
-			setPhanCongGiangDays(Array.isArray(payload.data) ? payload.data : []);
+			const { payload } =
+				await phanCongGiangDayApiRequest.phanCongGiangDays(page);
+			const data = payload.data as any;
+			const items = data?.items ?? (Array.isArray(data) ? data : []);
+			const totalResults =
+				data?.totalCount ??
+				(payload as any).pagination?.totalResults ??
+				0;
+			setPhanCongGiangDays(items);
 			setTotalPageCount(totalResults);
 		} catch (error) {
 			handleErrorApi({ error });

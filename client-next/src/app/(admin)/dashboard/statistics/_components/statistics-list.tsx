@@ -29,7 +29,7 @@ import {
 import { useAppContext } from '@/app/app-provider';
 
 type WeeklyStatistic = WeeklyStatisticsType['data'];
-type WeeklyStatisticByWeek = ViewScoreListByWeekResType['data'];
+type WeeklyStatisticByWeek = ViewScoreListByWeekResType['data'][number];
 
 export default function StatisticsList() {
 	const router = useRouter();

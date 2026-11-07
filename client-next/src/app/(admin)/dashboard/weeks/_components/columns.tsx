@@ -1,10 +1,10 @@
 import React, { HTMLProps } from 'react';
 import { DataTableRowThreeActions } from '@/app/(admin)/_components/data-table-row-three-action';
-import { WeekListResType } from '@/schemaValidations/week.schema';
+import { WeekResType } from '@/schemaValidations/week.schema';
 import { ColumnDef } from '@tanstack/react-table';
 import { Button } from '@/components/ui/button';
 
-type WeekType = WeekListResType['data'];
+type WeekType = WeekResType['data'];
 
 interface WeekColumnProps {
 	handleRedirectToDetail: (data: WeekType) => void;

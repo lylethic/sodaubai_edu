@@ -26,14 +26,16 @@ export async function generateMetadata(
 	const { payload } = await getDetail(Number(params.id), accessToken?.value);
 
 	const result = payload.data;
+	const id = result?.semesterId ?? result?.id;
+	const semesterName = result?.semesterName || result?.name || '';
 	const url =
-		envConfig.NEXT_PUBLIC_URL + '/dashboard/semesters/' + result.academicYearId;
+		envConfig.NEXT_PUBLIC_URL + '/dashboard/semesters/' + id;
 
 	return {
-		title: result.semesterName,
+		title: semesterName,
 		openGraph: {
 			...baseOpenGraph,
-			title: result.semesterName,
+			title: semesterName,
 			url,
 		},
 		alternates: {
@@ -75,7 +77,7 @@ export default async function SemesterDetailPage({
 							</Button>
 						</Link>
 						<Link
-							href={`/dashboard/semesters/${result.semesterId}/edit`}
+							href={`/dashboard/semesters/${result.semesterId ?? result.id}/edit`}
 							className='flex justify-center items-center my-4'
 						>
 							<Button
@@ -102,13 +104,13 @@ export default async function SemesterDetailPage({
 									Tên hiển thị năm học
 								</TableCell>
 								<TableCell className='font-medium'>
-									{result.displayAcademicYearName}
+									{result.displayAcademicYearName ?? '_'}
 								</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell className='font-medium'>Mã học kỳ</TableCell>
 								<TableCell className='font-medium'>
-									{result.semesterId}
+									{result.semesterId ?? result.id}
 								</TableCell>
 							</TableRow>
 							<TableRow>
@@ -116,7 +118,7 @@ export default async function SemesterDetailPage({
 									Tên hiển thị học kỳ
 								</TableCell>
 								<TableCell className='font-medium'>
-									{result.semesterName}
+									{result.semesterName || result.name}
 								</TableCell>
 							</TableRow>
 							<TableRow>

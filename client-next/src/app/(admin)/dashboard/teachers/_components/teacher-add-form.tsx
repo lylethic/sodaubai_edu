@@ -74,7 +74,9 @@ export default function TeacherAddForm({ teacher }: { teacher?: Teacher }) {
 				AccountId: data.AccountId,
 				SchoolId: data.SchoolId,
 				Fullname: data.Fullname,
-				DateOfBirth: new Date(data.DateOfBirth),
+				DateOfBirth: data.DateOfBirth
+					? new Date(data.DateOfBirth)
+					: undefined,
 				Gender: data.Gender,
 				Address: data.Address,
 				Status: data.Status,
@@ -177,7 +179,7 @@ export default function TeacherAddForm({ teacher }: { teacher?: Teacher }) {
 								<FormItem>
 									<FormLabel>Trường học</FormLabel>
 									<SchoolSelect
-										selectedSchoolId={field.value}
+										selectedSchoolId={field.value ?? null}
 										onSelectSchool={(schoolId) => field.onChange(schoolId)}
 									/>
 									<FormMessage />
@@ -217,7 +219,7 @@ export default function TeacherAddForm({ teacher }: { teacher?: Teacher }) {
 											{...field}
 											value={
 												field.value
-													? field.value.toISOString().split('T')[0]
+													? new Date(field.value).toISOString().split('T')[0]
 													: ''
 											}
 											onChange={(e) => field.onChange(new Date(e.target.value))}
@@ -267,7 +269,9 @@ export default function TeacherAddForm({ teacher }: { teacher?: Teacher }) {
 											rows={3}
 											placeholder='Nhập địa chỉ'
 											value={
-												field.value !== undefined ? field.value.toString() : ''
+												field.value !== undefined && field.value !== null
+													? field.value.toString()
+													: ''
 											}
 										/>
 									</FormControl>

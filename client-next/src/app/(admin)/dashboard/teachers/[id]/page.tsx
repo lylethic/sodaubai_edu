@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight, Check, Images } from 'lucide-react';
 import Image from 'next/image';
+import { formatDateToDDMMYYYY } from '@/lib/utils';
 
 const getDetailTeacher = cache(teacherApiRequest.teacherDetail);
 
@@ -104,7 +105,11 @@ export default async function TeacherDetail({ params, searchParams }: Props) {
 									</TableRow>
 									<TableRow>
 										<TableCell>Ngày sinh</TableCell>
-										<TableCell>{result.dateOfBirth}</TableCell>
+										<TableCell>
+											{result.dateOfBirth
+												? formatDateToDDMMYYYY(result.dateOfBirth)
+												: '_'}
+										</TableCell>
 									</TableRow>
 									<TableRow>
 										<TableCell>Giới tính</TableCell>
@@ -131,11 +136,23 @@ export default async function TeacherDetail({ params, searchParams }: Props) {
 									</TableRow>
 									<TableRow>
 										<TableCell>Ngày tạo</TableCell>
-										<TableCell>{result.dateCreate}</TableCell>
+										<TableCell>
+											{result.dateCreate || result.dateCreated
+												? formatDateToDDMMYYYY(
+														(result.dateCreate || result.dateCreated)!
+												  )
+												: '_'}
+										</TableCell>
 									</TableRow>
 									<TableRow>
 										<TableCell>Ngày cập nhật</TableCell>
-										<TableCell>{result.dateUpdate}</TableCell>
+										<TableCell>
+											{result.dateUpdate || result.dateUpdated
+												? formatDateToDDMMYYYY(
+														(result.dateUpdate || result.dateUpdated)!
+												  )
+												: '_'}
+										</TableCell>
 									</TableRow>
 								</TableBody>
 							</Table>

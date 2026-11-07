@@ -1,77 +1,68 @@
 import { z } from 'zod';
-
-const SchoolRes = z
-	.object({
-		status: z.number(),
-		message: z.string(),
-		data: z.object({
-			schoolId: z.number(),
-			provinceId: z.number(),
-			districtId: z.number(),
-			nameSchool: z.string({ required_error: 'Vui lòng nhập tên trường học' }),
-			address: z.string({ required_error: 'Vui lòng địa chỉ' }),
-			phoneNumber: z.string({
-				required_error: 'Vui lòng nhập tên số điện thoại trường học',
-			}),
-			schoolType: z.string(),
-			description: z.string().optional(),
-			dateCreated: z.date(),
-			dateUpdated: z.date(),
-		}),
-		pagination: z.object({
-			pageNumber: z.number(),
-			pageSize: z.number(),
-			totalResults: z.number(),
-			totalPages: z.number(),
-		}),
-	})
-	.strict();
-export type SchoolResType = z.TypeOf<typeof SchoolRes>;
-
-export const CreateSchoolBody = z.object({
-	schoolId: z.number(),
-	provinceId: z.number(),
-	districtId: z.number(),
-	nameSchool: z.string({ required_error: 'Vui lòng nhập tên trường học' }),
-	address: z.string({ required_error: 'Vui lòng địa chỉ' }),
-	phoneNumber: z.string({
-		required_error: 'Vui lòng nhập tên số điện thoại trường học',
-	}),
-	schoolType: z.string(),
-	description: z.string().optional(),
-	dateCreated: z.date().nullable(),
-	dateUpdated: z.date().nullable(),
-});
-export type CreateSchoolBodyType = z.TypeOf<typeof CreateSchoolBody>;
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
 export const SchoolSchema = z.object({
-	schoolId: z.number(),
-	provinceId: z.number(),
-	districtId: z.number(),
-	nameSchool: z.string({ required_error: 'Vui lòng nhập tên trường học' }),
-	address: z.string({ required_error: 'Vui lòng địa chỉ' }),
+	id: z.number(),
+	schoolId: z.number().optional(), // backwards compatibility alias
+	name: z.string({ required_error: 'Vui lòng nhập tên trường học' }),
+	nameSchool: z.string().optional(), // backwards compatibility alias
 	phoneNumber: z.string({
-		required_error: 'Vui lòng nhập tên số điện thoại trường học',
+		required_error: 'Vui lòng nhập số điện thoại trường học',
 	}),
-	schoolType: z.string(),
+	schoolType: z.string().nullable().optional(),
+	description: z.string().nullable().optional(),
+	level: z.number().nullable().optional(),
+	provinceId: z.number().nullable().optional(),
+	districtId: z.number().nullable().optional(),
+	address: z.string().nullable().optional(),
+	dateCreated: z.union([z.string(), z.date()]).nullable().optional(),
+	dateUpdated: z.union([z.string(), z.date()]).nullable().optional(),
 });
 
-export const SchoolAddRes = z.object({
-	message: z.string(),
-	data: SchoolSchema,
+export type SchoolDto = z.infer<typeof SchoolSchema>;
+export type SchoolType = SchoolDto;
+
+export const SchoolRes = createApiResponseSchema(SchoolSchema);
+export type SchoolResType = z.infer<typeof SchoolRes>;
+
+export const SchoolListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(SchoolSchema)
+);
+export type SchoolListResType = z.infer<typeof SchoolListRes>;
+
+export const CreateSchoolBody = z.object({
+	name: z
+		.string({ required_error: 'Vui lòng nhập tên trường học' })
+		.min(1, 'Vui lòng nhập tên trường học')
+		.optional(),
+	nameSchool: z.string().optional(),
+	phoneNumber: z
+		.string({ required_error: 'Vui lòng nhập số điện thoại trường học' })
+		.min(1, 'Vui lòng nhập số điện thoại trường học'),
+	schoolType: z.string().optional().nullable(),
+	description: z.string().optional().nullable(),
+	level: z.number().optional().nullable(),
+	schoolId: z.number().optional(),
+	provinceId: z.number().optional().nullable(),
+	districtId: z.number().optional().nullable(),
+	address: z.string().optional().nullable(),
+	dateCreated: z.union([z.string(), z.date()]).nullable().optional(),
+	dateUpdated: z.union([z.string(), z.date()]).nullable().optional(),
 });
-export type SchoolAddResType = z.TypeOf<typeof SchoolAddRes>;
+export type CreateSchoolBodyType = z.infer<typeof CreateSchoolBody>;
 
-export const SchoolListRes = z.object({
-	message: z.string(),
-	data: z.array(SchoolSchema),
+export const UpdateSchoolBody = CreateSchoolBody.extend({
+	id: z.number().optional(),
 });
+export type UpdateSchoolBodyType = z.infer<typeof UpdateSchoolBody>;
 
-export type SchoolListResType = z.TypeOf<typeof SchoolListRes>;
+export const SchoolAddRes = SchoolRes;
+export type SchoolAddResType = SchoolResType;
 
-export const UpdateSchoolBody = CreateSchoolBody;
-export type UpdateSchoolBodyType = z.TypeOf<typeof UpdateSchoolBody>;
-
-export const RoleParams = z.object({
-	schoolId: z.coerce.number(),
+export const SchoolParams = z.object({
+	id: z.coerce.number().optional(),
+	schoolId: z.coerce.number().optional(),
 });

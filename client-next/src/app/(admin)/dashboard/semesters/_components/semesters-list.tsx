@@ -19,7 +19,15 @@ import SemesterUploadButton from './semester-upload-button';
 
 type SemesterType = SemesterResType['data'];
 
-export default function SemestersList() {
+interface SemestersListProps {
+	initialSemesters?: SemesterType[];
+	initialTotalCount?: number;
+}
+
+export default function SemestersList({
+	initialSemesters = [],
+	initialTotalCount = 0,
+}: SemestersListProps) {
 	const router = useRouter();
 	const { toast } = useToast();
 	const [loading, setLoading] = useState(false);
@@ -28,20 +36,28 @@ export default function SemestersList() {
 	const [pageNumber, setPageNumber] = useState<number>(1);
 	const [pageSize, setPageSize] = useState<number>(20);
 
-	const [totalPageCount, setTotalPageCount] = useState<number>(0);
+	const [totalPageCount, setTotalPageCount] =
+		useState<number>(initialTotalCount);
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 	const [rowToDelete, setRowToDelete] = useState<SemesterType | null>(null);
 
-	const [data, setData] = useState<SemesterListResType['data']>([]);
+	const [data, setData] = useState<SemesterType[]>(initialSemesters);
+	const isFirstMount = React.useRef(true);
 
 	const fetchData = async (query: QueryType) => {
 		setLoading(true);
 		try {
 			const response = await semesterApiRequest.semesters(query);
-			const data = response.payload.data;
-			const totalResults = response.payload.pagination?.totalResults;
-			setData(Array.isArray(data) ? data : []);
-			setTotalPageCount(totalResults ?? 0);
+			const payload = response.payload as any;
+			const items =
+				payload?.data?.items ||
+				(Array.isArray(payload?.data) ? payload.data : []);
+			const totalResults =
+				payload?.data?.totalCount ??
+				payload?.pagination?.totalResults ??
+				0;
+			setData(items);
+			setTotalPageCount(totalResults);
 		} catch (error) {
 			handleErrorApi({ error });
 		} finally {
@@ -50,13 +66,18 @@ export default function SemestersList() {
 	};
 
 	useEffect(() => {
-		if (loading) return;
+		if (isFirstMount.current) {
+			isFirstMount.current = false;
+			if (initialSemesters.length > 0 && pageNumber === 1 && pageSize === 20) {
+				return;
+			}
+		}
 		fetchData({ pageNumber, pageSize });
-	}, []);
+	}, [pageNumber, pageSize]);
 
 	const handleEdit = useCallback(
 		(data: SemesterType) =>
-			router.push(`/dashboard/semesters/${data.semesterId}/edit`),
+			router.push(`/dashboard/semesters/${data.semesterId ?? data.id}/edit`),
 		[]
 	);
 
@@ -68,14 +89,15 @@ export default function SemestersList() {
 	const confirmDelete = async () => {
 		if (!rowToDelete) return;
 		try {
-			const response = await semesterApiRequest.delete(rowToDelete.semesterId);
+			const id = rowToDelete.semesterId ?? rowToDelete.id;
+			const response = await semesterApiRequest.delete(id!);
 			toast({
 				description: response.payload.message,
 			});
 
 			// Update state lopHocs
 			setData((prev) =>
-				prev.filter((item) => item.semesterId !== rowToDelete.semesterId)
+				prev.filter((item) => (item.semesterId ?? item.id) !== id)
 			);
 		} catch (error) {
 			handleErrorApi({ error });
@@ -87,7 +109,7 @@ export default function SemestersList() {
 
 	const handleRedirectToDetail = useCallback(
 		(data: SemesterType) =>
-			router.push(`/dashboard/semesters/${data.semesterId}`),
+			router.push(`/dashboard/semesters/${data.semesterId ?? data.id}`),
 		[]
 	);
 
@@ -112,7 +134,7 @@ export default function SemestersList() {
 			<SemesterAddButton />
 			<SemesterUploadButton onRefresh={handleRefresh} />
 			<BulkSemesterAcademicYearDialog
-				selectedItems={selected.map((items) => items.semesterId)}
+				selectedItems={selected.map((items) => (items.semesterId ?? items.id)!)}
 				onDeleted={handleRefresh}
 			/>
 			<DataTable

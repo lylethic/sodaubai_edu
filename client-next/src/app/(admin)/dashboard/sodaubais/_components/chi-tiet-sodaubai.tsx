@@ -17,7 +17,10 @@ import Link from 'next/link';
 import { Edit } from 'lucide-react';
 import { weekApiRequest } from '@/apiRequests/week';
 import { DaysOfWeekResType } from '@/schemaValidations/week.schema';
-import { ChiTietSoDauBaiResType } from '@/schemaValidations/chiTietSoDauBai.schema';
+import {
+	ChiTietSoDauBaiDto,
+	normalizeChiTietSoDauBai,
+} from '@/schemaValidations/chiTietSoDauBai.schema';
 import chiTietSoDauBaiApiRequest from '@/apiRequests/chiTietSoDauBai';
 import FilterChiTietSodauBai from './filter-chi-tiet-sodaubai';
 import ChiTietSoDauBaiAddButton from './chi-tiet-so-dau-bai-add-button';
@@ -39,9 +42,9 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 
 	const [loading, setLoading] = useState(false);
 	const [chiTietSoDauBais, setChiTietSoDauBais] = useState<
-		ChiTietSoDauBaiResType['data'][]
+		ChiTietSoDauBaiDto[]
 	>([]);
-	const [daysOfWeek, setDaysOfWeek] = useState<DaysOfWeekResType['data'][]>([]);
+	const [daysOfWeek, setDaysOfWeek] = useState<DaysOfWeekResType['data']>([]);
 	const [selectedWeekId, setSelectedWeekId] = useState<number>(0);
 	const [selectedAcademicYearId, setSelectedAcademicYearId] =
 		useState<number>(0);
@@ -94,8 +97,9 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 				selectedWeekId,
 				Number(id)
 			);
-			const result = response.payload.data;
-			setChiTietSoDauBais(Array.isArray(result) ? result : []);
+			const result: any = response.payload.data;
+			const rawItems = Array.isArray(result) ? result : (result?.items ?? []);
+			setChiTietSoDauBais(rawItems.map(normalizeChiTietSoDauBai));
 		} catch (error: any) {
 			handleErrorApi({ error });
 		} finally {

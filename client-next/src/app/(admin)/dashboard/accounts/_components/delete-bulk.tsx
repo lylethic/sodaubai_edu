@@ -33,9 +33,9 @@ export default function BulkDeleteAccount({
 				return;
 			}
 
-			const result = await accountApiRequest.bulkDeleteAccount(selected);
+			await accountApiRequest.bulkDeleteAccount(selected);
 
-			toast({ description: result.payload.message });
+			toast({ description: 'Xóa các tài khoản đã chọn thành công' });
 			onDeleted(selected);
 		} catch (error: any) {
 			handleErrorApi({ error });

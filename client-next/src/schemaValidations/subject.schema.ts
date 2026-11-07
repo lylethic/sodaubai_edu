@@ -1,49 +1,46 @@
-import z from 'zod';
+import { z } from 'zod';
+import {
+	createApiResponseSchema,
+	createPaginatedResponseSchema,
+} from './common.schema';
 
-const SubjectSchema = z.object({
-	subjectId: z.number(),
-	subjectName: z.string(),
-	gradeId: z.number(),
-	gradeName: z.string(),
-	displayAcademicYear_Name: z.string(),
-	status: z.boolean(),
-	yearStart: z.string(),
-	yearEnd: z.string(),
+export const SubjectSchema = z.object({
+	id: z.number().optional(),
+	subjectId: z.number().default(0),
+	name: z.string().optional(),
+	subjectName: z.string().default(''),
+	gradeId: z.number().optional().nullable(),
+	gradeName: z.string().optional().nullable(),
+	displayAcademicYear_Name: z.string().optional().nullable(),
+	status: z.boolean().default(true),
+	yearStart: z.union([z.string(), z.date()]).optional().nullable(),
+	yearEnd: z.union([z.string(), z.date()]).optional().nullable(),
+	description: z.string().optional().nullable(),
+	dateCreated: z.union([z.string(), z.date()]).optional().nullable(),
+	dateUpdated: z.union([z.string(), z.date()]).optional().nullable(),
 });
 
-export const SubjectRes = z.object({
-	status: z.number(),
-	message: z.string().nullable(),
-	data: SubjectSchema,
-	pagination: z.object({
-		pageNumber: z.number(),
-		pageSize: z.number(),
-		totalResults: z.number(),
-		totalPages: z.number(),
-	}),
-});
-export type SubjectResType = z.TypeOf<typeof SubjectRes>;
+export type SubjectSchemaType = z.infer<typeof SubjectSchema>;
+export type SubjectDto = SubjectSchemaType;
 
-export const SubjectListRes = z.object({
-	status: z.number(),
-	message: z.string().nullable(),
-	data: z.array(SubjectSchema),
-	pagination: z.object({
-		pageNumber: z.number(),
-		pageSize: z.number(),
-		totalResults: z.number(),
-		totalPages: z.number(),
-	}),
-});
-export type SubjectListResType = z.TypeOf<typeof SubjectListRes>;
+export const SubjectRes = createApiResponseSchema(SubjectSchema);
+export type SubjectResType = z.infer<typeof SubjectRes>;
+
+export const SubjectListRes = createApiResponseSchema(
+	createPaginatedResponseSchema(SubjectSchema)
+);
+export type SubjectListResType = z.infer<typeof SubjectListRes>;
 
 export const CreateSubjectBody = z.object({
-	gradeId: z.number(),
-	subjectId: z.number(),
-	subjectName: z.string(),
-	status: z.boolean(),
+	id: z.number().optional(),
+	subjectId: z.number().optional(),
+	name: z.string().optional(),
+	subjectName: z.string().optional(),
+	gradeId: z.number().optional().nullable(),
+	status: z.boolean().optional(),
+	description: z.string().optional().nullable(),
 });
-export type CreateSubjectBodyType = z.TypeOf<typeof CreateSubjectBody>;
+export type CreateSubjectBodyType = z.infer<typeof CreateSubjectBody>;
 
 export const UpdateSubjectBody = CreateSubjectBody;
-export type UpdateSubjectBodyType = z.TypeOf<typeof UpdateSubjectBody>;
+export type UpdateSubjectBodyType = z.infer<typeof UpdateSubjectBody>;

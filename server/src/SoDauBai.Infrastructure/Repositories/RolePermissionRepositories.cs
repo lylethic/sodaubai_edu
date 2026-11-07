@@ -1,0 +1,49 @@
+using SoDauBai.Infrastructure.Data;
+using SoDauBai.Application.Interfaces.Repositories;
+using SoDauBai.Application.Interfaces.Services;
+using SoDauBai.Domain.Entities;
+using SoDauBai.Application.DTOs;
+using SoDauBai.Application.Common.Models;
+using System.Threading.Tasks;
+
+namespace SoDauBai.Infrastructure.Repositories;
+
+public class RolePermissionRepositories : BaseRepository<RolePermission>, IRolePermission
+{
+  public RolePermissionRepositories(SoDauBaiContext context) : base(context)
+  {
+  }
+
+  public async Task<PaginatedResponse<RolePermission>> GetRolePermissions(QueryObject request)
+  {
+    return await GetOffsetPagedAsync(request.PageSize, (request.PageNumber - 1) * request.PageSize, request.Keyword);
+  }
+
+  public async Task<RolePermission?> GetRolePermission(int id)
+  {
+    return await GetByIdAsync(id);
+  }
+
+  public async Task<RolePermission> AddRolePermission(RolePermission entity)
+  {
+    return await AddAsync(entity);
+  }
+
+  public async Task<RolePermission> UpdateRolePermission(RolePermission entity)
+  {
+    var existing = await GetByIdAsync(entity.Id);
+    if (existing == null) throw new System.Exception("RolePermission not found");
+
+    if (entity.RoleId != 0) existing.RoleId = entity.RoleId;
+    if (entity.PermissionId != 0) existing.PermissionId = entity.PermissionId;
+
+    existing.DateUpdated = System.DateTime.UtcNow;
+    return await UpdateAsync(existing);
+  }
+
+  public async Task<bool> DeleteRolePermission(int id)
+  {
+    return await SoftDeleteAsync(id);
+  }
+}
+

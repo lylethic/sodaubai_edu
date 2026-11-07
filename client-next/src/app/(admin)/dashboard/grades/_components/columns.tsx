@@ -59,6 +59,9 @@ export const getGradesColumns = ({
 	{
 		accessorKey: 'gradeId',
 		header: 'Mã khối lớp',
+		cell: ({ row }) => (
+			<span>{row.original.gradeId || row.original.id}</span>
+		),
 	},
 	{
 		accessorKey: 'academicYearId',
@@ -85,6 +88,9 @@ export const getGradesColumns = ({
 	{
 		accessorKey: 'gradeName',
 		header: 'Tên khối',
+		cell: ({ row }) => (
+			<span>{row.original.gradeName || row.original.name}</span>
+		),
 	},
 	{
 		accessorKey: 'description',

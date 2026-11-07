@@ -1,5 +1,5 @@
 import { xepLoaiApiRequest } from '@/apiRequests/xeploaiTiethoc';
-import { ClassifyResType } from '@/schemaValidations/xepLoaiTietHoc.schema';
+import { ClassificationResType } from '@/schemaValidations/xepLoaiTietHoc.schema';
 import React, { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 import {
@@ -9,8 +9,10 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { Ban, Check, ChevronsUpDown } from 'lucide-react';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type ClassifyType = ClassificationResType['data'];
 
 interface Props {
 	selected: number | null;
@@ -21,17 +23,16 @@ export default function XepLoaiTietHocSelect({
 	selected,
 	onSelectedClassify,
 }: Props) {
-	const [classifications, setClassifications] = useState<
-		ClassifyResType['data'][]
-	>([]);
+	const [classifications, setClassifications] = useState<ClassifyType[]>([]);
 
 	const { setValue } = useFormContext();
 	useEffect(() => {
 		const fetchXepLoai = async () => {
 			try {
 				const response = await xepLoaiApiRequest.xeploaisNoPagination();
-				const data = response.payload.data;
-				const result = Array.isArray(data) ? data : [data];
+				const data = (response.payload as any)?.data;
+				const result =
+					data?.items ?? (Array.isArray(data) ? data : []);
 				setClassifications(result);
 			} catch (error) {}
 		};
@@ -39,35 +40,44 @@ export default function XepLoaiTietHocSelect({
 		fetchXepLoai();
 	}, []);
 
+	const selectedItem = classifications.find(
+		(item) => (item.classificationId || item.id) === selected
+	);
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant='outline' className='w-full justify-between'>
-					{classifications.find((item) => item.classificationId === selected)
-						?.classifyName || 'Chọn xếp loại tiết học...'}
+					{selectedItem?.classifyName ||
+						selectedItem?.name ||
+						'Chọn xếp loại tiết học...'}
 					<ChevronsUpDown className='ml-2 h-4 w-4 opacity-50' />
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className='w-full max-h-60 overflow-y-auto'>
-				{classifications.map((key) => (
-					<DropdownMenuItem
-						key={key.classificationId}
-						onClick={() => {
-							onSelectedClassify(key.classificationId);
-							setValue('classificationId', key.classificationId);
-						}}
-					>
-						<Check
-							className={cn(
-								'mr-2 h-4 w-4',
-								key.classificationId === selected ? 'opacity-100' : 'opacity-0'
-							)}
-						/>
-						<div className='w-full flex items-center justify-between'>
-							{key.classifyName}
-						</div>
-					</DropdownMenuItem>
-				))}
+				{classifications.map((key) => {
+					const id = key.classificationId || key.id || 0;
+					const name = key.classifyName || key.name || '';
+					return (
+						<DropdownMenuItem
+							key={id}
+							onClick={() => {
+								onSelectedClassify(id);
+								setValue('classificationId', id);
+							}}
+						>
+							<Check
+								className={cn(
+									'mr-2 h-4 w-4',
+									id === selected ? 'opacity-100' : 'opacity-0'
+								)}
+							/>
+							<div className='w-full flex items-center justify-between'>
+								{name}
+							</div>
+						</DropdownMenuItem>
+					);
+				})}
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

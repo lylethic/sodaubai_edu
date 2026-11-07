@@ -12,7 +12,7 @@ const getDetail = cache(phanCongGiangDayApiRequest.phanCongGiangDay);
 
 type Props = {
 	params: { id: string };
-	searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+	searchParams?: { [key: string]: string | string[] | undefined };
 };
 
 export async function generateMetadata(
@@ -29,10 +29,10 @@ export async function generateMetadata(
 		'/dashboard/assign-teachers/' +
 		account.phanCongGiangDayId;
 	return {
-		title: account.className,
+		title: account?.className || '',
 		openGraph: {
 			...baseOpenGraph,
-			title: account.className,
+			title: account?.className || '',
 			url,
 		},
 		alternates: {

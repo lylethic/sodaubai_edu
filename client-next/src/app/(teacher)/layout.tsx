@@ -1,17 +1,21 @@
-import Header from '@/components/header/header';
-import React from 'react';
+import Header from "@/components/header/header";
+import FloatingBottomNav from "@/components/header/header-floating-navbar";
+import React from "react";
 
 export default function TeacherLayout({
-	children,
+  children,
 }: Readonly<{
-	children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-	return (
-		<div className='h-screen w-full overflow-y-auto overflow-x-hidden'>
-			<Header />
-			<main className='p-6'>
-				<div>{children}</div>
-			</main>
-		</div>
-	);
+  return (
+    <div className='h-dvh w-full overflow-y-auto'>
+        <Header />
+
+        <main className='mx-auto w-full max-w-7xl px-4 pb-28 lg:pb-6'>
+            <div>{children}</div>
+        </main>
+
+        <FloatingBottomNav />
+    </div>
+  );
 }

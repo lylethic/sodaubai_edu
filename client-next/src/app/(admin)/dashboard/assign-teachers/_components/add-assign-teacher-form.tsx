@@ -137,7 +137,7 @@ export default function AssignTeacherAddForm({
 									<FormLabel>Năm học</FormLabel>
 									<FormControl>
 										<NamHocSelect
-											selectedNamHoc={field.value}
+											selectedNamHoc={field.value ?? null}
 											onSelectedNamHoc={(key) => field.onChange(key)}
 										/>
 									</FormControl>
@@ -172,7 +172,7 @@ export default function AssignTeacherAddForm({
 									<FormControl>
 										<TeachersBySchoolSelect
 											selectedSchoolId={selectedSchoolId}
-											selectedTeacherId={field.value}
+											selectedTeacherId={field.value ?? 0}
 											onSelectTeacher={(teacherId) => field.onChange(teacherId)}
 										/>
 									</FormControl>
@@ -209,6 +209,7 @@ export default function AssignTeacherAddForm({
 											placeholder='Ghi chú'
 											rows={3}
 											{...field}
+											value={field.value ?? ''}
 										/>
 									</FormControl>
 									<FormMessage />

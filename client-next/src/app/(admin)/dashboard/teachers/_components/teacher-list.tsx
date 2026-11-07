@@ -40,10 +40,13 @@ export function TeacherList() {
 
 		try {
 			const response = await teacherApiRequest.teachersBySchool(query, school);
-			const { data, pagination } = response.payload;
+			const { data, pagination } = response.payload as any;
+            console.log(data);
+            
 
-			const result = Array.isArray(data) ? data : [];
-			const totalResults = pagination.totalResults;
+			const result = data?.items ?? (Array.isArray(data) ? data : []);
+			const totalResults =
+				data?.totalCount ?? pagination?.totalResults ?? 0;
 
 			setTeachers(result);
 			setTotalPageCount(totalResults);

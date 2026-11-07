@@ -54,32 +54,29 @@ export const getSchoolColumns = ({
 		},
 	},
 	{
-		accessorKey: 'schoolId',
+		accessorKey: 'id',
 		header: 'Mã trường học',
+		cell: ({ row }) => <span>{row.original.id ?? row.original.schoolId}</span>,
 	},
 	{
-		accessorKey: 'provinceId',
-		header: 'Mã tỉnh',
-	},
-	{
-		accessorKey: 'districtId',
-		header: 'Mã huyện',
-	},
-	{
-		accessorKey: 'nameSchool',
+		accessorKey: 'name',
 		header: 'Tên trường học',
-	},
-	{
-		accessorKey: 'address',
-		header: 'Địa chỉ trường học',
+		cell: ({ row }) => (
+			<span>{row.original.name || row.original.nameSchool}</span>
+		),
 	},
 	{
 		accessorKey: 'phoneNumber',
-		header: 'Số điện thoại trường học',
+		header: 'Số điện thoại',
 	},
 	{
 		accessorKey: 'schoolType',
-		header: 'Phân loại trường học',
+		header: 'Phân loại',
+	},
+	{
+		accessorKey: 'level',
+		header: 'Cấp học',
+		cell: ({ row }) => <span>{row.original.level ?? '_'}</span>,
 	},
 	{
 		accessorKey: 'description',

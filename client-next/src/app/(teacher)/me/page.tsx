@@ -1,15 +1,14 @@
 import React from 'react';
-import MeProfile from '../_components/user-infor';
+import MeProfile from '@/components/profile/me-profile';
 
 export default function Profile() {
 	return (
-		<>
-			<div className='overflow-x-auto border rounded-xl p-4'>
-				<h1 className='text-center mt-4 text-lg uppercase font-bold'>
-					hồ sơ giáo viên
-				</h1>
-				<MeProfile />
-			</div>
-		</>
+		<div className='container mx-auto py-6 px-4'>
+			<h1 className='text-center mb-6 text-2xl uppercase font-bold tracking-wide'>
+				Thông tin cá nhân
+			</h1>
+			<MeProfile />
+		</div>
 	);
 }
+

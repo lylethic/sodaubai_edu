@@ -1,139 +1,183 @@
-import http from '@/lib/http';
-import { QueryType } from '@/types/queryType';
-import { MessageResType } from '@/schemaValidations/common.schema';
+import http from "@/lib/http";
+import { MessageResType } from "@/schemaValidations/common.schema";
 import {
-	CreateTeacherBodyType,
-	TeacherDetailResType,
-	TeacherResType,
-	UpdateTeacherBodyType,
-} from '@/schemaValidations/teacher.schema';
+  CreateTeacherBodyType,
+  TeacherListResType,
+  TeacherResType,
+  UpdateTeacherBodyType,
+} from "@/schemaValidations/teacher.schema";
+import { ApiResponse, buildQueryString, QueryObject } from "@/types/api";
+import { QueryType } from "@/types/queryType";
 
-const teacherApiRequest = {
-	create: (body: CreateTeacherBodyType) => {
-		const formData = new FormData();
-		formData.append('AccountId', body.AccountId.toString());
-		formData.append('SchoolId', body.SchoolId.toString());
-		formData.append('Fullname', body.Fullname);
-		formData.append(
-			'DateOfBirth',
-			body.DateOfBirth.toISOString().split('T')[0]
-		);
-		formData.append('Gender', body.Gender.toString());
-		formData.append('Address', body.Address);
-		formData.append('Status', body.Status.toString());
+export interface TeacherQuery extends QueryObject {
+  schoolId?: number | null;
+  userId?: number | null;
+}
 
-		if (body.PhotoPath instanceof File) {
-			formData.append('PhotoPath', body.PhotoPath, body.PhotoPath.name);
-		}
-		return http.post<TeacherResType>('/Teachers', formData);
-	},
+const normalizeTeacher = (item: any) => {
+  if (!item) return item;
+  const id = item.id ?? item.teacherId ?? 0;
+  const userId = item.userId ?? item.accountId ?? 0;
+  return {
+    ...item,
+    id,
+    teacherId: item.teacherId ?? id,
+    userId,
+    accountId: item.accountId ?? userId,
+  };
+};
 
-	addPhoto: (body: FormData) =>
-		http.post<{
-			data: string;
-		}>(`/Teachers/add-photo`, body),
+export const teacherApiRequest = {
+  teachers: async (query: QueryType | TeacherQuery, token?: string) => {
+    const res = await http.get<TeacherListResType>(
+      `/v1/teachers${buildQueryString(query as QueryObject)}`,
+      {
+        token,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+      },
+    );
+    if (res.payload?.data?.items) {
+      res.payload.data.items = res.payload.data.items.map(normalizeTeacher);
+    }
+    return res;
+  },
 
-	teacher: (id: number) => http.get<TeacherResType>(`/Teachers/${id}`),
+  teachersNoPagination: async (token?: string) => {
+    const res = await http.get<TeacherListResType>(
+      "/v1/teachers?pageNumber=1&pageSize=100",
+      {
+        token,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+      },
+    );
+    if (res.payload?.data?.items) {
+      res.payload.data.items = res.payload.data.items.map(normalizeTeacher);
+    }
+    return res;
+  },
 
-	teachers: (query: QueryType) =>
-		http.get<TeacherResType>(
-			`/Teachers?pageNumber=${query.pageNumber}&pageSize=${query.pageSize}`,
-			{
-				cache: 'no-store',
-			}
-		),
+  teacher: async (id: number, token?: string) => {
+    const res = await http.get<TeacherResType>(`/v1/teachers/${id}`, {
+      token,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      cache: "no-store",
+    });
+    if (res.payload?.data) {
+      res.payload.data = normalizeTeacher(res.payload.data);
+    }
+    return res;
+  },
 
-	teacherByAccountId: (id: number | null) =>
-		http.get<TeacherResType>(`/Teachers/teacher-by-account/${id}`, {
-			cache: 'no-store',
-		}),
+  teacherDetail: async (id: number, token?: string) => {
+    return teacherApiRequest.teacher(id, token);
+  },
 
-	teacherDetail: (id: number, token: string) =>
-		http.get<TeacherResType>(`/Teachers/${id}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		}),
+  teacherDetailToUpdate: async (id: number, token?: string) => {
+    return teacherApiRequest.teacher(id, token);
+  },
 
-	teacherDetailToUpdate: (id: number, token: string) =>
-		http.get<TeacherDetailResType>(`/Teachers/teacher-to-update/${id}`, {
-			headers: {
-				Authorization: `Bearer ${token}`,
-			},
-		}),
+  teachersBySchool: async (
+    query: QueryType,
+    schoolId?: number | null,
+    token?: string,
+  ) => {
+    const queryObj = {
+      ...query,
+      schoolId: schoolId ? schoolId : undefined,
+    };
+    return teacherApiRequest.teachers(queryObj, token);
+  },
 
-	countTeachersBySchool: (id?: number) =>
-		http.get<number | null>(`/Teachers/count-amount-of-teachers?id=${id}`),
+  teachersBySchoolNoLimit: async (
+    page: QueryType,
+    schoolId: number,
+    token?: string,
+  ) => {
+    return teacherApiRequest.teachers(
+      { ...page, schoolId, pageSize: 1000 },
+      token,
+    );
+  },
 
-	countAllTeachers: (signal?: AbortSignal | undefined) =>
-		http.get<number | null>('/Teachers/count-amount-of-teachers', { signal }),
+  teacherByAccountId: async (userId?: number | null, token?: string) => {
+    const res = await http.get<TeacherListResType>(
+      `/v1/teachers?userId=${userId ?? ""}&pageNumber=1&pageSize=1`,
+      {
+        token,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+      },
+    );
+    const items = res.payload?.data?.items || [];
+    const first = items.length > 0 ? normalizeTeacher(items[0]) : null;
+    return {
+      ...res,
+      payload: {
+        ...res.payload,
+        data: first,
+      },
+    };
+  },
 
-	teachersBySchool: (query: QueryType, id?: number) => {
-		const queries = id
-			? `schoolId=${id}&pageNumber=${query.pageNumber}&pageSize=${query.pageSize}`
-			: `&pageNumber=${query.pageNumber}&pageSize=${query.pageSize}`;
+  create: (body: CreateTeacherBodyType) => {
+    const payload = {
+      userId: body.userId ?? body.userId ?? 0,
+      schoolId: body.schoolId ?? 0,
+      fullname: body.fullname,
+      dateOfBirth: body.dateOfBirth,
+      gender: body.gender ?? true,
+      address: body.address,
+      status: body.status ?? true,
+      photoPath: body.photoPath,
+    };
+    return http.post<TeacherResType>("/v1/teachers", payload);
+  },
 
-		return http.get<TeacherResType>(`/Teachers/teachers-by-school?${queries}`, {
-			cache: 'no-store',
-		});
-	},
+  update: (id: number, body: UpdateTeacherBodyType) => {
+    const payload = {
+      userId: body.userId ?? body.userId,
+      schoolId: body.schoolId,
+      fullname: body.fullname,
+      dateOfBirth: body.dateOfBirth,
+      gender: body.gender,
+      address: body.address,
+      status: body.status,
+      photoPath: body.photoPath,
+    };
+    return http.put<TeacherResType>(`/v1/teachers/${id}`, payload);
+  },
 
-	teachersBySchoolNoLimit: (page: QueryType, schoolId: number) =>
-		http.get<TeacherResType>(
-			`/Teachers/teachers-by-school?pageNumber=${page.pageNumber}&pageSize=${page.pageSize}&schoolId=${schoolId}`,
-			{
-				cache: 'no-store',
-			}
-		),
+  uploadAvatar: (formData: FormData) =>
+    http.post<TeacherResType>("/v1/teachers/upload", formData),
 
-	delete: (id: number) => http.delete<MessageResType>(`/Teachers/${id}`),
+  delete: (id: number) =>
+    http.delete<ApiResponse<boolean>>(`/v1/teachers/${id}`),
 
-	bulkDelete: (ids: number[]) =>
-		http.delete<MessageResType>(`/Teachers/bulk-delete`, ids),
+  bulkDelete: (ids: number[]) =>
+    http.delete<ApiResponse<boolean>>("/v1/teachers/bulkdelete", ids),
 
-	update: (id: number, body: UpdateTeacherBodyType) => {
-		const formData = new FormData();
-		formData.append('accountId', body.accountId.toString());
-		formData.append('schoolId', body.schoolId.toString());
-		formData.append('fullname', body.fullname);
-		formData.append(
-			'dateOfBirth',
-			body.dateOfBirth.toISOString().split('T')[0]
-		);
-		formData.append('gender', body.gender.toString());
-		formData.append('address', body.address);
-		formData.append('status', body.status.toString());
+  bulkdelete: (ids: number[]) =>
+    http.delete<ApiResponse<boolean>>("/v1/teachers/bulkdelete", ids),
 
-		if (body.photoPath instanceof File) {
-			formData.append('photoPath', body.photoPath, body.photoPath.name);
-		}
-		return http.put<TeacherResType>(`/Teachers/${id}`, formData);
-	},
+  importExcel: (formData: FormData) =>
+    http.post<MessageResType>("/v1/teachers/upload-excel", formData),
 
-	importExcel: (body: FormData) => {
-		return http.post<{
-			message: string;
-			data: string;
-		}>(`/Teachers/upload`, body);
-	},
-
-	relativeSearchTeachers: (
-		pageNumber: number,
-		pageSize: number,
-		schoolId?: number,
-		name?: string
-	) => {
-		const params = new URLSearchParams({
-			...(schoolId && { schoolId: schoolId.toString() }),
-			...(name && { name: name }),
-			pageNumber: pageNumber.toString(),
-			pageSize: pageSize.toString(),
-		}).toString();
-
-		return http.get<TeacherResType>(`/Teachers/search?${params}`, {
-			cache: 'no-store',
-		});
-	},
+  relativeSearchTeachers: (
+    pageNumber: number,
+    pageSize: number,
+    schoolId?: number,
+    name?: string,
+  ) => {
+    const queryObj: TeacherQuery = {
+      pageNumber,
+      pageSize,
+      schoolId: schoolId || undefined,
+      keyword: name || undefined,
+    };
+    return teacherApiRequest.teachers(queryObj);
+  },
 };
 
 export default teacherApiRequest;
