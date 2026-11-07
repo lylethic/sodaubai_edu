@@ -1,169 +1,161 @@
-import http from '@/lib/http';
+import http from "@/lib/http";
 import {
-	AccountDetailResType,
-	AccountAddResType,
-	AccountResType,
-	AccountListResType,
-	CreateAccountBodyType,
-	UpdateAccountBodyType,
-} from '@/schemaValidations/account.schema';
-import { MessageResType } from '@/schemaValidations/common.schema';
-import { ApiResponse, buildQueryString, QueryObject } from '@/types/api';
+  UserDetailResType,
+  UserAddResType,
+  UserResType,
+  UserListResType,
+  CreateUserBodyType,
+  UpdateUserBodyType,
+} from "@/schemaValidations/account.schema";
+import { MessageResType } from "@/schemaValidations/common.schema";
+import { ApiResponse, buildQueryString, QueryObject } from "@/types/api";
 
 const accountApiRequest = {
-	/**
-	 * Get paginated list of users from /api/v1/user
-	 */
-	getUsers: (query?: QueryObject & { schoolId?: number | null }, token?: string) =>
-		http.get<AccountListResType>(`/v1/user${buildQueryString(query)}`, {
-			token,
-			cache: 'no-store',
-		}),
+  /**
+   * Get paginated list of users from /api/v1/user
+   */
+  getUsers: (
+    query?: QueryObject & { schoolId?: number | null; status?: boolean | null },
+    token?: string,
+  ) =>
+    http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+      cache: "no-store",
+    }),
 
-	/**
-	 * Backwards compatible accounts call
-	 */
-	accounts: (
-		pageNumber: number = 1,
-		pageSize: number = 20,
-		schoolId?: number | null,
-		token?: string
-	) => {
-		const query: Record<string, any> = { pageNumber, pageSize };
-		if (schoolId) query.schoolId = schoolId;
-		return http.get<AccountListResType>(`/v1/user${buildQueryString(query)}`, {
-			token,
-			cache: 'no-store',
-		});
-	},
+  /**
+   * Backwards compatible accounts call
+   */
+  accounts: (
+    pageNumber: number = 1,
+    pageSize: number = 20,
+    schoolId?: number | null,
+    token?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (schoolId) query.schoolId = schoolId;
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+      cache: "no-store",
+    });
+  },
 
-	getAccountsBySchool: (
-		idSchool: number | null,
-		pageNumber: number = 1,
-		pageSize: number = 20,
-		token?: string
-	) => {
-		const query: Record<string, any> = { pageNumber, pageSize };
-		if (idSchool) query.schoolId = idSchool;
-		return http.get<AccountListResType>(`/v1/user${buildQueryString(query)}`, {
-			token,
-			cache: 'no-store',
-		});
-	},
+  getAccountsBySchool: (
+    idSchool: number | null,
+    pageNumber: number = 1,
+    pageSize: number = 20,
+    token?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (idSchool) query.schoolId = idSchool;
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+      cache: "no-store",
+    });
+  },
 
-	accountsSelect: (token?: string) =>
-		http.get<AccountListResType>(`/v1/user?pageNumber=1&pageSize=100`, {
-			token,
-			cache: 'no-store',
-		}),
+  accountsSelect: (token?: string) =>
+    http.get<UserListResType>(`/v1/user?pageNumber=1&pageSize=100`, {
+      token,
+      cache: "no-store",
+    }),
 
-	accountsServer: (pageNumber: number, pageSize: number, token: string) =>
-		http.get<AccountListResType>(
-			`/v1/user?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-			{
-				token,
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-				cache: 'no-store',
-			}
-		),
+  accountsServer: (pageNumber: number, pageSize: number, token: string) =>
+    http.get<UserListResType>(
+      `/v1/user?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+      {
+        token,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        cache: "no-store",
+      },
+    ),
 
-	getDetail: (id: number, token?: string) =>
-		http.get<AccountResType>(`/v1/user/${id}`, {
-			token,
-			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-			cache: 'no-store',
-		}),
+  getUser: (id: number, token?: string) =>
+    http.get<UserResType>(`/v1/user/${id}`, {
+      token,
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    }),
 
-	getAccountById: (id: number, token?: string) =>
-		http.get<AccountResType>(`/v1/user/${id}`, {
-			token,
-			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-		}),
+  accountsByRoleIdSchoolId: (
+    pageNumber: number,
+    pageSize: number,
+    roleId?: number,
+    schoolId?: number,
+    token?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (schoolId) query.schoolId = schoolId;
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      token,
+    });
+  },
 
-	getAccountHasName: (id: number, token?: string) =>
-		http.get<AccountResType>(`/v1/user/${id}`, {
-			token,
-			headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-		}),
+  countNumberOfAccounts: (token?: string) =>
+    http.get<UserListResType>("/v1/user?pageNumber=1&pageSize=1", {
+      token,
+      cache: "no-store",
+    }),
 
-	accountsByRoleIdSchoolId: (
-		pageNumber: number,
-		pageSize: number,
-		roleId?: number,
-		schoolId?: number,
-		token?: string
-	) => {
-		const query: Record<string, any> = { pageNumber, pageSize };
-		if (schoolId) query.schoolId = schoolId;
-		return http.get<AccountListResType>(`/v1/user${buildQueryString(query)}`, {
-			token,
-		});
-	},
+  countNumberOfAccountsBySchool: (id: number, token?: string) =>
+    http.get<UserListResType>(
+      `/v1/user?schoolId=${id}&pageNumber=1&pageSize=1`,
+      {
+        token,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        cache: "no-store",
+      },
+    ),
 
-	countNumberOfAccounts: (token?: string) =>
-		http.get<AccountListResType>('/v1/user?pageNumber=1&pageSize=1', {
-			token,
-			cache: 'no-store',
-		}),
+  addAccount: (body: CreateUserBodyType) => {
+    const payload = {
+      schoolId: body.schoolId || body.SchoolId || 0,
+      email: body.email || body.Email || "",
+      username: body.username || (body.email || body.Email || "").split("@")[0],
+      avatar: body.avatar || null,
+      passwordHash: body.password || body.passwordHash || body.Password || "",
+    };
+    return http.post<UserAddResType>("/v1/user", payload);
+  },
 
-	countNumberOfAccountsBySchool: (id: number, token?: string) =>
-		http.get<AccountListResType>(
-			`/v1/user?schoolId=${id}&pageNumber=1&pageSize=1`,
-			{
-				token,
-				headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-				cache: 'no-store',
-			}
-		),
+  updateAccount: (id: number, body: UpdateUserBodyType) =>
+    http.put<UserAddResType>(`/v1/user/${id}`, { id, ...body }),
 
-	addAccount: (body: CreateAccountBodyType) => {
-		const payload = {
-			schoolId: body.schoolId || body.SchoolId || 0,
-			email: body.email || body.Email || '',
-			username: body.username || (body.email || body.Email || '').split('@')[0],
-			avatar: body.avatar || null,
-			passwordHash: body.password || body.passwordHash || body.Password || '',
-		};
-		return http.post<AccountAddResType>('/v1/user', payload);
-	},
+  deleteAccount: (id: number) =>
+    http.delete<ApiResponse<boolean>>(`/v1/user/${id}`),
 
-	updateAccount: (id: number, body: UpdateAccountBodyType) =>
-		http.put<AccountAddResType>(`/v1/user/${id}`, { id, ...body }),
+  bulkDeleteAccount: (ids: number[]) => {
+    // Sequentially or parallel delete for endpoints without dedicated bulk
+    return Promise.all(
+      ids.map((id) => http.delete<ApiResponse<boolean>>(`/v1/user/${id}`)),
+    );
+  },
 
-	deleteAccount: (id: number) =>
-		http.delete<ApiResponse<boolean>>(`/v1/user/${id}`),
+  uploadAvatar: (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append("id", id.toString());
+    formData.append("file", file);
+    return http.post<UserResType>("/v1/user/upload", formData);
+  },
 
-	bulkDeleteAccount: (ids: number[]) => {
-		// Sequentially or parallel delete for endpoints without dedicated bulk
-		return Promise.all(ids.map((id) => http.delete<ApiResponse<boolean>>(`/v1/user/${id}`)));
-	},
+  importExcel: (formData: FormData) =>
+    http.post<MessageResType>("/v1/user/upload", formData),
 
-	uploadAvatar: (id: number, file: File) => {
-		const formData = new FormData();
-		formData.append('id', id.toString());
-		formData.append('file', file);
-		return http.post<AccountResType>('/v1/user/upload', formData);
-	},
+  relativeSearchAccounts: (
+    pageNumber: number,
+    pageSize: number,
+    schoolId?: number,
+    keyword?: string,
+  ) => {
+    const query: Record<string, any> = { pageNumber, pageSize };
+    if (schoolId) query.schoolId = schoolId;
+    if (keyword) query.keyword = keyword;
 
-	importExcel: (formData: FormData) =>
-		http.post<MessageResType>('/v1/user/upload', formData),
-
-	relativeSearchAccounts: (
-		pageNumber: number,
-		pageSize: number,
-		schoolId?: number,
-		keyword?: string
-	) => {
-		const query: Record<string, any> = { pageNumber, pageSize };
-		if (schoolId) query.schoolId = schoolId;
-		if (keyword) query.keyword = keyword;
-
-		return http.get<AccountListResType>(`/v1/user${buildQueryString(query)}`, {
-			cache: 'no-store',
-		});
-	},
+    return http.get<UserListResType>(`/v1/user${buildQueryString(query)}`, {
+      cache: "no-store",
+    });
+  },
 };
 
 export default accountApiRequest;

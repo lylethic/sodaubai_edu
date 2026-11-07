@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SoDauBai.Infrastructure.Data;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 using SoDauBai.Domain.Entities;
@@ -50,7 +51,7 @@ namespace SoDauBai.Infrastructure.Repositories
       }
     }
 
-    public async Task<ResponseData<WeeklyEvaluation>> GetAllByWeek(int weekId)
+    public async Task<ResponseData<WeeklyEvaluation>> GetAllByWeek(int weekId, QueryObject query)
     {
       try
       {
@@ -59,17 +60,28 @@ namespace SoDauBai.Infrastructure.Repositories
           return new ResponseData<WeeklyEvaluation>(400, "Vui lòng nhập mã tuần học");
         }
 
-        var result = await _context.WeeklyEvaluations
-            .Where(x => x.WeekId == weekId)
+        var weeklyEvaluations = _context.WeeklyEvaluations
+            .Where(x => x.WeekId == weekId);
+        var total = await weeklyEvaluations.CountAsync();
+        var result = await weeklyEvaluations
             .Include(x => x.Teacher)
             .Include(x => x.Class)
             .AsNoTracking()
+            .OrderBy(x => x.Id)
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
             .ToListAsync();
 
         if (result is null)
           return new ResponseData<WeeklyEvaluation>(404, "Tuần học này chưa có thống kê");
 
-        return new ResponseData<WeeklyEvaluation>(200, "Thành công", result);
+        return new ResponseData<WeeklyEvaluation>
+        {
+          StatusCode = 200,
+          Message = "Success",
+          ListData = result,
+          Total = total
+        };
       }
       catch (Exception ex)
       {

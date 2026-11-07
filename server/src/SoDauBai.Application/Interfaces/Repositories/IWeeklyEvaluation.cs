@@ -1,4 +1,5 @@
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Domain.Entities;
 using SoDauBai.Application.DTOs.Types.Weekly;
 
@@ -10,7 +11,7 @@ namespace SoDauBai.Application.Interfaces.Repositories
     Task<ResponseData<WeeklyEvaluation>> Update(int id, WeeklyEvaluationDto model);
     Task<ResponseData<WeeklyEvaluation>> Delete(int id);
     Task<ResponseData<WeeklyEvaluation>> BulkDelete(List<int> ids);
-    Task<ResponseData<WeeklyEvaluation>> GetAllByWeek(int weekId);
+    Task<ResponseData<WeeklyEvaluation>> GetAllByWeek(int weekId, QueryObject query);
     Task<ResponseData<WeeklyEvaluationRes>> GetAllScoreByWeek(int schoolId, int weekId, int gradeId);
     Task<ResponseData<WeeklyEvaluation>> GetById(int id);
     Task<double> GetTotalScoreByWeekId(int id);

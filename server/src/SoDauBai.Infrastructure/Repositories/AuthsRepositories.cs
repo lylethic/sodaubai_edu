@@ -8,6 +8,7 @@ using SoDauBai.Application.Interfaces.Services;
 using SoDauBai.Domain.Entities;
 using SoDauBai.Application.DTOs.Types.Auth;
 using System.Security.Claims;
+using SoDauBai.Infrastructure.Services;
 
 namespace SoDauBai.Infrastructure.Repositories;
 
@@ -20,7 +21,6 @@ public class AuthsRepositories : IAuths
     private readonly IRole _roleRepo;
     private readonly IUserRole _userRoleRepo;
     private readonly IPermission _permission;
-
     public AuthsRepositories(SoDauBaiContext context, IHttpContextAccessor httpContextAccessor, IConfiguration config, ITokenService tokenService, IRole roleRepo, IUserRole userRoleRepo, IPermission permission)
     {
         _context = context;
@@ -90,6 +90,26 @@ public class AuthsRepositories : IAuths
         var accessToken = _tokenService.GenerateAccessToken(claims);
         _tokenService.SetJWTTokenCookie(accessToken);
 
+        var userInfo = await (from u in _context.Users.AsNoTracking()
+                              where u.Id == user.Id
+                              join s in _context.Schools.AsNoTracking() on u.SchoolId equals s.Id into schoolJoin
+                              from s in schoolJoin.DefaultIfEmpty()
+                              join t in _context.Teachers.AsNoTracking().Where(x => x.Deleted == false) on u.Id equals t.UserId into teacherJoin
+                              from t in teacherJoin.DefaultIfEmpty()
+                              select new UserLoginInfoDto
+                              {
+                                  Id = u.Id,
+                                  Email = u.Email,
+                                  Username = u.Username,
+                                  Avatar = u.Avatar,
+                                  SchoolId = u.SchoolId,
+                                  SchoolName = s != null ? s.Name : null,
+                                  SchoolType = s != null ? s.SchoolType : null,
+                                  SchoolPhoneNumber = s != null ? s.PhoneNumber : null,
+                                  TeacherId = t != null ? t.Id : null,
+                                  FullName = t != null ? t.Fullname : null
+                              }).FirstOrDefaultAsync();
+
         return new LoginResType
         {
             IsSuccess = true,
@@ -99,6 +119,7 @@ public class AuthsRepositories : IAuths
             {
                 Token = accessToken,
                 ExpiresAt = DateTime.UtcNow.AddHours(Convert.ToInt16(_config["JwtSettings:AccessTokenExpirationHours"])),
+                UserInfo = userInfo
             }
         };
     }
@@ -195,13 +216,32 @@ public class AuthsRepositories : IAuths
                 return new LogoutResType(404, false, "User not found");
             }
 
-            // Remove refresh token in DB
-            var session = await _context.Sessions
-                .FirstOrDefaultAsync(s => s.Id == user.Id);
+            var httpContext = _httpContextAccessor.HttpContext;
+            var authorization = httpContext?.Request.Headers.Authorization.ToString();
+            var token = authorization?.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) == true
+                ? authorization["Bearer ".Length..].Trim()
+                : httpContext?.Request.Cookies["jwtAccessToken"];
 
-            if (session != null)
+            if (string.IsNullOrWhiteSpace(token))
             {
-                _context.Sessions.Remove(session);
+                return new LogoutResType(401, false, "Access token is missing");
+            }
+
+            var tokenExpiresAt = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler()
+                .ReadJwtToken(token).ValidTo;
+            var revokedToken = TokenRevocation.GetStorageValue(token);
+            var alreadyRevoked = await _context.Sessions
+                .AnyAsync(session => session.Token == revokedToken);
+
+            if (!alreadyRevoked)
+            {
+                _context.Sessions.Add(new Session
+                {
+                    Token = revokedToken,
+                    UserId = user.Id,
+                    ExpiresAt = tokenExpiresAt,
+                    DateCreated = DateTime.UtcNow
+                });
                 await _context.SaveChangesAsync();
             }
 

@@ -1,0 +1,68 @@
+services:
+  # ----------------------------------------------------------------------------
+  # Backend Web API (SoDauBai.Api - .NET 8)
+  # ----------------------------------------------------------------------------
+  api:
+    container_name: sodaubai_api
+    build:
+      context: ../server
+      dockerfile: ../docker/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-5000}:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__SoDauBaiContext=${CONNECTION_STRING}
+      - ConnectionStrings__SoDauBaiContextFailover=${CONNECTION_STRING_FAILOVER}
+      - JwtSettings__Issuer=${JWT_ISSUER}
+      - JwtSettings__Audience=${JWT_AUDIENCE}
+      - JwtSettings__SecretKey=${JWT_SECRET_KEY}
+      - JwtSettings__AccessTokenExpirationHours=${JWT_ACCESS_TOKEN_EXPIRATION_HOURS:-16}
+      - JwtSettings__AccessTokenExpirationDays=${JWT_ACCESS_TOKEN_EXPIRATION_DAYS:-2}
+      - JwtSettings__RefreshTokenExpirationMonths=${JWT_REFRESH_TOKEN_EXPIRATION_MONTHS:-1}
+      - CloudinarySettings__CloudName=${CLOUDINARY_CLOUD_NAME}
+      - CloudinarySettings__APIKey=${CLOUDINARY_API_KEY}
+      - CloudinarySettings__APISecret=${CLOUDINARY_API_SECRET}
+      - CloudinarySettings__Preset_Name=${CLOUDINARY_PRESET_NAME}
+      - CloudinarySettings__Folder_Name=${CLOUDINARY_FOLDER_NAME}
+    volumes:
+      - uploads_data:/app/Uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - sodaubai_network
+
+  # ----------------------------------------------------------------------------
+  # Database Service (Microsoft SQL Server 2022)
+  # ----------------------------------------------------------------------------
+  db:
+    container_name: sodaubai_db
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD:-YourStrong@Passw0rd!2026}
+      - MSSQL_PID=Express
+    volumes:
+      - mssql_data:/var/opt/mssql/data
+    networks:
+      - sodaubai_network
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD}\" -Q \"SELECT 1\" -b -C || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  uploads_data:
+    name: sodaubai_uploads_data
+  mssql_data:
+    name: sodaubai_mssql_data
+
+networks:
+  sodaubai_network:
+    name: sodaubai_network
+    driver: bridge

@@ -1,50 +1,50 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useAppContext } from '@/app/app-provider';
-import schoolApiRequest from '@/apiRequests/school';
-import { handleErrorApi } from '@/lib/utils';
-import Image from 'next/image';
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useAppContext } from "@/app/app-provider";
+import schoolApiRequest from "@/apiRequests/school";
+import { handleErrorApi } from "@/lib/utils";
 
 export default function HeaderSchool() {
-	const { user } = useAppContext();
-	const [school, setSchool] = useState<string>('');
+  const { user } = useAppContext();
+  const [school, setSchool] = useState<string>("");
 
-	useEffect(() => {
-		if (!user) return;
+  useEffect(() => {
+    if (!user) return;
 
-		const fetchSchoolName = async (schoolId: number) => {
-			try {
-				const { payload } = await schoolApiRequest.getNameOfSchool(schoolId);
-				const name =
-					(payload as any)?.data?.nameSchool ??
-					(payload as any)?.data?.name ??
-					(payload as any)?.nameSchool ??
-					'';
-				setSchool(name);
-			} catch (error) {
-				handleErrorApi({ error });
-			}
-		};
+    const fetchSchoolName = async (schoolId: number) => {
+      try {
+        const { payload } = await schoolApiRequest.getNameOfSchool(schoolId);
+        const name =
+          (payload as any)?.data?.nameSchool ??
+          (payload as any)?.data?.name ??
+          (payload as any)?.nameSchool ??
+          "";
+        setSchool(name);
+      } catch (error) {
+        handleErrorApi({ error });
+      }
+    };
 
-		if (user?.schoolId) {
-			fetchSchoolName(user.schoolId);
-		}
-	}, [user]);
+    if (user?.schoolId) {
+      fetchSchoolName(user.schoolId);
+    }
+  }, [user]);
 
-	if (!user) return null;
+  if (!user) return null;
 
-	return (
-		<div className='flex-1 flex items-center space-x-10'>
-			<>
-				<Image src={'/images/logo.png'} alt='30x30' width={40} height={40} />
-			</>
-			<div>
-				<span className='text-sm uppercase font-bold'>
-					sở GD&ĐT tỉnh đồng nai
-				</span>
-				<h3 className='uppercase font-bold'>{school}</h3>
-			</div>
-		</div>
-	);
+  return (
+    <div className='flex-1 flex items-center space-x-10'>
+      <>
+        <Image src={"/images/logo.png"} alt='30x30' width={40} height={40} />
+      </>
+      <div>
+        <span className='text-sm uppercase font-bold'>
+          sở GD&ĐT tỉnh đồng nai
+        </span>
+        <h3 className='uppercase font-bold'>{school}</h3>
+      </div>
+    </div>
+  );
 }

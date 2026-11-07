@@ -8,11 +8,12 @@ namespace SoDauBai.Application.Interfaces.Repositories;
 public interface IUser
 {
     Task<PaginatedResponse<ExtendUserBody>> GetUsers(UserSearch request);
-    Task<User?> GetUser(int id);
+    Task<UserDetail?> GetUser(int id);
     Task<User> AddUser(UserCreateBody model);
     Task<User> UpdateUser(int id, User entity);
     Task<bool> DeleteUser(int id);
     Task<User> UploadImageAsync(int id, IFormFile file);
     Task<MyInfoDto?> GetUserByUsername(string username);
+    Task<PaginatedResponse<UserDetail>> GetUserDetail(UserSearch query);
 }
 

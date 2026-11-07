@@ -6,6 +6,7 @@ using SoDauBai.Api.Controllers;
 using SoDauBai.Api.Filters;
 using SoDauBai.Api.Filters;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 
@@ -25,16 +26,26 @@ namespace SoDauBai.Api.Controllers.v1
 
     // GET: api/<WeeklyEvaluationsController>
     [HttpGet]
-    public async Task<IActionResult> GetAll(int weekId)
+    public async Task<IActionResult> GetAll(int weekId, [FromQuery] QueryObject query)
     {
-      var result = await _weeklyEvaluation.GetAllByWeek(weekId);
+      if (!ModelState.IsValid)
+        return ValidationProblem(ModelState);
+
+      var result = await _weeklyEvaluation.GetAllByWeek(weekId, query);
       if (result.StatusCode == 200)
       {
         return Ok(new
         {
           status = result.StatusCode,
           message = result.Message,
-          data = result.ListData
+          data = result.ListData,
+          pagination = new
+          {
+            pageNumber = query.PageNumber,
+            pageSize = query.PageSize,
+            totalResults = result.Total,
+            totalPages = (int)Math.Ceiling(result.Total / (double)query.PageSize)
+          }
         });
       }
 

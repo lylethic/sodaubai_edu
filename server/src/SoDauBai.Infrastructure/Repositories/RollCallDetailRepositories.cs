@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SoDauBai.Infrastructure.Data;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 using SoDauBai.Domain.Entities;
@@ -99,15 +100,25 @@ namespace SoDauBai.Infrastructure.Repositories
       }
     }
 
-    public async Task<ResponseData<RollCallDetail>> GetAllAsync()
+    public async Task<ResponseData<RollCallDetail>> GetAllAsync(QueryObject query)
     {
       try
       {
-        var result = await _context.RollCallDetails
-          .AsNoTracking()
+        var rollCallDetails = _context.RollCallDetails.AsNoTracking();
+        var total = await rollCallDetails.CountAsync();
+        var result = await rollCallDetails
+          .OrderBy(x => x.Id)
+          .Skip((query.PageNumber - 1) * query.PageSize)
+          .Take(query.PageSize)
           .ToListAsync();
 
-        return new ResponseData<RollCallDetail>(200, "Thành công", result);
+        return new ResponseData<RollCallDetail>
+        {
+          StatusCode = 200,
+          Message = "Thành công",
+          ListData = result,
+          Total = total
+        };
       }
       catch (Exception ex)
       {
@@ -116,22 +127,33 @@ namespace SoDauBai.Infrastructure.Repositories
       }
     }
 
-    public async Task<ResponseData<RollCallDetail>> GetAllAsync(int rollCallId)
+    public async Task<ResponseData<RollCallDetail>> GetAllAsync(int rollCallId, QueryObject query)
     {
       try
       {
-        var result = await _context.RollCallDetails
+        var detailsQuery = _context.RollCallDetails
           .Include(x => x.Student)
           .AsNoTracking()
-          .Where(x => x.RollCallId == rollCallId)
+          .Where(x => x.RollCallId == rollCallId);
+        var total = await detailsQuery.CountAsync();
+        var result = await detailsQuery
+          .OrderBy(x => x.Id)
+          .Skip((query.PageNumber - 1) * query.PageSize)
+          .Take(query.PageSize)
           .ToListAsync();
 
-        if (!result.Any())
+        if (total == 0)
         {
           return new ResponseData<RollCallDetail>(404, "Không tìm thấy dữ liệu");
         }
 
-        return new ResponseData<RollCallDetail>(200, "Thành công", result);
+        return new ResponseData<RollCallDetail>
+        {
+          StatusCode = 200,
+          Message = "Success",
+          ListData = result,
+          Total = total
+        };
       }
       catch (Exception ex)
       {

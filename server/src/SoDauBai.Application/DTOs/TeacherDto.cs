@@ -22,6 +22,8 @@ namespace SoDauBai.Application.DTOs
 
   public class TeacherCreateBody
   {
+    public int Id { get; set; }
+
     public int UserId { get; set; }
 
     public int SchoolId { get; set; }
@@ -35,6 +37,8 @@ namespace SoDauBai.Application.DTOs
     public string? Address { get; set; } = null;
 
     public string? PhotoPath { get; set; } = null;
+
+    public bool? Status { get; set; } = true;
   }
 
   public class TeacherToUpdate

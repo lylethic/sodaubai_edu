@@ -54,7 +54,7 @@ export class EntityError extends HttpError {
 let clientLogoutRequest: null | Promise<any> = null;
 export const isClient = () => typeof window !== 'undefined';
 
-const request = async <Response>(
+const requestWithoutLoading = async <Response>(
 	method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
 	url: string,
 	options?: CustomOptions | undefined
@@ -190,6 +190,31 @@ const request = async <Response>(
 	}
 
 	return data;
+};
+
+// The provider listens for these events and maintains a request counter, so
+// parallel requests keep the overlay visible until the last one completes.
+const request = async <Response>(
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+  url: string,
+  options?: CustomOptions | undefined,
+) => {
+  const shouldShowLoading = isClient();
+  if (shouldShowLoading) {
+    window.dispatchEvent(
+      new CustomEvent('app:loading:start', {
+        detail: method === 'GET' ? 'Đang tải dữ liệu...' : 'Đang xử lý...',
+      }),
+    );
+  }
+
+  try {
+    return await requestWithoutLoading<Response>(method, url, options);
+  } finally {
+    if (shouldShowLoading) {
+      window.dispatchEvent(new Event('app:loading:end'));
+    }
+  }
 };
 
 const http = {

@@ -130,3 +130,4 @@ server/Uploads/*
 !server/Uploads/.gitkeep
 
 .agents
+docker/.env

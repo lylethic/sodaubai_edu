@@ -17,9 +17,9 @@ export const rollCallDetailApiRequest = {
 			}
 		),
 
-	rollCallDetailByRollCallId: (id: number) =>
+	rollCallDetailByRollCallId: (id: number, pag: QueryType) =>
 		http.get<RollCallDetailResType>(
-			`/v1/roll-call-details/get-detail-by-rollCallId?rollCallId=${id}`,
+			`/v1/roll-call-details/get-detail-by-rollCallId?rollCallId=${id}&pageNumber=${pag.pageNumber}&pageSize=${pag.pageSize}`,
 			{
 				cache: 'no-store',
 			}

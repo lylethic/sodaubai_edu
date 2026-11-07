@@ -136,13 +136,21 @@ namespace SoDauBai.Infrastructure.Repositories
 
     public async Task<List<StudentDetail>> GetStudentsByClass(int schoolId, int classId)
     {
+      const int maxStudentsPerClass = 100;
       var items = await _dbSet
         .Where(x => x.Deleted == false && x.ClassId == classId && (x.User == null || x.User.SchoolId == schoolId))
         .Include(x => x.Class)
         .Include(x => x.User)
           .ThenInclude(u => u!.School)
         .AsNoTracking()
+        .OrderBy(x => x.Id)
+        .Take(maxStudentsPerClass + 1)
         .ToListAsync();
+
+      if (items.Count > maxStudentsPerClass)
+      {
+        throw new BadRequestException($"Sĩ số lớp vượt quá giới hạn tối đa {maxStudentsPerClass} học sinh.");
+      }
 
       return items.Select(student =>
       {

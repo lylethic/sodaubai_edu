@@ -121,6 +121,20 @@ namespace SoDauBai.Infrastructure.Repositories
 
       try
       {
+        if (string.IsNullOrWhiteSpace(accessToken))
+        {
+          return new LoginResType(false, 400, "Access token is required.");
+        }
+
+        var isRevoked = await _context.Sessions
+          .AsNoTracking()
+          .AnyAsync(session => session.Token == TokenRevocation.GetStorageValue(accessToken) && session.ExpiresAt > DateTime.UtcNow);
+
+        if (isRevoked)
+        {
+          return new LoginResType(false, 401, "Access token has been revoked.");
+        }
+
         // Validate: user, AccessToken tu claim Sap het han chua
         var (principal, isExpired) = GetPrincipalFromExpiredToken(accessToken);
 

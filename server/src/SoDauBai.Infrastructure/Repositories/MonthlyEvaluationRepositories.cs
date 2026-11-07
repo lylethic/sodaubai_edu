@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SoDauBai.Infrastructure.Data;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 using SoDauBai.Domain.Entities;
@@ -38,14 +39,24 @@ namespace SoDauBai.Infrastructure.Repositories
       throw new NotImplementedException();
     }
 
-    public async Task<ResponseData<MonthlyEvaluation>> GetAll()
+    public async Task<ResponseData<MonthlyEvaluation>> GetAll(QueryObject query)
     {
       try
       {
-        var monthlyEvaluation = await _context.MonthlyEvaluations
-        .AsNoTracking()
-        .ToListAsync();
-        return new ResponseData<MonthlyEvaluation>(200, "Thành công", monthlyEvaluation);
+        var monthlyEvaluations = _context.MonthlyEvaluations.AsNoTracking();
+        var total = await monthlyEvaluations.CountAsync();
+        var monthlyEvaluation = await monthlyEvaluations
+          .OrderBy(x => x.Id)
+          .Skip((query.PageNumber - 1) * query.PageSize)
+          .Take(query.PageSize)
+          .ToListAsync();
+        return new ResponseData<MonthlyEvaluation>
+        {
+          StatusCode = 200,
+          Message = "Success",
+          ListData = monthlyEvaluation,
+          Total = total
+        };
       }
       catch (System.Exception ex)
       {

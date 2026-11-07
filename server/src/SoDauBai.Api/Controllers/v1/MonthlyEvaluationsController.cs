@@ -6,6 +6,7 @@ using SoDauBai.Api.Controllers;
 using SoDauBai.Api.Filters;
 using SoDauBai.Api.Filters;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 
@@ -24,9 +25,12 @@ namespace SoDauBai.Api.Controllers.v1
     }
     // GET: api/<MonthlyEvaluationsController>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
     {
-      var result = await _monthlyEva.GetAll();
+      if (!ModelState.IsValid)
+        return ValidationProblem(ModelState);
+
+      var result = await _monthlyEva.GetAll(query);
       if (result.StatusCode == 200)
       {
 
@@ -34,7 +38,14 @@ namespace SoDauBai.Api.Controllers.v1
         {
           status = result.StatusCode,
           message = result.StatusCode,
-          data = result.ListData
+          data = result.ListData,
+          pagination = new
+          {
+            pageNumber = query.PageNumber,
+            pageSize = query.PageSize,
+            totalResults = result.Total,
+            totalPages = (int)Math.Ceiling(result.Total / (double)query.PageSize)
+          }
         });
       }
       return StatusCode(result.StatusCode, new

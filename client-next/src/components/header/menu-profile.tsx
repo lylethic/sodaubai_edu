@@ -1,6 +1,6 @@
-'use client';
-import teacherApiRequest from '@/apiRequests/teacher';
-import { useAppContext } from '@/app/app-provider';
+"use client";
+import teacherApiRequest from "@/apiRequests/teacher";
+import { useAppContext } from "@/app/app-provider";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,28 +8,31 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { getImageSrc, handleErrorApi } from '@/lib/utils';
-import { TeacherResType } from '@/schemaValidations/teacher.schema';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import ButtonLogout from '../button-logout';
+} from "@/components/ui/dropdown-menu";
+import { getImageSrc, handleErrorApi } from "@/lib/utils";
+import { TeacherResType } from "@/schemaValidations/teacher.schema";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import ButtonLogout from "../button-logout";
+import { Button } from "../ui/button";
 
 export default function MenuProfile() {
-  const [information, setInformation] = useState<TeacherResType['data']>();
+  const [information, setInformation] = useState<TeacherResType["data"]>();
   const [loading, setLoading] = useState(false);
 
   const { user } = useAppContext();
-  const accountId = Number(user?.accountId);
+  const teacherId = Number(user?.teacherId);
+
   useEffect(() => {
     const fetchInformation = async () => {
       setLoading(true);
       try {
         const { payload } =
-          await teacherApiRequest.teacherByAccountId(accountId);
+          await teacherApiRequest.teacher(teacherId);
+          console.log(await teacherApiRequest.teacher(teacherId));
+          
         setInformation(payload.data);
       } catch (error) {
         handleErrorApi({ error });
@@ -42,6 +45,7 @@ export default function MenuProfile() {
       fetchInformation();
     }
   }, [user]);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild className='cursor-pointer'>
@@ -61,13 +65,14 @@ export default function MenuProfile() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <Link
-              href={'/me'}
-              className='flex justify-between items-center w-full h-full'
-            >
-              Cá nhân
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-            </Link>
+            <Button size={"sm"} variant='ghost' className='w-full text-sm'>
+              <Link
+                href={"/me"}
+                className='flex justify-between items-center w-full h-full'
+              >
+                Cá nhân
+              </Link>
+            </Button>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

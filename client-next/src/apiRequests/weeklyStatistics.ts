@@ -6,11 +6,12 @@ import {
 	ViewScoreListByWeekResType,
 	WeeklyStatisticsType,
 } from '@/schemaValidations/weekly-statistics';
+import { QueryType } from '@/types/queryType';
 
 export const weeklyStatisticsApiRequest = {
-	weeklyEvaluations: (weekId: number) =>
+	weeklyEvaluations: (weekId: number, pag: QueryType) =>
 		http.get<WeeklyStatisticsType>(
-			`/v1/weekly-evaluations?weekId=${weekId}`
+			`/v1/weekly-evaluations?weekId=${weekId}&pageNumber=${pag.pageNumber}&pageSize=${pag.pageSize}`
 		),
 
 	create: (body: CreateWeeklyStatisticsType) =>

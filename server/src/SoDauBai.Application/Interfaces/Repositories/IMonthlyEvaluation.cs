@@ -1,4 +1,5 @@
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Domain.Entities;
 
 namespace SoDauBai.Application.Interfaces.Repositories
@@ -9,7 +10,7 @@ namespace SoDauBai.Application.Interfaces.Repositories
     Task<ResponseData<MonthlyEvaluation>> Update(int id, MonthlyEvaluationDto model);
     Task<ResponseData<MonthlyEvaluation>> Delete(int id);
     Task<ResponseData<MonthlyEvaluation>> BulkDelete(List<int> ids);
-    Task<ResponseData<MonthlyEvaluation>> GetAll();
+    Task<ResponseData<MonthlyEvaluation>> GetAll(QueryObject query);
     Task<ResponseData<MonthlyEvaluation>> GetById(int id);
   }
 }

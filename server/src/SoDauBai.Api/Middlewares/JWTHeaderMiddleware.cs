@@ -4,6 +4,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using SoDauBai.Infrastructure.Data;
+using SoDauBai.Infrastructure.Services;
 
 namespace SoDauBai.Api.Middlewares;
 
@@ -20,7 +23,7 @@ public class JWTHeaderMiddleware
         _logger = logger;
     }
 
-    public async Task Invoke(HttpContext httpContext)
+    public async Task Invoke(HttpContext httpContext, SoDauBaiContext context)
     {
         string? jwtToken = null;
 
@@ -39,6 +42,7 @@ public class JWTHeaderMiddleware
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"]!);
+            System.Security.Claims.ClaimsPrincipal? principal = null;
 
             try
             {
@@ -54,16 +58,11 @@ public class JWTHeaderMiddleware
                     ClockSkew = TimeSpan.Zero
                 };
 
-                tokenHandler.ValidateToken(jwtToken, validationParameters, out SecurityToken validatedToken);
-
-                if (!httpContext.Request.Headers.ContainsKey("Authorization"))
-                {
-                    httpContext.Request.Headers.Append("Authorization", $"Bearer {jwtToken}");
-                }
+                principal = tokenHandler.ValidateToken(jwtToken, validationParameters, out _);
             }
             catch (SecurityTokenExpiredException)
             {
-                _logger.LogWarning("JWT Token has expired.");
+                _logger.LogDebug("JWT token has expired.");
             }
             catch (SecurityTokenInvalidSignatureException)
             {
@@ -72,6 +71,25 @@ public class JWTHeaderMiddleware
             catch (Exception ex)
             {
                 _logger.LogError($"Token validation failed: {ex.Message}");
+            }
+
+            if (principal != null)
+            {
+                var revokedToken = await context.Sessions
+                    .AsNoTracking()
+                    .AnyAsync(session => session.Token == TokenRevocation.GetStorageValue(jwtToken) && session.ExpiresAt > DateTime.UtcNow);
+
+                if (revokedToken)
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    await httpContext.Response.WriteAsJsonAsync(new { message = "Token has been revoked." });
+                    return;
+                }
+
+                if (!httpContext.Request.Headers.ContainsKey("Authorization"))
+                {
+                    httpContext.Request.Headers.Append("Authorization", $"Bearer {jwtToken}");
+                }
             }
         }
 

@@ -1,14 +1,16 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using SoDauBai.Application.Interfaces.Services;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 
 namespace SoDauBai.Api.Middlewares;
 
 public class ApiLoggingMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly ILogManager _logger;
+    private readonly ILogger<ApiLoggingMiddleware> _logger;
 
-    public ApiLoggingMiddleware(RequestDelegate next, ILogManager logger)
+    public ApiLoggingMiddleware(RequestDelegate next, ILogger<ApiLoggingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
@@ -16,19 +18,28 @@ public class ApiLoggingMiddleware
 
     public async Task Invoke(HttpContext context)
     {
-        var method = context.Request.Method;
-        var url = context.Request.Path + context.Request.QueryString;
+        var stopwatch = Stopwatch.StartNew();
 
-        await _next(context);
-
-        var statusCode = context.Response.StatusCode;
-
-        var endpoint = context.GetEndpoint();
-        var apiName = endpoint?.DisplayName ?? "Unknown API";
-
-        if (!url.Contains("swagger"))
+        try
         {
-            _logger.Info($"[{method}] {url} => Status: {statusCode} | Endpoint: {apiName}");
+            await _next(context);
+        }
+        finally
+        {
+            stopwatch.Stop();
+
+            var route = (context.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "unmatched";
+            if (!route.StartsWith("swagger", StringComparison.OrdinalIgnoreCase))
+            {
+                var traceId = Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
+                _logger.LogInformation(
+                    "HTTP {Method} {Route} returned {StatusCode} in {ElapsedMilliseconds} ms; TraceId={TraceId}",
+                    context.Request.Method,
+                    route,
+                    context.Response.StatusCode,
+                    stopwatch.Elapsed.TotalMilliseconds,
+                    traceId);
+            }
         }
     }
 }

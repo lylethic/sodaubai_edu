@@ -27,6 +27,7 @@ public class AppAutomapper : Profile
           .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.TeacherUsers.FirstOrDefault() != null ? src.TeacherUsers.FirstOrDefault()!.Address : null))
           .ForMember(dest => dest.PhotoPath, opt => opt.MapFrom(src => src.TeacherUsers.FirstOrDefault() != null ? src.TeacherUsers.FirstOrDefault()!.PhotoPath : null))
           .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.TeacherUsers.FirstOrDefault() != null ? src.TeacherUsers.FirstOrDefault()!.Status : (bool?)null));
+        CreateMap<User, UserDetail>().ReverseMap();
 
         // Permission maps
         CreateMap<Permission, PermissionDto>().ReverseMap();

@@ -83,6 +83,12 @@ export const WeeklyStatistics = z.object({
 	httpStatus: z.number().optional(),
 	message: z.string().optional(),
 	data: z.union([WeeklyEvaluationSchema, z.array(WeeklyEvaluationSchema)]),
+	pagination: z.object({
+		pageNumber: z.number(),
+		pageSize: z.number(),
+		totalResults: z.number(),
+		totalPages: z.number(),
+	}).optional(),
 });
 export type WeeklyStatisticsType = z.infer<typeof WeeklyStatistics>;
 

@@ -6,6 +6,7 @@ using SoDauBai.Api.Controllers;
 using SoDauBai.Api.Filters;
 using SoDauBai.Api.Filters;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 
@@ -25,16 +26,26 @@ namespace SoDauBai.Api.Controllers.v1
 
     // GET: api/<AbsencesController>
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
     {
-      var result = await _rollCallDetail.GetAllAsync();
+      if (!ModelState.IsValid)
+        return ValidationProblem(ModelState);
+
+      var result = await _rollCallDetail.GetAllAsync(query);
       if (result.StatusCode == 200)
       {
         return Ok(new
         {
           status = result.StatusCode,
           message = result.Message,
-          data = result.ListData
+          data = result.ListData,
+          pagination = new
+          {
+            pageNumber = query.PageNumber,
+            pageSize = query.PageSize,
+            totalResults = result.Total,
+            totalPages = (int)Math.Ceiling(result.Total / (double)query.PageSize)
+          }
         });
       }
 
@@ -46,16 +57,26 @@ namespace SoDauBai.Api.Controllers.v1
     }
 
     [HttpGet("get-detail-by-rollCallId")]
-    public async Task<IActionResult> GetAll(int rollCallId)
+    public async Task<IActionResult> GetAll(int rollCallId, [FromQuery] QueryObject query)
     {
-      var result = await _rollCallDetail.GetAllAsync(rollCallId);
+      if (!ModelState.IsValid)
+        return ValidationProblem(ModelState);
+
+      var result = await _rollCallDetail.GetAllAsync(rollCallId, query);
       if (result.StatusCode == 200)
       {
         return Ok(new
         {
           status = result.StatusCode,
           message = result.Message,
-          data = result.ListData
+          data = result.ListData,
+          pagination = new
+          {
+            pageNumber = query.PageNumber,
+            pageSize = query.PageSize,
+            totalResults = result.Total,
+            totalPages = (int)Math.Ceiling(result.Total / (double)query.PageSize)
+          }
         });
       }
 

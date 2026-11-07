@@ -148,7 +148,7 @@ export default function MeProfile() {
                   </span>
                 </div>
 
-                {information.schoolName && (
+                {/* {information.schoolName && (
                   <div className='flex items-center justify-between p-2 rounded-lg bg-muted/50'>
                     <span className='text-muted-foreground flex items-center gap-1.5'>
                       <School className='h-4 w-4' /> Trường
@@ -160,7 +160,7 @@ export default function MeProfile() {
                       {information.schoolName}
                     </span>
                   </div>
-                )}
+                )} */}
 
                 <div className='flex items-center justify-between p-2 rounded-lg bg-muted/50'>
                   <span className='text-muted-foreground flex items-center gap-1.5'>
@@ -206,7 +206,7 @@ export default function MeProfile() {
                   {information.username && (
                     <TableRow>
                       <TableCell className='font-medium text-muted-foreground'>
-                        Tên tài khoản (Username)
+                        Tên tài khoản
                       </TableCell>
                       <TableCell className='font-semibold'>
                         {information.username}
@@ -238,7 +238,7 @@ export default function MeProfile() {
                   {information.teacherId && (
                     <TableRow>
                       <TableCell className='font-medium text-muted-foreground'>
-                        Mã giáo viên (Teacher ID)
+                        Mã giáo viên
                       </TableCell>
                       <TableCell className='font-semibold'>
                         {information.teacherId}

@@ -6,6 +6,7 @@ using SoDauBai.Api.Controllers;
 using SoDauBai.Api.Filters;
 using SoDauBai.Api.Filters;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 
@@ -25,30 +26,26 @@ namespace SoDauBai.Api.Controllers.v1
 
     // GET: api/<RollCallsController>
     [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] QueryObject? queryObject, int weekId, int classId)
+    public async Task<IActionResult> GetAll([FromQuery] QueryObject query, int weekId, int classId)
     {
-      queryObject ??= new QueryObject();
-      var result = await _rollCall.RollCalls(weekId, classId);
+      if (!ModelState.IsValid)
+        return ValidationProblem(ModelState);
+
+      var result = await _rollCall.RollCalls(weekId, classId, query);
       if (result.StatusCode == 200)
       {
         var data = result.ListRollCallRes ?? [];
-        var totalResults = data.Count;
-        var totalPages = (int)Math.Ceiling((double)totalResults / queryObject.PageSize);
-        var paginatedData = data
-        .Skip((queryObject.PageNumber - 1) * queryObject.PageSize)
-        .Take(queryObject.PageSize)
-        .ToList();
 
         return Ok(new
         {
           message = result.Message,
-          data = paginatedData,
+          data,
           pagination = new
           {
-            queryObject.PageNumber,
-            queryObject.PageSize,
-            totalResults,
-            totalPages
+            pageNumber = query.PageNumber,
+            pageSize = query.PageSize,
+            totalResults = result.Total,
+            totalPages = (int)Math.Ceiling(result.Total / (double)query.PageSize)
           }
         });
       }

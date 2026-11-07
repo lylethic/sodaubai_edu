@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SoDauBai.Infrastructure.Data;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
 using SoDauBai.Domain.Entities;
@@ -205,15 +206,22 @@ namespace SoDauBai.Infrastructure.Repositories
       }
     }
 
-    public async Task<RollCallResType> RollCalls(int weekId, int classId)
+    public async Task<RollCallResType> RollCalls(int weekId, int classId, QueryObject query)
     {
       try
       {
-        var rollCalls = await _context.RollCalls
-          .Where(x => x.WeekId == weekId && x.ClassId == classId)
+        var rollCallQuery = _context.RollCalls
+          .Where(x => x.WeekId == weekId && x.ClassId == classId);
+        var total = await rollCallQuery.CountAsync();
+        var rollCalls = await rollCallQuery
           .Include(x => x.RollCallDetails)
           .ThenInclude(x => x.Student)
           .AsNoTracking()
+          .AsSplitQuery()
+          .OrderBy(x => x.DateAt)
+          .ThenBy(x => x.Id)
+          .Skip((query.PageNumber - 1) * query.PageSize)
+          .Take(query.PageSize)
           .ToListAsync();
 
         TimeZoneInfo vietnamTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -225,7 +233,12 @@ namespace SoDauBai.Infrastructure.Repositories
           if (x.DateUpdated.HasValue) x.DateUpdated = TimeZoneInfo.ConvertTimeFromUtc(x.DateUpdated.Value, vietnamTimeZone);
         });
 
-        return new RollCallResType(200, $"Thành công", rollCalls);
+        return new RollCallResType(200, "Success", rollCalls)
+        {
+          PageNumber = query.PageNumber,
+          PageSize = query.PageSize,
+          Total = total
+        };
       }
       catch (Exception ex)
       {
@@ -234,7 +247,7 @@ namespace SoDauBai.Infrastructure.Repositories
       }
     }
 
-    public async Task<RollCallResType> RollCalls(int weekId, int? classId)
+    public async Task<RollCallResType> RollCalls(int weekId, int? classId, QueryObject query)
     {
       try
       {
@@ -258,8 +271,12 @@ namespace SoDauBai.Infrastructure.Repositories
                             NumberOfAttendants = rollcall.NumberOfAttendants ?? 0
                           };
 
+        var total = await queryObject.CountAsync();
         var rollCalls = await queryObject
           .AsNoTracking()
+          .OrderBy(x => x.RollCallId)
+          .Skip((query.PageNumber - 1) * query.PageSize)
+          .Take(query.PageSize)
           .ToListAsync();
 
         if (rollCalls is null || rollCalls.Count == 0)

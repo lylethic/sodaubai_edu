@@ -54,9 +54,40 @@ public class UserRepositories : BaseRepository<User>, IUser
         };
     }
 
-    public async Task<User?> GetUser(int id)
+    public async Task<UserDetail?> GetUser(int id)
     {
-        return await GetByIdAsync(id);
+        var result = from u in _context.Users.AsNoTracking()
+                     where u.Id == id
+                     join ur in _context.UserRoles.AsNoTracking() on u.Id equals ur.UserId into userRoleJoin
+                     from ur in userRoleJoin.DefaultIfEmpty()
+                     join r in _context.Roles.AsNoTracking() on ur.RoleId equals r.Id // inner join
+                     join s in _context.Schools.AsNoTracking() on u.SchoolId equals s.Id into schoolJoin
+                     from s in schoolJoin.DefaultIfEmpty()
+                     join t in _context.Teachers.AsNoTracking().Where(x => x.Deleted == false) on u.Id equals t.UserId into teacherJoin
+                     from t in teacherJoin.DefaultIfEmpty()
+                     select new UserDetail
+                     {
+                         Id = u.Id,
+                         Email = u.Email,
+                         Username = u.Username,
+                         Avatar = u.Avatar,
+                         SchoolId = u.SchoolId,
+                         SchoolName = s != null ? s.Name : null,
+                         SchoolType = s != null ? s.SchoolType : null,
+                         SchoolPhoneNumber = s != null ? s.PhoneNumber : null,
+                         TeacherId = t != null ? t.Id : null,
+                         Fullname = t != null ? t.Fullname : null,
+                         DateOfBirth = t != null ? t.DateOfBirth : null,
+                         Gender = t != null ? t.Gender : null,
+                         Address = t != null ? t.Address : null,
+                         PhotoPath = t != null ? t.PhotoPath : null,
+                         Status = t != null ? t.Status : null,
+                         RoleId = r.Id,
+                         NameRole = r.NameRole,
+                         DateCreated = u.DateCreated,
+                         DateUpdated = u.DateUpdated
+                     };
+        return await result.FirstOrDefaultAsync();
     }
 
     public async Task<User> AddUser(UserCreateBody model)
@@ -159,7 +190,7 @@ public class UserRepositories : BaseRepository<User>, IUser
                       from s in schoolJoin.DefaultIfEmpty()
                       join t in _context.Teachers.AsNoTracking().Where(x => x.Deleted == false) on u.Id equals t.UserId into teacherJoin
                       from t in teacherJoin.DefaultIfEmpty()
-                      where u.Deleted == false && (u.Email == username)
+                      where u.Deleted == false && (u.Username == username)
                       select new MyInfoDto
                       {
                           Id = u.Id,
@@ -176,5 +207,73 @@ public class UserRepositories : BaseRepository<User>, IUser
                           PhotoPath = t != null ? t.PhotoPath : null,
                           Status = t != null ? t.Status : null
                       }).FirstOrDefaultAsync();
+    }
+
+    /// <summary>
+    /// Get User's detail by User.Id
+    /// </summary>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    public async Task<PaginatedResponse<UserDetail>> GetUserDetail(UserSearch query)
+    {
+        var baseQuery = from u in _context.Users.AsNoTracking()
+                        join ur in _context.UserRoles.AsNoTracking() on u.Id equals ur.UserId into userRoleJoin
+                        from ur in userRoleJoin.DefaultIfEmpty()
+                        join r in _context.Roles.AsNoTracking() on ur.RoleId equals r.Id
+                        join s in _context.Schools.AsNoTracking() on u.SchoolId equals s.Id into schoolJoin
+                        from s in schoolJoin.DefaultIfEmpty()
+                        join t in _context.Teachers.AsNoTracking().Where(x => x.Deleted == false) on u.Id equals t.UserId into teacherJoin
+                        from t in teacherJoin.DefaultIfEmpty()
+                        select new UserDetail
+                        {
+                            Id = u.Id,
+                            Email = u.Email,
+                            Username = u.Username,
+                            Avatar = u.Avatar,
+                            SchoolId = u.SchoolId,
+                            SchoolName = s != null ? s.Name : null,
+                            SchoolType = s != null ? s.SchoolType : null,
+                            SchoolPhoneNumber = s != null ? s.PhoneNumber : null,
+                            TeacherId = t != null ? t.Id : null,
+                            Fullname = t != null ? t.Fullname : null,
+                            DateOfBirth = t != null ? t.DateOfBirth : null,
+                            Gender = t != null ? t.Gender : null,
+                            Address = t != null ? t.Address : null,
+                            PhotoPath = t != null ? t.PhotoPath : null,
+                            Status = t != null ? t.Status : null,
+                            RoleId = r.Id,
+                            NameRole = r.NameRole,
+                            DateCreated = u.DateCreated,
+                            DateUpdated = u.DateUpdated
+                        };
+
+        if (query.SchoolId.HasValue)
+        {
+            baseQuery = baseQuery.Where(x => x.SchoolId == query.SchoolId.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+        {
+            var keyword = query.Keyword.Trim();
+            baseQuery = baseQuery.Where(x =>
+                x.Email.Contains(keyword) ||
+                (x.Fullname != null && x.Fullname.Contains(keyword)));
+        }
+
+        var totalCount = await baseQuery.CountAsync();
+
+        var items = await baseQuery
+            .OrderBy(x => x.Id)
+            .Skip((query.PageNumber - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<UserDetail>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            PageNumber = query.PageNumber,
+            PageSize = query.PageSize
+        };
     }
 }

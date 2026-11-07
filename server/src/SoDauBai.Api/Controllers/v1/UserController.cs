@@ -16,97 +16,111 @@ namespace SoDauBai.Api.Controllers.v1;
 [Route("api/v{version:apiVersion}/[controller]")]
 public class UserController : BaseApiController
 {
-  private readonly IUser _repository;
+    private readonly IUser _repository;
 
-  public UserController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IUser repository) : base(mapper, httpContextAccessor, logger)
-  {
-    _repository = repository;
-  }
+    public UserController(IMapper mapper, IHttpContextAccessor httpContextAccessor, ILogManager logger, IUser repository) : base(mapper, httpContextAccessor, logger)
+    {
+        _repository = repository;
+    }
 
-  [HttpGet]
-  public async Task<IActionResult> GetAllAsync([FromQuery] UserSearch request)
-  {
-    try
-    {
-      var result = await _repository.GetUsers(request);
-      return Success(result);
-    }
-    catch (Exception ex)
-    {
-      return Error(ex);
-    }
-  }
+    // [HttpGet]
+    // public async Task<IActionResult> GetAllAsync([FromQuery] UserSearch request)
+    // {
+    //     try
+    //     {
+    //         var result = await _repository.GetUsers(request);
+    //         return Success(result);
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         return Error(ex);
+    //     }
+    // }
 
-  [HttpGet("{id}")]
-  public async Task<IActionResult> GetAsync(int id)
-  {
-    try
+    [HttpGet]
+    public async Task<IActionResult> GetAllAsync(UserSearch query)
     {
-      var result = await _repository.GetUser(id);
-      return Success(_mapper.Map<UserDto>(result));
+        try
+        {
+            var result = await _repository.GetUserDetail(query);
+            return Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
-    catch (Exception ex)
-    {
-      return Error(ex);
-    }
-  }
 
-  [HttpPost]
-  public async Task<IActionResult> PostAsync([FromBody] UserCreateBody entity)
-  {
-    try
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetAsync(int id)
     {
-      var result = await _repository.AddUser(entity);
-      return Success(_mapper.Map<User, UserDto>(result));
+        try
+        {
+            var result = await _repository.GetUser(id);
+            return Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
-    catch (Exception ex)
-    {
-      return Error(ex);
-    }
-  }
 
-  [HttpPost("upload")]
-  [Consumes("multipart/form-data")]
-  public async Task<IActionResult> CreatePhotoPath([FromForm] int? id, [FromForm] IFormFile file, [FromQuery] int? userId = null)
-  {
-    try
+    [HttpPost]
+    public async Task<IActionResult> PostAsync([FromBody] UserCreateBody entity)
     {
-      var targetId = (id.HasValue && id.Value > 0) ? id.Value : (userId ?? 0);
-      var result = await _repository.UploadImageAsync(targetId, file);
-      return Success(_mapper.Map<User, UserDto>(result));
+        try
+        {
+            var result = await _repository.AddUser(entity);
+            return Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
-    catch (Exception ex)
-    {
-      return Error(ex);
-    }
-  }
 
-  [HttpPut("{id}")]
-  public async Task<IActionResult> PutAsync(int id, [FromBody] UserDto entity)
-  {
-    try
+    [HttpPost("upload")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> CreatePhotoPath([FromForm] int? id, [FromForm] IFormFile file, [FromQuery] int? userId = null)
     {
-      var result = await _repository.UpdateUser(id, _mapper.Map<User>(entity));
-      return Success(_mapper.Map<User, UserDto>(result));
+        try
+        {
+            var targetId = (id.HasValue && id.Value > 0) ? id.Value : (userId ?? 0);
+            var result = await _repository.UploadImageAsync(targetId, file);
+            return Success(_mapper.Map<User, UserDto>(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
-    catch (Exception ex)
-    {
-      return Error(ex);
-    }
-  }
 
-  [HttpDelete("{id}")]
-  public async Task<IActionResult> DeleteAsycn(int id)
-  {
-    try
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutAsync(int id, [FromBody] UserDto entity)
     {
-      var result = await _repository.DeleteUser(id);
-      return Success(result);
+        try
+        {
+            var result = await _repository.UpdateUser(id, _mapper.Map<User>(entity));
+            return Success(_mapper.Map<User, UserDto>(result));
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
-    catch (Exception ex)
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteAsycn(int id)
     {
-      return Error(ex);
+        try
+        {
+            var result = await _repository.DeleteUser(id);
+            return Success(result);
+        }
+        catch (Exception ex)
+        {
+            return Error(ex);
+        }
     }
-  }
 }
 

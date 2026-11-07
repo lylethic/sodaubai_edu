@@ -125,6 +125,9 @@ namespace SoDauBai.Api.Controllers.v1
         [HttpPost("export")]
         public async Task<IActionResult> ExportSchools([FromBody] List<int> ids)
         {
+            if (ids is null || ids.Count == 0 || ids.Count > 500)
+                return BadRequest("Export requires between 1 and 500 IDs.");
+
             var exportFolder = Path.Combine(Directory.GetCurrentDirectory(), "Exports");
 
             // Ensure the directory exists

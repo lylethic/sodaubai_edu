@@ -6,6 +6,10 @@ namespace SoDauBai.Application.DTOs.Types.RollCall
 
     public string Message { get; set; } = string.Empty;
 
+    public int PageNumber { get; set; }
+    public int PageSize { get; set; }
+    public int Total { get; set; }
+
     public RollCallRes? RollCallRes { get; set; }
     public List<RollCallRes>? ListRollCallDetailRes { get; set; }
 

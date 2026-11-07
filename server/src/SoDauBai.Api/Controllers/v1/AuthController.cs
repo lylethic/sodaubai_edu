@@ -48,7 +48,8 @@ namespace SoDauBai.Api.Controllers.v1
                 data = new
                 {
                     token = result.Data!.Token,
-                    expiresAt = result.Data.ExpiresAt
+                    expiresAt = result.Data.ExpiresAt,
+                    userInfo = result.Data.UserInfo
                 }
             });
         }

@@ -91,8 +91,14 @@ namespace SoDauBai.Infrastructure.Repositories
 
     public async Task<Teacher> UpdateAsync(int id, TeacherCreateBody model)
     {
+      model.Id = id;
       var existing = await base.GetByIdAsync(id) ?? throw new NotFoundException("Không tìm thấy giáo viên");
+      var currentUserId = existing.UserId;
       _mapper.Map(model, existing);
+      if (model.UserId <= 0)
+      {
+        existing.UserId = currentUserId;
+      }
       existing.UpdatedBy = _sessionUser.UserId;
       existing.DateUpdated = DateTime.UtcNow;
       return await base.UpdateAsync(existing);

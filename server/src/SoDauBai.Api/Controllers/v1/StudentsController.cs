@@ -7,8 +7,10 @@ using SoDauBai.Api.Filters;
 using SoDauBai.Application.DTOs.Search;
 using SoDauBai.Api.Filters;
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.Common.Exceptions;
 using SoDauBai.Application.Interfaces.Repositories;
 using SoDauBai.Application.Interfaces.Services;
+using System.Net;
 
 namespace SoDauBai.Api.Controllers.v1
 {
@@ -48,6 +50,11 @@ namespace SoDauBai.Api.Controllers.v1
       }
       catch (Exception ex)
       {
+        if (ex is BadRequestException)
+        {
+          return StatusCode((int)HttpStatusCode.BadRequest, new { message = ex.Message });
+        }
+
         return Error(ex);
       }
     }

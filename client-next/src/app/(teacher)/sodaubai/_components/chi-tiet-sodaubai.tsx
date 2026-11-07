@@ -132,7 +132,7 @@ export default function ChiTietSoDauBai({ filters }: FilterProps) {
 		try {
 			if (user) {
 				const { payload } = await teacherApiRequest.teacherByAccountId(
-					user.accountId
+					user.id
 				);
 				if (payload.data?.teacherId) {
 					setTeacherId(payload.data.teacherId);

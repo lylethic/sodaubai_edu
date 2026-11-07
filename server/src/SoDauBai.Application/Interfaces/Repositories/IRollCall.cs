@@ -1,4 +1,5 @@
 using SoDauBai.Application.DTOs;
+using SoDauBai.Application.DTOs.Common;
 using SoDauBai.Application.DTOs.Types.RollCall;
 
 namespace SoDauBai.Application.Interfaces.Repositories
@@ -11,7 +12,7 @@ namespace SoDauBai.Application.Interfaces.Repositories
     Task<RollCallResType> Delete(int rollCallId);
     Task<RollCallResType> BulkDelete(List<int> rollCallIds);
     Task<RollCallResType> RollCall(int rollCallId);
-    Task<RollCallResType> RollCalls(int weekId, int classId);
+    Task<RollCallResType> RollCalls(int weekId, int classId, QueryObject query);
     Task<RollCallResType> Import(int weekId, int classId);
     Task<RollCallResType> Export(int weekId, int classId);
   }

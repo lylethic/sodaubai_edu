@@ -129,6 +129,12 @@ export const RollCallDetailRes = z.object({
 	status: z.number().optional(),
 	message: z.string().optional(),
 	data: z.union([RollCallDetailSchema, z.array(RollCallDetailSchema)]),
+	pagination: z.object({
+		pageNumber: z.number(),
+		pageSize: z.number(),
+		totalResults: z.number(),
+		totalPages: z.number(),
+	}).optional(),
 });
 export type RollCallDetailResType = z.infer<typeof RollCallDetailRes>;
 
